@@ -9,7 +9,7 @@ export default function AccountPage() {
   return (
     <div className="space-y-4">
       <div className="-mx-4 rounded-b-lg rounded-t-none border border-border bg-card/70 px-9 py-5 shadow-sm backdrop-blur-xl">
-        <h1 className="text-lg font-semibold text-slate-900">Account</h1>
+        <h1 className="text-lg font-semibold text-slate-900">Cuenta</h1>
         <p className="mt-1 text-sm text-slate-600">Tu perfil (mock).</p>
 
         <div className="mt-4 flex items-start justify-between gap-4">

@@ -10,7 +10,7 @@ export default function FriendsPage() {
   return (
     <div className="space-y-4">
       <div className="-mx-4 rounded-b-lg rounded-t-none border border-border bg-card/70 px-9 py-5 shadow-sm backdrop-blur-xl">
-        <h1 className="text-lg font-semibold text-slate-900">Friends</h1>
+        <h1 className="text-lg font-semibold text-slate-900">Amigos</h1>
         <p className="mt-1 text-sm text-slate-600">Agregá y organizá participantes.</p>
       </div>
 
