@@ -49,13 +49,13 @@ export default function MainLayout() {
           <div className="relative grid grid-cols-5 items-center pt-2 pb-3">
             <MobileNavItem
               to="/groups"
-              label="Groups"
+              label="Grupos"
               icon={<LayoutGrid className="h-5 w-5" strokeWidth={2} />}
             />
 
             <MobileNavItem
               to="/friends"
-              label="Friends"
+              label="Amigos"
               icon={<Users className="h-5 w-5" strokeWidth={2} />}
             />
 
@@ -83,13 +83,13 @@ export default function MainLayout() {
 
             <MobileNavItem
               to="/activity"
-              label="Activity"
+              label="Actividad"
               icon={<Activity className="h-5 w-5" strokeWidth={2} />}
             />
 
             <MobileNavItem
               to="/account"
-              label="Account"
+              label="Cuenta"
               icon={<UserIcon className="h-5 w-5" strokeWidth={2} />}
             />
           </div>
