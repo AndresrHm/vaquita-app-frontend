@@ -28,11 +28,11 @@ export default function GroupsPage() {
                 <div className="mt-1 text-xs text-slate-600">{g.members} miembros</div>
               </div>
               <div className="text-right">
-                <div className="text-sm font-semibold text-slate-900">
-                  {g.currency}
+                <div className="inline-flex rounded-lg border border-red-200/70 bg-red-100/70 px-2 py-1 text-sm font-semibold text-red-700">
+                  -{g.currency}
                   {g.outstanding.toLocaleString('es-AR')}
                 </div>
-                <div className="mt-1 text-xs text-slate-600">pendiente</div>
+                <div className="mt-1 text-xs text-red-600">deuda pendiente</div>
               </div>
             </div>
           </div>

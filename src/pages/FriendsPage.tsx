@@ -34,8 +34,10 @@ export default function FriendsPage() {
                 <div className="mt-1 text-xs text-slate-600">{f.role}</div>
               </div>
               <div className="text-right">
-                <div className="text-sm font-semibold text-slate-900">$ {f.due.toLocaleString('es-AR')}</div>
-                <div className="mt-1 text-xs text-slate-600">a favor</div>
+                <div className="inline-flex rounded-lg border border-emerald-200/70 bg-emerald-100/70 px-2 py-1 text-sm font-semibold text-emerald-700">
+                  +$ {f.due.toLocaleString('es-AR')}
+                </div>
+                <div className="mt-1 text-xs text-emerald-600">saldo a favor</div>
               </div>
             </div>
           </div>
