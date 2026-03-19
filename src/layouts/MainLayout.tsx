@@ -67,16 +67,16 @@ export default function MainLayout() {
               >
                 <span
                   className={[
-                    'inline-flex h-14 w-14 items-center justify-center',
+                    'inline-flex h-16 w-16 items-center justify-center',
                     'rounded-2xl',
-                    'bg-slate-900 text-white',
+                    'bg-primary text-primary-foreground',
                     'shadow-[0_18px_40px_-18px_rgba(2,6,23,1)]',
                     'ring-1 ring-white/20',
                     'transition-transform',
                     'active:scale-[0.98]'
                   ].join(' ')}
                 >
-                  <PlusCircle className="h-7 w-7" strokeWidth={2.25} />
+                  <PlusCircle className="h-9 w-9" strokeWidth={2.25} />
                 </span>
               </NavLink>
             </div>

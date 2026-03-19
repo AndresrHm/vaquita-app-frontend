@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { Edit3, Sparkles, Upload } from 'lucide-react'
 
 type LineItem = { id: string; label: string; amount: number }
 
@@ -26,21 +27,44 @@ export default function GroupsScanPage() {
       </div>
 
       <div className="rounded-2xl bg-card/70 p-5 shadow-sm backdrop-blur-xl border border-border">
-        {!scanned ? (
-          <>
-            <h2 className="text-sm font-semibold text-slate-900">Listo para escanear</h2>
-            <p className="mt-1 text-sm text-slate-600">Simulá el escaneo para ver el resultado.</p>
-            <div className="mt-4">
-              <Button
-                className="w-full rounded-xl"
-                onClick={() => setScanned(true)}
-                aria-label="Simular escaneo"
-              >
-                Simular escaneo
-              </Button>
-            </div>
-          </>
-        ) : (
+        <h2 className="text-sm font-semibold text-foreground">Próxima acción</h2>
+        <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
+          Optimizá tu tiempo escaneando el ticket con nuestra IA.
+        </p>
+
+        <div className="mt-5 flex flex-col gap-3">
+          {/* OPCIÓN ESTRELLA: ESCANEO IA */}
+          <Button
+            className="w-full h-12 text-md font-bold shadow-md hover:opacity-90 transition-all bg-primary text-primary-foreground rounded-xl flex items-center justify-center gap-2"
+            onClick={() => setScanned(true)}
+          >
+            <Sparkles size={18} />
+            Escanear con IA
+          </Button>
+
+          {/* OPCIONES SECUNDARIAS */}
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              className="flex-1 rounded-xl border-primary/20 text-primary hover:bg-primary/5 text-xs h-10"
+            >
+              <Upload size={14} className="mr-2" />
+              Subir imagen
+            </Button>
+
+            <Button
+              variant="ghost"
+              className="flex-1 rounded-xl text-muted-foreground hover:text-foreground text-xs h-10"
+            >
+              <Edit3 size={14} className="mr-2" />
+              Manual
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {scanned ? (
+        <div className="rounded-2xl bg-card/70 p-5 shadow-sm backdrop-blur-xl border border-border">
           <>
             <h2 className="text-sm font-semibold text-slate-900">Ticket detectado (mock)</h2>
             <div className="mt-3 space-y-2">
@@ -66,8 +90,8 @@ export default function GroupsScanPage() {
               </Button>
             </div>
           </>
-        )}
-      </div>
+        </div>
+      ) : null}
     </div>
   )
 }
