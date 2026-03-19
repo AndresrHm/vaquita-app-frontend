@@ -1,7 +1,9 @@
+import { Search } from 'lucide-react'
+
 const mockGroups = [
-  { id: 'g1', name: 'Centro de Estudiantes', members: 6, outstanding: 12400, currency: '$' },
-  { id: 'g2', name: 'Cátedra - Comisión 2', members: 9, outstanding: 7800, currency: '$' },
-  { id: 'g3', name: 'Viaje de Fin de Año', members: 14, outstanding: 25650, currency: '$' },
+  { id: 'g1', name: 'Centro de Estudiantes', status: 'Pendiente de pago', outstanding: 12400, currency: '$' },
+  { id: 'g2', name: 'Cátedra - Comisión 2', status: 'Parcialmente pagada', outstanding: 7800, currency: '$' },
+  { id: 'g3', name: 'Viaje de Fin de Año', status: 'Pagada', outstanding: 0, currency: '$' },
 ]
 
 export default function GroupsPage() {
@@ -16,27 +18,58 @@ export default function GroupsPage() {
         </div>
       </div>
 
-      <div className="space-y-3">
-        {mockGroups.map((g) => (
-          <div
-            key={g.id}
-            className="rounded-2xl border border-border bg-card/70 p-4 shadow-sm backdrop-blur-xl"
-          >
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <div className="text-sm font-semibold text-slate-900">{g.name}</div>
-                <div className="mt-1 text-xs text-slate-600">{g.members} miembros</div>
-              </div>
-              <div className="text-right">
-                <div className="inline-flex rounded-lg border border-red-200/70 bg-red-100/70 px-2 py-1 text-sm font-semibold text-red-700">
-                  -{g.currency}
-                  {g.outstanding.toLocaleString('es-AR')}
+      <div className="rounded-2xl border border-border bg-card/70 p-3 shadow-sm backdrop-blur-xl">
+        <label className="flex items-center gap-2 rounded-xl border border-border bg-background/70 px-3 py-2">
+          <Search className="h-4 w-4 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder="Buscar grupos"
+            className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
+          />
+        </label>
+      </div>
+
+      <div className="rounded-2xl border border-border bg-card/70 p-3 shadow-sm backdrop-blur-xl">
+        <div className="max-h-[52vh] space-y-3 overflow-y-auto pr-1">
+          {mockGroups.map((g) => (
+            <div
+              key={g.id}
+              className="rounded-2xl border border-border bg-background/70 p-4 shadow-sm"
+            >
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div
+                    className="h-11 w-11 shrink-0 rounded-xl border border-border bg-muted/80"
+                    aria-hidden="true"
+                  />
+                  <div>
+                    <div className="text-sm font-semibold text-slate-900">{g.name}</div>
+                    <div className="mt-1 text-xs text-slate-600">{g.status}</div>
+                  </div>
                 </div>
-                <div className="mt-1 text-xs text-red-600">deuda pendiente</div>
+                <div className="text-right">
+                  {g.outstanding > 0 ? (
+                    <>
+                      <div className="inline-flex rounded-lg border border-red-200/70 bg-red-100/70 px-1.5 py-0.5 text-xs font-semibold text-red-700">
+                        -{g.currency}
+                        {g.outstanding.toLocaleString('es-AR')}
+                      </div>
+                      <div className="mt-1 text-xs text-red-600">deuda pendiente</div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="inline-flex rounded-lg border border-emerald-200/70 bg-emerald-100/70 px-1.5 py-0.5 text-xs font-semibold text-emerald-700">
+                        +{g.currency}
+                        {g.outstanding.toLocaleString('es-AR')}
+                      </div>
+                      <div className="mt-1 text-xs text-emerald-600">saldo al día</div>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   )
