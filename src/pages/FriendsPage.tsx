@@ -9,12 +9,12 @@ const mockFriends = [
 export default function FriendsPage() {
   return (
     <div className="space-y-4">
-      <div className="rounded-2xl border border-slate-200/60 bg-white/70 p-5 shadow-sm backdrop-blur-xl">
+      <div className="-mx-4 rounded-b-lg rounded-t-none border border-border bg-card/70 px-9 py-5 shadow-sm backdrop-blur-xl">
         <h1 className="text-lg font-semibold text-slate-900">Friends</h1>
         <p className="mt-1 text-sm text-slate-600">Agregá y organizá participantes.</p>
       </div>
 
-      <div className="rounded-2xl bg-white/70 p-5 shadow-sm backdrop-blur-xl">
+      <div className="rounded-2xl bg-card/70 p-5 shadow-sm backdrop-blur-xl border border-border">
         <h2 className="text-sm font-semibold text-slate-900">Invitaciones (mock)</h2>
         <p className="mt-1 text-sm text-slate-600">Por ahora usamos datos estáticos.</p>
         <Button className="mt-4 w-full rounded-xl" variant="secondary" type="button">
@@ -26,7 +26,7 @@ export default function FriendsPage() {
         {mockFriends.map((f) => (
           <div
             key={f.id}
-            className="rounded-2xl border border-slate-200/60 bg-white/70 p-4 shadow-sm backdrop-blur-xl"
+            className="rounded-2xl border border-border bg-card/70 p-4 shadow-sm backdrop-blur-xl"
           >
             <div className="flex items-center justify-between gap-3">
               <div>

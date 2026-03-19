@@ -18,14 +18,14 @@ export default function GroupsScanPage() {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-2xl border border-slate-200/60 bg-white/70 p-5 shadow-sm backdrop-blur-xl">
+      <div className="-mx-4 rounded-b-2xl rounded-t-none border border-border bg-card/70 px-9 py-5 shadow-sm backdrop-blur-xl">
         <h1 className="text-lg font-semibold text-slate-900">Escanear con IA</h1>
         <p className="mt-1 text-sm text-slate-600">
           Placeholder mock: en el futuro se integra Gemini + OCR.
         </p>
       </div>
 
-      <div className="rounded-2xl bg-white/70 p-5 shadow-sm backdrop-blur-xl">
+      <div className="rounded-2xl bg-card/70 p-5 shadow-sm backdrop-blur-xl border border-border">
         {!scanned ? (
           <>
             <h2 className="text-sm font-semibold text-slate-900">Listo para escanear</h2>

@@ -8,7 +8,7 @@ const mockUser = {
 export default function AccountPage() {
   return (
     <div className="space-y-4">
-      <div className="rounded-2xl border border-slate-200/60 bg-white/70 p-5 shadow-sm backdrop-blur-xl">
+      <div className="-mx-4 rounded-b-lg rounded-t-none border border-border bg-card/70 px-9 py-5 shadow-sm backdrop-blur-xl">
         <h1 className="text-lg font-semibold text-slate-900">Account</h1>
         <p className="mt-1 text-sm text-slate-600">Tu perfil (mock).</p>
 
@@ -23,14 +23,14 @@ export default function AccountPage() {
         </div>
       </div>
 
-      <div className="rounded-2xl bg-white/70 p-5 shadow-sm backdrop-blur-xl">
+      <div className="rounded-2xl bg-card/70 p-5 shadow-sm backdrop-blur-xl border border-border">
         <h2 className="text-sm font-semibold text-slate-900">Preferencias</h2>
         <div className="mt-3 space-y-2">
-          <div className="rounded-xl border border-slate-200/60 bg-white/70 px-3 py-2">
+          <div className="rounded-xl border border-border bg-card/70 px-3 py-2">
             <div className="text-xs font-medium text-slate-800">Tema</div>
             <div className="mt-1 text-xs text-slate-600">Sistema (mock)</div>
           </div>
-          <div className="rounded-xl border border-slate-200/60 bg-white/70 px-3 py-2">
+          <div className="rounded-xl border border-border bg-card/70 px-3 py-2">
             <div className="text-xs font-medium text-slate-800">Notificaciones</div>
             <div className="mt-1 text-xs text-slate-600">On (mock)</div>
           </div>
