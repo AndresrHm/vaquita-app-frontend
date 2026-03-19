@@ -31,7 +31,7 @@ function MobileNavItem({ to, label, icon }: NavItemProps) {
 
 export default function MainLayout() {
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-primary-foreground">
       <main className="mx-auto w-full max-w-md px-4 pb-28 pt-6">
         <Outlet />
       </main>
