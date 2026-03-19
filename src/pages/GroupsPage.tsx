@@ -1,10 +1,19 @@
 import { Search } from 'lucide-react'
 
 const mockGroups = [
-  { id: 'g1', name: 'Centro de Estudiantes', status: 'Pendiente de pago', outstanding: 12400, currency: '$' },
-  { id: 'g2', name: 'Cátedra - Comisión 2', status: 'Parcialmente pagada', outstanding: 7800, currency: '$' },
-  { id: 'g3', name: 'Viaje de Fin de Año', status: 'Pagada', outstanding: 0, currency: '$' },
+  { id: 'g1', name: 'Centro de Estudiantes', status: 'Pendiente de pago', outstanding: 12400, currency: '$', imageUrl: '' },
+  { id: 'g2', name: 'Cátedra - Comisión 2', status: 'Parcialmente pagada', outstanding: 7800, currency: '$', imageUrl: '' },
+  { id: 'g3', name: 'Viaje de Fin de Año', status: 'Pagada', outstanding: 0, currency: '$', imageUrl: '' },
 ]
+
+function getInitials(name: string) {
+  return name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? '')
+    .join('')
+}
 
 export default function GroupsPage() {
   return (
@@ -38,10 +47,17 @@ export default function GroupsPage() {
             >
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <div
-                    className="h-11 w-11 shrink-0 rounded-xl border border-border bg-muted/80"
-                    aria-hidden="true"
-                  />
+                  {g.imageUrl ? (
+                    <img
+                      src={g.imageUrl}
+                      alt={g.name}
+                      className="h-11 w-11 shrink-0 rounded-full border border-border object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border bg-muted/80 text-xs font-semibold text-muted-foreground">
+                      {getInitials(g.name)}
+                    </div>
+                  )}
                   <div>
                     <div className="text-sm font-semibold text-slate-900">{g.name}</div>
                     <div className="mt-1 text-xs text-slate-600">{g.status}</div>

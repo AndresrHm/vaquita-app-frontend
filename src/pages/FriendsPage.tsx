@@ -2,10 +2,19 @@ import { Button } from '@/components/ui/button'
 import { Search } from 'lucide-react'
 
 const mockFriends = [
-  { id: 'u1', name: 'Lucía', role: 'Integrante', due: 2100 },
-  { id: 'u2', name: 'Martín', role: 'Integrante', due: 5400 },
-  { id: 'u3', name: 'Sofía', role: 'Integrante', due: 1200 },
+  { id: 'u1', name: 'Lucía', role: 'Integrante', due: 2100, imageUrl: '' },
+  { id: 'u2', name: 'Martín', role: 'Integrante', due: 5400, imageUrl: '' },
+  { id: 'u3', name: 'Juan Carlos', role: 'Integrante', due: 1200, imageUrl: '' },
 ]
+
+function getInitials(name: string) {
+  return name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? '')
+    .join('')
+}
 
 export default function FriendsPage() {
   return (
@@ -42,9 +51,22 @@ export default function FriendsPage() {
               className="rounded-2xl border border-border bg-background/70 p-4 shadow-sm"
             >
               <div className="flex items-center justify-between gap-3">
-                <div>
-                  <div className="text-sm font-semibold text-slate-900">{f.name}</div>
-                  <div className="mt-1 text-xs text-slate-600">{f.role}</div>
+                <div className="flex items-center gap-3">
+                  {f.imageUrl ? (
+                    <img
+                      src={f.imageUrl}
+                      alt={f.name}
+                      className="h-11 w-11 shrink-0 rounded-full border border-border object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border bg-muted/80 text-xs font-semibold text-muted-foreground">
+                      {getInitials(f.name)}
+                    </div>
+                  )}
+                  <div>
+                    <div className="text-sm font-semibold text-slate-900">{f.name}</div>
+                    <div className="mt-1 text-xs text-slate-600">{f.role}</div>
+                  </div>
                 </div>
                 <div className="text-right">
                   <div className="inline-flex rounded-lg border border-emerald-200/70 bg-emerald-100/70 px-2 py-1 text-sm font-semibold text-emerald-700">

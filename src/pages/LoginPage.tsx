@@ -13,11 +13,11 @@ export default function LoginPage() {
   }, [email, password])
 
   return (
-    <div className="min-h-screen bg-slate-50 px-4 py-10">
+    <div className="min-h-screen bg-background px-4 py-6 flex items-center">
       <div className="mx-auto w-full max-w-md">
-        <div className="rounded-2xl border border-slate-200/70 bg-white/70 p-6 shadow-sm backdrop-blur-xl">
-          <h1 className="text-xl font-semibold text-slate-900">Iniciar sesión</h1>
-          <p className="mt-1 text-sm text-slate-600">
+        <div className="rounded-2xl border border-border bg-card/70 p-6 shadow-sm backdrop-blur-xl">
+          <h1 className="text-xl font-semibold text-foreground">Iniciar sesión</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
             Accedé a Vaquita para administrar grupos y deudas.
           </p>
 
@@ -33,7 +33,7 @@ export default function LoginPage() {
             }}
           >
             <label className="block">
-              <span className="text-sm font-medium text-slate-800">Email</span>
+              <span className="text-sm font-medium text-foreground">Email</span>
               <input
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -41,19 +41,19 @@ export default function LoginPage() {
                 inputMode="email"
                 autoComplete="email"
                 placeholder="tu@email.com"
-                className="mt-2 w-full rounded-xl border border-slate-200/70 bg-white/90 px-3 py-2 text-sm outline-none focus:border-slate-900/40 focus:ring-3 focus:ring-slate-900/10"
+                className="mt-2 w-full rounded-xl border border-border bg-background/80 px-3 py-2 text-sm text-foreground outline-none focus:border-primary/40 focus:ring-3 focus:ring-primary/10"
               />
             </label>
 
             <label className="block">
-              <span className="text-sm font-medium text-slate-800">Contraseña</span>
+              <span className="text-sm font-medium text-foreground">Contraseña</span>
               <input
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 type="password"
                 autoComplete="current-password"
                 placeholder="••••••••"
-                className="mt-2 w-full rounded-xl border border-slate-200/70 bg-white/90 px-3 py-2 text-sm outline-none focus:border-slate-900/40 focus:ring-3 focus:ring-slate-900/10"
+                className="mt-2 w-full rounded-xl border border-border bg-background/80 px-3 py-2 text-sm text-foreground outline-none focus:border-primary/40 focus:ring-3 focus:ring-primary/10"
               />
             </label>
 
@@ -62,13 +62,15 @@ export default function LoginPage() {
             </Button>
 
             {status ? (
-              <div className="rounded-xl bg-slate-50 px-3 py-2 text-sm text-slate-700">{status}</div>
+              <div className="rounded-xl border border-border bg-background/70 px-3 py-2 text-sm text-muted-foreground">
+                {status}
+              </div>
             ) : null}
           </form>
 
-          <div className="mt-5 text-center text-sm text-slate-600">
+          <div className="mt-5 text-center text-sm text-muted-foreground">
             ¿No tenés cuenta?{' '}
-            <Link className="font-medium text-slate-900 underline underline-offset-4" to="/register">
+            <Link className="font-medium text-foreground underline underline-offset-4" to="/register">
               Registrate
             </Link>
           </div>
