@@ -20,8 +20,8 @@ export default function GroupsScanPage() {
   return (
     <div className="space-y-4">
       <div className="-mx-4 rounded-b-2xl rounded-t-none border border-border bg-card/70 px-9 py-5 shadow-sm backdrop-blur-xl">
-        <h1 className="text-lg font-semibold text-slate-900">Escanear con IA</h1>
-        <p className="mt-1 text-sm text-slate-600">
+        <h1 className="text-lg font-semibold text-foreground">Escanear con IA</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
           Placeholder mock: en el futuro se integra Gemini + OCR.
         </p>
       </div>
@@ -46,7 +46,7 @@ export default function GroupsScanPage() {
           <div className="flex gap-2">
             <Button
               variant="outline"
-              className="flex-1 rounded-xl border-primary/20 text-primary hover:bg-primary/5 text-xs h-10"
+              className="flex-1 rounded-xl border-border text-foreground hover:bg-muted text-xs h-10"
             >
               <Upload size={14} className="mr-2" />
               Subir imagen
@@ -66,23 +66,23 @@ export default function GroupsScanPage() {
       {scanned ? (
         <div className="rounded-2xl bg-card/70 p-5 shadow-sm backdrop-blur-xl border border-border">
           <>
-            <h2 className="text-sm font-semibold text-slate-900">Ticket detectado (mock)</h2>
+            <h2 className="text-sm font-semibold text-foreground">Ticket detectado (mock)</h2>
             <div className="mt-3 space-y-2">
               {mockDetected.map((it) => (
-                <div key={it.id} className="flex items-center justify-between gap-3 rounded-xl border border-slate-200/60 bg-white/70 px-3 py-2">
-                  <div className="text-sm font-medium text-slate-900">{it.label}</div>
-                  <div className="text-sm font-semibold text-slate-900">
+                <div key={it.id} className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card px-3 py-2">
+                  <div className="text-sm font-medium text-foreground">{it.label}</div>
+                  <div className="text-sm font-semibold text-foreground">
                     $ {it.amount.toLocaleString('es-AR')}
                   </div>
                 </div>
               ))}
             </div>
-            <div className="mt-4 rounded-2xl border border-slate-200/60 bg-slate-50 px-4 py-3">
+            <div className="mt-4 rounded-2xl border border-border bg-muted px-4 py-3">
               <div className="flex items-center justify-between">
-                <div className="text-sm font-medium text-slate-800">Total</div>
-                <div className="text-base font-semibold text-slate-900">$ {total.toLocaleString('es-AR')}</div>
+                <div className="text-sm font-medium text-foreground">Total</div>
+                <div className="text-base font-semibold text-foreground">$ {total.toLocaleString('es-AR')}</div>
               </div>
-              <div className="mt-2 text-xs text-slate-600">Siguiente paso: repartir entre miembros del group.</div>
+              <div className="mt-2 text-xs text-muted-foreground">Siguiente paso: repartir entre miembros del group.</div>
             </div>
             <div className="mt-4">
               <Button className="w-full rounded-xl" onClick={() => setScanned(false)}>

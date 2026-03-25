@@ -26,30 +26,32 @@
 }
 
 :root {
-  /* FONDO: #FAF3E0 (Crema Almendra) */
-  --background: oklch(0.96 0.02 85);
+  /* FONDO */
+  --background: oklch(0.97 0.01 250);
   --foreground: oklch(0.25 0.03 260);
-  /* El #1E212D para texto */
 
-  /* CARDS: Blanco Puro para contraste */
+  /* CARDS */
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.25 0.03 260);
 
-  /* PRIMARY: #B68973 (Tierra/Cuero) */
-  --primary: oklch(0.65 0.07 45);
-  --primary-foreground: oklch(0.98 0.01 85);
+  /* PRIMARY (azul pastel fintech) */
+  --primary: oklch(0.72 0.12 240);
+  --primary-foreground: oklch(0.98 0.01 250);
 
-  /* SECONDARY: #EABF9F (Durazno suave) */
-  --secondary: oklch(0.85 0.08 55);
-  --secondary-foreground: oklch(0.35 0.05 45);
+  /* SECONDARY (violeta suave) */
+  --secondary: oklch(0.78 0.10 280);
+  --secondary-foreground: oklch(0.98 0.01 280);
 
-  /* DETALLES */
-  --muted: oklch(0.92 0.02 85);
+  /* MUTED (fondos suaves UI) */
+  --muted: oklch(0.94 0.02 250);
   --muted-foreground: oklch(0.45 0.03 260);
 
-  --border: oklch(0.88 0.02 85);
-  --input: oklch(0.88 0.02 85);
-  --ring: oklch(0.65 0.07 45);
+  /* BORDES / INPUTS */
+  --border: oklch(0.90 0.02 250);
+  --input: oklch(0.90 0.02 250);
+
+  /* RING (focus states) */
+  --ring: oklch(0.72 0.12 240);
 
   --radius: 1.25rem;
 }
@@ -63,3 +65,10 @@
     @apply bg-background text-foreground antialiased;
   }
 }
+
+/* 
+primary → acciones importantes (CTA, botones principales)
+secondary → highlights suaves, badges, insights
+muted → fondos de listas / containers
+background → app base 
+*/

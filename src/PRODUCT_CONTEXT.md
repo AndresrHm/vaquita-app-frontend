@@ -226,4 +226,31 @@ When generating code:
 
 ---
 
+🎨 UI Color System — Vaquita
+
+The app uses a fintech-oriented pastel blue color system designed for clarity, trust, and low cognitive load.
+
+Core principles:
+Blue = trust, structure, financial clarity
+Purple = intelligence, automation (AI features)
+Avoid warm tones (browns, oranges, yellows)
+UI must feel lightweight and frictionless
+Color roles:
+primary: main actions (buttons, CTAs)
+secondary: highlights and secondary actions
+muted: backgrounds for sections and lists
+card: main content containers
+background: global app background
+Usage rules:
+Never use strong colors behind financial data
+Avoid gradients in data-heavy components
+Use gradients only for branding sections (hero, onboarding)
+Maintain high contrast for readability
+Prefer soft elevation (shadow + border) over color separation
+Design tone:
+Minimal
+Clean
+Modern fintech (inspired by Mercado Pago, Linear, Stripe)
+No visual noise
+
 End of file.

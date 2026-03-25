@@ -41,7 +41,7 @@ export default function LoginPage() {
                 inputMode="email"
                 autoComplete="email"
                 placeholder="tu@email.com"
-                className="mt-2 w-full rounded-xl border border-border bg-background/80 px-3 py-2 text-sm text-foreground outline-none focus:border-primary/40 focus:ring-3 focus:ring-primary/10"
+                className="mt-2 w-full rounded-xl border border-border bg-input px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
               />
             </label>
 
@@ -53,7 +53,7 @@ export default function LoginPage() {
                 type="password"
                 autoComplete="current-password"
                 placeholder="••••••••"
-                className="mt-2 w-full rounded-xl border border-border bg-background/80 px-3 py-2 text-sm text-foreground outline-none focus:border-primary/40 focus:ring-3 focus:ring-primary/10"
+                className="mt-2 w-full rounded-xl border border-border bg-input px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
               />
             </label>
 

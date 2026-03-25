@@ -1,3 +1,4 @@
+import MoneyBadge from '@/components/moneyBadge/moneyBadge'
 import { Search } from 'lucide-react'
 
 const mockGroups = [
@@ -21,8 +22,8 @@ export default function GroupsPage() {
       <div className="-mx-4 rounded-b-lg rounded-t-none border border-border bg-card/70 px-9 py-5 shadow-sm backdrop-blur-xl">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-lg font-semibold text-slate-900">Grupos</h1>
-            <p className="mt-1 text-sm text-slate-600">Administrá deudas compartidas.</p>
+            <h1 className="text-lg font-semibold text-foreground">Grupos</h1>
+            <p className="mt-1 text-sm text-muted-foreground">Administrá deudas compartidas.</p>
           </div>
         </div>
       </div>
@@ -59,29 +60,16 @@ export default function GroupsPage() {
                     </div>
                   )}
                   <div>
-                    <div className="text-sm font-semibold text-slate-900">{g.name}</div>
-                    <div className="mt-1 text-xs text-slate-600">{g.status}</div>
+                    <div className="text-sm font-semibold text-foreground">{g.name}</div>
+                    <div className="mt-1 text-xs text-muted-foreground">{g.status}</div>
                   </div>
                 </div>
-                <div className="text-right">
-                  {g.outstanding > 0 ? (
-                    <>
-                      <div className="inline-flex rounded-lg border border-red-200/70 bg-red-100/70 px-1.5 py-0.5 text-xs font-semibold text-red-700">
-                        -{g.currency}
-                        {g.outstanding.toLocaleString('es-AR')}
-                      </div>
-                      <div className="mt-1 text-xs text-red-600">deuda pendiente</div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="inline-flex rounded-lg border border-emerald-200/70 bg-emerald-100/70 px-1.5 py-0.5 text-xs font-semibold text-emerald-700">
-                        +{g.currency}
-                        {g.outstanding.toLocaleString('es-AR')}
-                      </div>
-                      <div className="mt-1 text-xs text-emerald-600">saldo al día</div>
-                    </>
-                  )}
-                </div>
+
+                {/* Badge de dinero */}
+                <MoneyBadge
+                  amount={g.outstanding}
+                  currency={g.currency}
+                />
               </div>
             </div>
           ))}

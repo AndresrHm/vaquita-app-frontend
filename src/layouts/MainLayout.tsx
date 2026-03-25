@@ -19,7 +19,7 @@ function MobileNavItem({ to, label, icon }: NavItemProps) {
           'h-12 w-full',
           'text-[11px] font-medium',
           'transition-colors',
-          isActive ? 'text-slate-900' : 'text-slate-500'
+          isActive ? 'text-foreground' : 'text-muted-foreground'
         ].join(' ')
       }
     >
@@ -31,7 +31,7 @@ function MobileNavItem({ to, label, icon }: NavItemProps) {
 
 export default function MainLayout() {
   return (
-    <div className="min-h-screen bg-primary-foreground">
+    <div className="min-h-screen bg-background">
       <main className="mx-auto w-full max-w-md px-4 pb-28 pt-0">
         <Outlet />
       </main>
@@ -39,9 +39,9 @@ export default function MainLayout() {
       <nav
         className={[
           'fixed inset-x-0 bottom-0 z-50',
-          'bg-white/55 backdrop-blur-xl',
-          'border-t border-white/60',
-          'shadow-[0_-10px_30px_-20px_rgba(15,23,42,0.35)]'
+          'bg-card/80 backdrop-blur-xl',
+          'border-t border-border',
+          'shadow-lg'
         ].join(' ')}
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
@@ -70,8 +70,8 @@ export default function MainLayout() {
                     'inline-flex h-16 w-16 items-center justify-center',
                     'rounded-2xl',
                     'bg-primary text-primary-foreground',
-                    'shadow-[0_18px_40px_-18px_rgba(2,6,23,1)]',
-                    'ring-1 ring-white/20',
+                    'shadow-lg',
+                    'ring-1 ring-ring/30',
                     'transition-transform',
                     'active:scale-[0.98]'
                   ].join(' ')}

@@ -4,7 +4,7 @@ function App() {
   return (
     <>
       <div className="flex flex-col items-center justify-center h-screen">
-        <h1 className="bg-blue-500">
+        <h1 className="bg-primary text-primary-foreground">
           Hello World
         </h1>
         <Button>Click me!</Button>
