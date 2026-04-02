@@ -1,11 +1,30 @@
-import MoneyBadge from '@/components/moneyBadge/moneyBadge'
-import { Search } from 'lucide-react'
+import GroupCard from '@/components/groupsPage/GroupCard'
+import GroupsSearch from '@/components/groupsPage/GroupsSearch'
+import CreateGroupButton from '@/components/groupsPage/CreateGroupButton'
+
+const getAvatarUrl = (name: string) =>
+  `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}`
 
 const mockGroups = [
-  { id: 'g1', name: 'Centro de Estudiantes', status: 'Pendiente de pago', outstanding: 12400, currency: '$', imageUrl: '' },
-  { id: 'g2', name: 'Cátedra - Comisión 2', status: 'Parcialmente pagada', outstanding: 7800, currency: '$', imageUrl: '' },
-  { id: 'g3', name: 'Viaje de Fin de Año', status: 'Pagada', outstanding: 0, currency: '$', imageUrl: '' },
-]
+  { id: 'g1', name: 'Centro de Estudiantes', status: 'Pendiente de pago', outstanding: 12400, currency: '$' },
+  { id: 'g2', name: 'Cátedra - Comisión 2', status: 'Parcialmente pagada', outstanding: 7800, currency: '$' },
+  { id: 'g3', name: 'Viaje de Fin de Año', status: 'Pagada', outstanding: 0, currency: '$' },
+
+  { id: 'g4', name: 'Depto Palermo', status: 'Pendiente de pago', outstanding: 45200, currency: '$' },
+  { id: 'g5', name: 'Cumple Juan', status: 'Parcialmente pagada', outstanding: 3200, currency: '$' },
+  { id: 'g6', name: 'Asado del Finde', status: 'Pendiente de pago', outstanding: 8900, currency: '$' },
+
+  { id: 'g7', name: 'Viaje a Bariloche', status: 'Parcialmente pagada', outstanding: 15600, currency: '$' },
+  { id: 'g8', name: 'Equipo de Fútbol 5', status: 'Pendiente de pago', outstanding: 5400, currency: '$' },
+  { id: 'g9', name: 'Regalo Profe', status: 'Pagada', outstanding: 0, currency: '$' },
+
+  { id: 'g10', name: 'Vacaciones Brasil', status: 'Pendiente de pago', outstanding: 68400, currency: '$' },
+  { id: 'g11', name: 'Salida Cine', status: 'Parcialmente pagada', outstanding: 2100, currency: '$' },
+  { id: 'g12', name: 'Gastos Oficina', status: 'Pagada', outstanding: 0, currency: '$' },
+].map(group => ({
+  ...group,
+  imageUrl: getAvatarUrl(group.name),
+}))
 
 function getInitials(name: string) {
   return name
@@ -18,62 +37,30 @@ function getInitials(name: string) {
 
 export default function GroupsPage() {
   return (
-    <div className="space-y-4">
-      <div className="-mx-4 rounded-b-lg rounded-t-none border border-border bg-card/70 px-9 py-5 shadow-sm backdrop-blur-xl">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-lg font-semibold text-foreground">Grupos</h1>
-            <p className="mt-1 text-sm text-muted-foreground">Administrá deudas compartidas.</p>
-          </div>
+    // Título y search
+    <div className="flex flex-col space-y-4 min-h-[calc(100vh-5rem)]">
+
+      <div className="rounded-b-2xl rounded-t-none border border-border bg-card/70 p-3 shadow-sm backdrop-blur-xl space-y-4">
+        <div className="pl-3">
+          <h2 className="text-xl font-semibold text-foreground">Tenés deudas</h2>
+          <p className="mt-1 text-sm text-muted-foreground">Debes $8,430</p>
         </div>
+
+        <GroupsSearch />
       </div>
 
-      <div className="rounded-2xl border border-border bg-card/70 p-3 shadow-sm backdrop-blur-xl">
-        <label className="flex items-center gap-2 rounded-xl border border-border bg-background/70 px-3 py-2">
-          <Search className="h-4 w-4 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Buscar grupos"
-            className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
-          />
-        </label>
-      </div>
-
-      <div className="rounded-2xl border border-border bg-card/70 p-3 shadow-sm backdrop-blur-xl">
-        <div className="max-h-[52vh] space-y-3 overflow-y-auto pr-1">
+      {/* Contenedor de groupCards - estira para ocupar el espacio restante */}
+      <div className="flex-1 min-h-0 rounded-2xl border border-border bg-card/70 p-3 shadow-sm backdrop-blur-xl">
+        <div className="h-full space-y-3 overflow-y-auto">
           {mockGroups.map((g) => (
-            <div
-              key={g.id}
-              className="rounded-2xl border border-border bg-background/70 p-4 shadow-sm"
-            >
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  {g.imageUrl ? (
-                    <img
-                      src={g.imageUrl}
-                      alt={g.name}
-                      className="h-11 w-11 shrink-0 rounded-full border border-border object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border bg-muted/80 text-xs font-semibold text-muted-foreground">
-                      {getInitials(g.name)}
-                    </div>
-                  )}
-                  <div>
-                    <div className="text-sm font-semibold text-foreground">{g.name}</div>
-                    <div className="mt-1 text-xs text-muted-foreground">{g.status}</div>
-                  </div>
-                </div>
-
-                {/* Badge de dinero */}
-                <MoneyBadge
-                  amount={g.outstanding}
-                  currency={g.currency}
-                />
-              </div>
-            </div>
+            <GroupCard key={g.id} group={g} />
           ))}
         </div>
+      </div>
+
+      {/* Mini card/button al final para agregar grupo */}
+      <div className="mt-2">
+        <CreateGroupButton />
       </div>
     </div>
   )
