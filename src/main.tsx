@@ -9,6 +9,7 @@ import ActivityPage from '@/pages/ActivityPage.tsx'
 import FriendsPage from '@/pages/FriendsPage.tsx'
 import GroupsPage from '@/pages/GroupsPage.tsx'
 import GroupsScanPage from '@/pages/GroupsScanPage.tsx'
+import GroupDetailPage from '@/pages/GroupDetailPage.tsx'
 import LoginPage from '@/pages/LoginPage.tsx'
 import RegisterPage from '@/pages/RegisterPage'
 
@@ -21,6 +22,7 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <Navigate to="/groups" replace /> },
       { path: 'groups', element: <GroupsPage /> },
+      { path: 'groups/:groupId', element: <GroupDetailPage /> },
       { path: 'groups/scan', element: <GroupsScanPage /> },
       { path: 'friends', element: <FriendsPage /> },
       { path: 'activity', element: <ActivityPage /> },

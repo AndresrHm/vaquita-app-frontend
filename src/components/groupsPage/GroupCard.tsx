@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 
 type Group = {
   id: string
@@ -9,7 +10,10 @@ type Group = {
 
 export default function GroupCard({ group }: { group: Group }) {
   return (
-    <div className="rounded-2xl border border-border bg-background/70 p-4 shadow-sm">
+    <Link
+      to={`/groups/${group.id}`}
+      className="block rounded-2xl border border-border bg-background/70 p-4 shadow-sm hover:bg-muted/50 active:bg-muted/70 cursor-pointer transition"
+    >
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           {group.imageUrl ? (
@@ -36,6 +40,6 @@ export default function GroupCard({ group }: { group: Group }) {
         </div>
 
       </div>
-    </div>
+    </Link>
   )
 }

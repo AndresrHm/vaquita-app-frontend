@@ -1,6 +1,7 @@
 import GroupCard from '@/components/groupsPage/GroupCard'
 import GroupsSearch from '@/components/groupsPage/GroupsSearch'
 import CreateGroupButton from '@/components/groupsPage/CreateGroupButton'
+import GroupsContainer from '@/components/groupsPage/GroupsContainer'
 
 const getAvatarUrl = (name: string) =>
   `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}`
@@ -50,13 +51,11 @@ export default function GroupsPage() {
       </div>
 
       {/* Contenedor de groupCards - estira para ocupar el espacio restante */}
-      <div className="flex-1 min-h-0 rounded-2xl border border-border bg-card/70 p-3 shadow-sm backdrop-blur-xl">
-        <div className="h-full space-y-3 overflow-y-auto">
-          {mockGroups.map((g) => (
-            <GroupCard key={g.id} group={g} />
-          ))}
-        </div>
-      </div>
+      <GroupsContainer>
+        {mockGroups.map((g) => (
+          <GroupCard key={g.id} group={g} />
+        ))}
+      </GroupsContainer>
 
       {/* Mini card/button al final para agregar grupo */}
       <div className="mt-2">
