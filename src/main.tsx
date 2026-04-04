@@ -12,6 +12,7 @@ import GroupsScanPage from '@/pages/GroupsScanPage.tsx'
 import GroupDetailPage from '@/pages/GroupDetailPage.tsx'
 import LoginPage from '@/pages/LoginPage.tsx'
 import RegisterPage from '@/pages/RegisterPage'
+import CreateManualExpensePage from './pages/CreateManualExpensePage'
 
 const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -24,6 +25,7 @@ const router = createBrowserRouter([
       { path: 'groups', element: <GroupsPage /> },
       { path: 'groups/:groupId', element: <GroupDetailPage /> },
       { path: 'groups/scan', element: <GroupsScanPage /> },
+      { path: 'groups/expense/create', element: <CreateManualExpensePage /> },
       { path: 'friends', element: <FriendsPage /> },
       { path: 'activity', element: <ActivityPage /> },
       { path: 'account', element: <AccountPage /> },
