@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ChevronLeft, Receipt, Calendar } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -7,6 +7,7 @@ import GroupSelect from '@/components/createExpense/GroupSelect'
 import CategorySelector from '@/components/createExpense/CategorySelector'
 import TotalAmount from '@/components/createExpense/TotalAmount'
 import TextField from '@/components/createExpense/TextField'
+import ParticipantSelect from '@/components/createExpense/ParticipantSelect'
 import { CATEGORIES } from '@/components/createExpense/categories'
 
 // Mock de grupos (esto después vendrá del back)
@@ -16,6 +17,28 @@ const mockUserGroups = [
   { id: 'g4', name: 'Depto Palermo', emoji: '🏠' },
   { id: 'g6', name: 'Asado del Finde', emoji: '🔥' },
 ]
+
+// Mock de participantes por grupo (esto después vendrá del back
+const participantsByGroup = {
+  g1: [
+    { id: 'p1', name: 'Juan' },
+    { id: 'p2', name: 'María' },
+    { id: 'p3', name: 'Pedro' },
+  ],
+  g2: [
+    { id: 'p4', name: 'Ana' },
+    { id: 'p5', name: 'Luis' },
+  ],
+  g4: [
+    { id: 'p6', name: 'Carlos' },
+    { id: 'p7', name: 'Sofia' },
+    { id: 'p8', name: 'Diego' },
+  ],
+  g6: [
+    { id: 'p9', name: 'Laura' },
+    { id: 'p10', name: 'Miguel' },
+  ],
+}
 export default function CreateManualExpensePage() {
   const navigate = useNavigate()
 
@@ -24,8 +47,21 @@ export default function CreateManualExpensePage() {
   const [descripcion, setDescripcion] = useState('')
   const [fecha, setFecha] = useState(new Date().toISOString().split('T')[0])
   const [selectedGroupId, setSelectedGroupId] = useState('')
+  const [participants, setParticipants] = useState<{ id: string; name: string }[]>([])
+  const [selectedParticipants, setSelectedParticipants] = useState<string[]>([])
 
   const [categoria, setCategoria] = useState('OTROS')
+
+  // Actualizar participantes cuando cambia el grupo
+  useEffect(() => {
+    if (selectedGroupId) {
+      setParticipants(participantsByGroup[selectedGroupId as keyof typeof participantsByGroup] || [])
+      setSelectedParticipants([])
+    } else {
+      setParticipants([])
+      setSelectedParticipants([])
+    }
+  }, [selectedGroupId])
 
   const handleGuardar = () => {
     const montoNumerico = Number(monto)
@@ -38,6 +74,7 @@ export default function CreateManualExpensePage() {
       descripcion,
       fecha,
       groupId: selectedGroupId,
+      excludedParticipants: selectedParticipants,
     })
     navigate('/')
   }
@@ -80,6 +117,14 @@ export default function CreateManualExpensePage() {
               value={selectedGroupId}
               options={mockUserGroups}
               onChange={setSelectedGroupId}
+            />
+
+            <ParticipantSelect
+              label="¿Quiénes participan del gasto?"
+              value={selectedParticipants}
+              options={participants}
+              onChange={setSelectedParticipants}
+              disabled={!selectedGroupId}
             />
 
             <TextField
