@@ -7,6 +7,7 @@ import { CATEGORIES } from '@/components/createExpense/categories'
 import FieldWrapper from '@/components/createExpense/FieldWrapper'
 import ParticipantDisplay from '@/components/createExpense/ParticipantDisplay'
 import { Expense } from '@/domain/expense'
+import { expenseService } from '@/service/expenseService'
 
 // Mock de grupos (esto después vendrá del back)
 const mockUserGroups = [
@@ -77,9 +78,9 @@ export default function CreateManualExpensePage() {
     setExpense(expenseParaValidar)
     if (expenseParaValidar.valido()) {
       try {
-        // Aquí iría la llamada al service
+        expenseService.createExpense(expense)
         console.log('Gasto creado:', expense)
-        //navigate('/')
+        navigate('/')
       } catch (error: unknown) {
         console.error('Error creando gasto:', error)
       }

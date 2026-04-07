@@ -2,12 +2,13 @@ import { Validable } from '@/types/validable'
 
 export type ExpenseJSON = {
     id: string
-    groupId: string
+    descripcion: string
+    grupoId: string
+    pagadorId: string
     participantIds: string[]
-    description: string
-    total: number
-    category: string
-    date: string
+    monto: number
+    categoria: string
+    fecha: string
 }
 
 const DEFAULT_CATEGORY = 'OTROS'
@@ -16,6 +17,7 @@ export class Expense extends Validable {
     constructor(
         public id = '',
         public groupId = '',
+        public pagadorId = '',
         public participantIds: string[] = [],
         public description = '',
         public total = 0,
@@ -56,24 +58,26 @@ export class Expense extends Validable {
     toJSON(): ExpenseJSON {
         return {
             id: this.id,
-            groupId: this.groupId,
-            participantIds: [...this.participantIds],
-            description: this.description,
-            total: this.total,
-            category: this.category,
-            date: this.date,
+            descripcion: this.description,
+            grupoId: this.groupId,
+            pagadorId: this.pagadorId,
+            participantIds: this.participantIds,
+            monto: this.total,
+            categoria: this.category,
+            fecha: this.date,
         }
     }
 
     static fromJSON(json: ExpenseJSON): Expense {
         return new Expense(
             json.id,
-            json.groupId,
+            json.grupoId,
+            json.pagadorId,
             json.participantIds,
-            json.description,
-            json.total,
-            json.category,
-            json.date,
+            json.descripcion,
+            json.monto,
+            json.categoria,
+            json.fecha
         )
     }
 
@@ -81,6 +85,7 @@ export class Expense extends Validable {
         return new Expense(
             expense.id,
             expense.groupId,
+            expense.pagadorId,
             expense.participantIds,
             expense.description,
             expense.total,
