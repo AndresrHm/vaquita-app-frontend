@@ -9,41 +9,44 @@ import ParticipantDisplay from '@/components/createExpense/ParticipantDisplay'
 import { Expense } from '@/domain/expense'
 import { expenseService } from '@/service/expenseService'
 
+// Mock de usuario actual
+const mockCurrentUser = { id: 1, name: 'Juan' }
+
 // Mock de grupos (esto después vendrá del back)
 const mockUserGroups = [
-  { id: 'g1', name: 'Centro de Estudiantes', emoji: '📚' },
-  { id: 'g2', name: 'Los Pibes', emoji: '⚽' },
-  { id: 'g4', name: 'Depto Palermo', emoji: '🏠' },
-  { id: 'g6', name: 'Asado del Finde', emoji: '🔥' },
+  { id: 1, name: 'Centro de Estudiantes', emoji: '📚' },
+  { id: 2, name: 'Los Pibes', emoji: '⚽' },
+  { id: 3, name: 'Depto Palermo', emoji: '🏠' },
+  { id: 4, name: 'Asado del Finde', emoji: '🔥' },
 ]
 
 // Mock de participantes por grupo (esto después vendrá del back)
-const participantsByGroup = {
-  g1: [
-    { id: 'p1', name: 'Juan' },
-    { id: 'p2', name: 'María' },
-    { id: 'p3', name: 'Pedro' },
+const participantsByGroup: Record<number, { id: number; name: string }[]> = {
+  1: [
+    { id: 1, name: 'Juan' },
+    { id: 2, name: 'María' },
+    { id: 3, name: 'Pedro' },
   ],
-  g2: [
-    { id: 'p4', name: 'Ana' },
-    { id: 'p5', name: 'Luis' },
+  2: [
+    { id: 4, name: 'Ana' },
+    { id: 5, name: 'Luis' },
   ],
-  g4: [
-    { id: 'p6', name: 'Carlos' },
-    { id: 'p7', name: 'Sofia' },
-    { id: 'p8', name: 'Diego' },
+  3: [
+    { id: 6, name: 'Carlos' },
+    { id: 7, name: 'Sofia' },
+    { id: 8, name: 'Diego' },
   ],
-  g6: [
-    { id: 'p9', name: 'Laura' },
-    { id: 'p10', name: 'Miguel' },
+  4: [
+    { id: 9, name: 'Laura' },
+    { id: 10, name: 'Miguel' },
   ],
 }
 
 export default function CreateManualExpensePage() {
   const navigate = useNavigate()
 
-  const [expense, setExpense] = useState(new Expense())
-  const [participants, setParticipants] = useState<{ id: string; name: string }[]>([])
+  const [expense, setExpense] = useState(new Expense(undefined, mockCurrentUser.id))
+  const [participants, setParticipants] = useState<{ id: number; name: string }[]>([])
   const [isParticipantsOpen, setIsParticipantsOpen] = useState(false)
 
   const actualizarExpense = (cambios: Partial<Expense>) => {
@@ -53,7 +56,7 @@ export default function CreateManualExpensePage() {
     setExpense(expenseClon)
   }
 
-  const handleToggleParticipant = (id: string) => {
+  const handleToggleParticipant = (id: number) => {
     const newParticipantIds = expense.participantIds.includes(id)
       ? expense.participantIds.filter((v) => v !== id)
       : [...expense.participantIds, id]
@@ -62,7 +65,7 @@ export default function CreateManualExpensePage() {
 
   useEffect(() => {
     if (expense.groupId) {
-      const groupParticipants = participantsByGroup[expense.groupId as keyof typeof participantsByGroup] || []
+      const groupParticipants = participantsByGroup[expense.groupId] || []
       setParticipants(groupParticipants)
       actualizarExpense({ participantIds: groupParticipants.map((participant) => participant.id) })
     } else {
@@ -78,8 +81,9 @@ export default function CreateManualExpensePage() {
     setExpense(expenseParaValidar)
     if (expenseParaValidar.valido()) {
       try {
+        console.log(expense)
+        console.log(expense.toJSON())
         expenseService.createExpense(expense)
-        console.log('Gasto creado:', expense)
         navigate('/')
       } catch (error: unknown) {
         console.error('Error creando gasto:', error)
@@ -131,15 +135,15 @@ export default function CreateManualExpensePage() {
               <div className="relative flex items-center gap-3 rounded-xl border border-border bg-background/70 px-3 py-2.5">
                 <Users className="h-4 w-4 text-muted-foreground shrink-0" />
                 <select
-                  value={expense.groupId}
-                  onChange={(e) => actualizarExpense({ groupId: e.target.value })}
+                  value={expense.groupId || ''}
+                  onChange={(e) => actualizarExpense({ groupId: Number(e.target.value) })}
                   className="w-full bg-transparent text-sm text-foreground outline-none appearance-none cursor-pointer"
                 >
                   <option value="" disabled className="bg-card text-muted-foreground">
                     Seleccioná un grupo
                   </option>
                   {mockUserGroups.map((group) => (
-                    <option key={group.id} value={group.id} className="bg-card text-foreground">
+                    <option key={group.id} value={String(group.id)} className="bg-card text-foreground">
                       {group.emoji} {group.name}
                     </option>
                   ))}
@@ -201,11 +205,10 @@ export default function CreateManualExpensePage() {
                     key={category.id}
                     type="button"
                     onClick={() => actualizarExpense({ category: category.id })}
-                    className={`flex flex-col items-center gap-2 rounded-xl border p-3 transition-all ${
-                      expense.category === category.id
+                    className={`flex flex-col items-center gap-2 rounded-xl border p-3 transition-all ${expense.category === category.id
                         ? 'border-primary bg-primary/10 text-primary'
                         : 'border-border bg-background/70 text-muted-foreground hover:bg-muted'
-                    }`}
+                      }`}
                   >
                     <span className="text-lg">{category.icon}</span>
                     <span className="text-[10px] font-medium mt-1">{category.label}</span>

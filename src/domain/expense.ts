@@ -1,24 +1,25 @@
 import { Validable } from '@/types/validable'
+import type { ItemGastoDTO } from './itemGasto'
 
 export type ExpenseJSON = {
-    id: string
     descripcion: string
-    grupoId: string
-    pagadorId: string
-    participantIds: string[]
+    grupoID: number
+    pagadorID: number
+    participantesIDs: number[]
     monto: number
     categoria: string
     fecha: string
+    items: ItemGastoDTO[]
 }
 
 const DEFAULT_CATEGORY = 'OTROS'
 
 export class Expense extends Validable {
+    id: number = 0
     constructor(
-        public id = '',
-        public groupId = '',
-        public pagadorId = '',
-        public participantIds: string[] = [],
+        public groupId = 0,
+        public pagadorId = 0,
+        public participantIds: number[] = [],
         public description = '',
         public total = 0,
         public category = DEFAULT_CATEGORY,
@@ -57,23 +58,22 @@ export class Expense extends Validable {
 
     toJSON(): ExpenseJSON {
         return {
-            id: this.id,
+            grupoID: this.groupId,
+            pagadorID: this.pagadorId,
+            participantesIDs: this.participantIds,
             descripcion: this.description,
-            grupoId: this.groupId,
-            pagadorId: this.pagadorId,
-            participantIds: this.participantIds,
             monto: this.total,
             categoria: this.category,
             fecha: this.date,
+            items: [] //TODO()
         }
     }
 
     static fromJSON(json: ExpenseJSON): Expense {
         return new Expense(
-            json.id,
-            json.grupoId,
-            json.pagadorId,
-            json.participantIds,
+            json.grupoID,
+            json.pagadorID,
+            json.participantesIDs,
             json.descripcion,
             json.monto,
             json.categoria,
@@ -83,7 +83,6 @@ export class Expense extends Validable {
 
     public static clone(expense: Expense): Expense {
         return new Expense(
-            expense.id,
             expense.groupId,
             expense.pagadorId,
             expense.participantIds,

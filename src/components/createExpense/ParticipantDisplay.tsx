@@ -1,11 +1,11 @@
 interface Participant {
-  id: string
+  id: number
   name: string
 }
 
 interface ParticipantDisplayProps {
   participants: Participant[]
-  selectedIds: string[]
+  selectedIds: number[]
 }
 
 export default function ParticipantDisplay({ participants, selectedIds }: ParticipantDisplayProps) {
