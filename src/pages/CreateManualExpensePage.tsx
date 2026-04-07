@@ -1,14 +1,12 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ChevronLeft, Receipt, Calendar } from 'lucide-react'
+import { ChevronLeft, Receipt, Calendar, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import GroupsContainer from '@/components/groupsPage/GroupsContainer'
-import GroupSelect from '@/components/createExpense/GroupSelect'
-import CategorySelector from '@/components/createExpense/CategorySelector'
-import TotalAmount from '@/components/createExpense/TotalAmount'
-import TextField from '@/components/createExpense/TextField'
-import ParticipantSelect from '@/components/createExpense/ParticipantSelect'
 import { CATEGORIES } from '@/components/createExpense/categories'
+import FieldWrapper from '@/components/createExpense/FieldWrapper'
+import ParticipantDisplay from '@/components/createExpense/ParticipantDisplay'
+import { Expense } from '@/domain/expense'
 
 // Mock de grupos (esto después vendrá del back)
 const mockUserGroups = [
@@ -18,7 +16,7 @@ const mockUserGroups = [
   { id: 'g6', name: 'Asado del Finde', emoji: '🔥' },
 ]
 
-// Mock de participantes por grupo (esto después vendrá del back
+// Mock de participantes por grupo (esto después vendrá del back)
 const participantsByGroup = {
   g1: [
     { id: 'p1', name: 'Juan' },
@@ -39,44 +37,53 @@ const participantsByGroup = {
     { id: 'p10', name: 'Miguel' },
   ],
 }
+
 export default function CreateManualExpensePage() {
   const navigate = useNavigate()
 
-  // Estados del formulario
-  const [monto, setMonto] = useState('')
-  const [descripcion, setDescripcion] = useState('')
-  const [fecha, setFecha] = useState(new Date().toISOString().split('T')[0])
-  const [selectedGroupId, setSelectedGroupId] = useState('')
+  const [expense, setExpense] = useState(new Expense())
   const [participants, setParticipants] = useState<{ id: string; name: string }[]>([])
-  const [selectedParticipants, setSelectedParticipants] = useState<string[]>([])
+  const [isParticipantsOpen, setIsParticipantsOpen] = useState(false)
 
-  const [categoria, setCategoria] = useState('OTROS')
+  const actualizarExpense = (cambios: Partial<Expense>) => {
+    const expenseClon = new Expense()
+    Object.assign(expenseClon, expense)
+    Object.assign(expenseClon, cambios)
+    setExpense(expenseClon)
+  }
 
-  // Actualizar participantes cuando cambia el grupo
+  const handleToggleParticipant = (id: string) => {
+    const newParticipantIds = expense.participantIds.includes(id)
+      ? expense.participantIds.filter((v) => v !== id)
+      : [...expense.participantIds, id]
+    actualizarExpense({ participantIds: newParticipantIds })
+  }
+
   useEffect(() => {
-    if (selectedGroupId) {
-      setParticipants(participantsByGroup[selectedGroupId as keyof typeof participantsByGroup] || [])
-      setSelectedParticipants([])
+    if (expense.groupId) {
+      const groupParticipants = participantsByGroup[expense.groupId as keyof typeof participantsByGroup] || []
+      setParticipants(groupParticipants)
+      actualizarExpense({ participantIds: groupParticipants.map((participant) => participant.id) })
     } else {
       setParticipants([])
-      setSelectedParticipants([])
+      actualizarExpense({ participantIds: [] })
     }
-  }, [selectedGroupId])
+  }, [expense.groupId])
 
-  const handleGuardar = () => {
-    const montoNumerico = Number(monto)
+  const crearExpense = async () => {
+    const expenseParaValidar = Expense.clone(expense)
+    expenseParaValidar.validar()
 
-    // Validamos que el grupo esté seleccionado además de los otros campos
-    if (!selectedGroupId || !monto || !descripcion || Number.isNaN(montoNumerico)) return
-
-    console.log({
-      monto: montoNumerico,
-      descripcion,
-      fecha,
-      groupId: selectedGroupId,
-      excludedParticipants: selectedParticipants,
-    })
-    navigate('/')
+    setExpense(expenseParaValidar)
+    if (expenseParaValidar.valido()) {
+      try {
+        // Aquí iría la llamada al service
+        console.log('Gasto creado:', expense)
+        //navigate('/')
+      } catch (error: unknown) {
+        console.error('Error creando gasto:', error)
+      }
+    }
   }
 
   return (
@@ -100,63 +107,131 @@ export default function CreateManualExpensePage() {
       <GroupsContainer>
         <div className="space-y-4 pt-2">
           {/* SECTOR MONTO */}
-          <TotalAmount
-            label="Monto total"
-            value={monto}
-            onChange={setMonto}
-            placeholder="0"
-            currencySymbol="$"
-          />
+          <div className="rounded-2xl border border-border bg-card/70 p-6 shadow-sm backdrop-blur-xl flex flex-col items-center">
+            <span className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wider">Monto total</span>
+            <div className="flex items-center gap-1 w-full max-w-md">
+              <span className="text-3xl font-bold text-primary">$</span>
+              <input
+                type="number"
+                step="0.01"
+                placeholder="0"
+                inputMode="decimal"
+                value={expense.total || ''}
+                onChange={(event) => actualizarExpense({ total: Number(event.target.value) || 0 })}
+                className="w-full bg-transparent text-4xl font-bold text-foreground outline-none placeholder:text-muted-foreground/30 text-center"
+              />
+            </div>
+          </div>
 
           {/* FORMULARIO */}
           <div className="rounded-2xl border border-border bg-card/70 p-4 shadow-sm backdrop-blur-xl space-y-4">
+            {/* Grupo */}
+            <FieldWrapper label="¿A qué grupo pertenece?" instruction="Seleccioná un grupo">
+              <div className="relative flex items-center gap-3 rounded-xl border border-border bg-background/70 px-3 py-2.5">
+                <Users className="h-4 w-4 text-muted-foreground shrink-0" />
+                <select
+                  value={expense.groupId}
+                  onChange={(e) => actualizarExpense({ groupId: e.target.value })}
+                  className="w-full bg-transparent text-sm text-foreground outline-none appearance-none cursor-pointer"
+                >
+                  <option value="" disabled className="bg-card text-muted-foreground">
+                    Seleccioná un grupo
+                  </option>
+                  {mockUserGroups.map((group) => (
+                    <option key={group.id} value={group.id} className="bg-card text-foreground">
+                      {group.emoji} {group.name}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute right-3 pointer-events-none text-muted-foreground text-[10px]">▼</div>
+              </div>
+            </FieldWrapper>
 
-            <GroupSelect
-              label="¿A qué grupo pertenece?"
-              instruction="Seleccioná un grupo"
-              value={selectedGroupId}
-              options={mockUserGroups}
-              onChange={setSelectedGroupId}
-            />
+            {/* Participantes */}
+            <FieldWrapper label="¿Quiénes participan del gasto?">
+              <div className="relative">
+                <div
+                  className={`relative flex items-center gap-3 rounded-xl border border-border bg-background/70 px-3 py-2.5 cursor-pointer ${!expense.groupId ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  onClick={() => expense.groupId && setIsParticipantsOpen(!isParticipantsOpen)}
+                >
+                  <Users className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <span className="w-full text-sm text-foreground">
+                    <ParticipantDisplay participants={participants} selectedIds={expense.participantIds} />
+                  </span>
+                  <div className="absolute right-3 pointer-events-none text-muted-foreground text-[10px]">▼</div>
+                </div>
+                {isParticipantsOpen && expense.groupId && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-xl shadow-lg z-10 max-h-40 overflow-y-auto">
+                    {participants.map((participant) => (
+                      <label key={participant.id} className="flex items-center gap-2 px-3 py-2 hover:bg-muted cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={expense.participantIds.includes(participant.id)}
+                          onChange={() => handleToggleParticipant(participant.id)}
+                          className="rounded"
+                        />
+                        <span className="text-sm">{participant.name}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </FieldWrapper>
 
-            <ParticipantSelect
-              label="¿Quiénes participan del gasto?"
-              value={selectedParticipants}
-              options={participants}
-              onChange={setSelectedParticipants}
-              disabled={!selectedGroupId}
-            />
+            {/* Descripción */}
+            <FieldWrapper label="Descripción" instruction="¿En qué se gastó?">
+              <div className="flex items-center gap-3 rounded-xl border border-border bg-background/70 px-3 py-2.5">
+                <Receipt className="h-4 w-4 text-muted-foreground shrink-0" />
+                <input
+                  type="text"
+                  value={expense.description}
+                  placeholder="¿En qué se gastó?"
+                  onChange={(event) => actualizarExpense({ description: event.target.value })}
+                  className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground/50"
+                />
+              </div>
+            </FieldWrapper>
 
-            <TextField
-              label="Descripción"
-              placeholder="¿En qué se gastó?"
-              value={descripcion}
-              onChange={setDescripcion}
-              icon={<Receipt className="h-4 w-4 text-muted-foreground shrink-0" />}
-            />
+            {/* Categoría */}
+            <FieldWrapper label="Categoría" instruction="Elegí un tipo de gasto">
+              <div className="grid grid-cols-3 gap-2">
+                {CATEGORIES.map((category) => (
+                  <button
+                    key={category.id}
+                    type="button"
+                    onClick={() => actualizarExpense({ category: category.id })}
+                    className={`flex flex-col items-center gap-2 rounded-xl border p-3 transition-all ${
+                      expense.category === category.id
+                        ? 'border-primary bg-primary/10 text-primary'
+                        : 'border-border bg-background/70 text-muted-foreground hover:bg-muted'
+                    }`}
+                  >
+                    <span className="text-lg">{category.icon}</span>
+                    <span className="text-[10px] font-medium mt-1">{category.label}</span>
+                  </button>
+                ))}
+              </div>
+            </FieldWrapper>
 
-            <CategorySelector
-              label="Categoría"
-              instruction="Elegí un tipo de gasto"
-              categories={CATEGORIES}
-              selectedCategory={categoria}
-              onSelect={setCategoria}
-            />
-
-            <TextField
-              label="Fecha del gasto"
-              type="date"
-              value={fecha}
-              onChange={setFecha}
-              icon={<Calendar className="h-4 w-4 text-muted-foreground shrink-0" />}
-            />
+            {/* Fecha */}
+            <FieldWrapper label="Fecha del gasto">
+              <div className="flex items-center gap-3 rounded-xl border border-border bg-background/70 px-3 py-2.5">
+                <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
+                <input
+                  type="date"
+                  value={expense.date}
+                  onChange={(event) => actualizarExpense({ date: event.target.value })}
+                  className="w-full bg-transparent text-sm text-foreground outline-none"
+                />
+              </div>
+            </FieldWrapper>
           </div>
 
           {/* BOTÓN FINAL */}
           <div className="pt-4">
             <Button
-              onClick={handleGuardar}
-              disabled={!selectedGroupId || !monto || !descripcion}
+              onClick={crearExpense}
+              disabled={!expense.valido()}
               className="w-full h-12 rounded-2xl text-md font-bold shadow-lg shadow-primary/20 transition-all active:scale-[0.98]"
             >
               Cargar Gasto
@@ -165,7 +240,6 @@ export default function CreateManualExpensePage() {
               "La vaquita se divide entre todos los miembros del grupo seleccionado automáticamente."
             </p>
           </div>
-
         </div>
       </GroupsContainer>
     </div>

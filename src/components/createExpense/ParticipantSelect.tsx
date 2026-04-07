@@ -24,10 +24,15 @@ export default function ParticipantSelect({
 }: ParticipantSelectProps) {
   const [isOpen, setIsOpen] = useState(false)
 
-  const displayText = value.length === 0 ? 'Todos' : `Todos excepto ${value.map(id => options.find(o => o.id === id)?.name).join(', ')}`
+  const displayText =
+    options.length === 0
+      ? 'Sin participantes'
+      : value.length === 0
+      ? 'Todos'
+      : value.map((id) => options.find((o) => o.id === id)?.name).filter(Boolean).join(', ')
 
   const handleToggle = (id: string) => {
-    const newValue = value.includes(id) ? value.filter(v => v !== id) : [...value, id]
+    const newValue = value.includes(id) ? value.filter((v) => v !== id) : [...value, id]
     onChange(newValue)
   }
 
@@ -48,7 +53,7 @@ export default function ParticipantSelect({
               <label key={option.id} className="flex items-center gap-2 px-3 py-2 hover:bg-muted cursor-pointer">
                 <input
                   type="checkbox"
-                  checked={!value.includes(option.id)}
+                  checked={value.includes(option.id)}
                   onChange={() => handleToggle(option.id)}
                   className="rounded"
                 />
