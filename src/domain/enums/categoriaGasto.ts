@@ -1,0 +1,3 @@
+export enum CategoriaGasto {
+    COMIDA, TRANSPORTE, SUPERMERCADO, SALUD, ENTRETENIMIENTO, OTROS
+}
