@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ChevronLeft, Search, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { crearGrupo } from '@/service/groups'
 
 const mockFriends = [
   { id: 'u1', name: 'Lucía Fernández' },
@@ -27,6 +28,8 @@ export default function CreateGroupPage() {
   const [search, setSearch] = useState('')
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [status, setStatus] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const filteredFriends = useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -45,11 +48,28 @@ export default function CreateGroupPage() {
     })
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!isValid) return
-    setStatus('Grupo creado (mock). Redirigiendo...')
-    setTimeout(() => navigate('/groups'), 700)
+
+    setLoading(true)
+    setError(null)
+
+    try {
+      // TODO: reemplazar 1 por el id del usuario autenticado
+      await crearGrupo(1, {
+        nombre: groupName.trim(),
+        descripcion: description.trim(),
+        imagen: '',
+        integrantesIds: Array.from(selectedIds).map(Number),
+      })
+      setStatus('Grupo creado. Redirigiendo...')
+      setTimeout(() => navigate('/groups'), 700)
+    } catch {
+      setError('No se pudo crear el grupo. Intentá de nuevo.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -172,8 +192,14 @@ export default function CreateGroupPage() {
           </div>
         )}
 
-        <Button className="w-full rounded-xl" disabled={!isValid} type="submit">
-          Crear grupo
+        {error && (
+          <div className="rounded-xl border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+            {error}
+          </div>
+        )}
+
+        <Button className="w-full rounded-xl" disabled={!isValid || loading} type="submit">
+          {loading ? 'Creando...' : 'Crear grupo'}
         </Button>
       </form>
     </div>
