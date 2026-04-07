@@ -1,6 +1,5 @@
-import React from 'react'
 import MonthSection from './MonthSection'
-import { Expense } from './ExpenseItem'
+import type { Expense } from './ExpenseItem'
 
 export type ExpensesByMonth = {
     month: string

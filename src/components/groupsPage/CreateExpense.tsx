@@ -1,4 +1,4 @@
-import React from 'react'
+// React import not required with automatic JSX runtime
 import { PlusCircle } from 'lucide-react'
 
 export default function CreateExpense({ onClick }: { onClick?: () => void }) {

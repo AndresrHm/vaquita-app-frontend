@@ -1,12 +1,11 @@
-import React from 'react'
-import { useParams, Link, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import GroupsContainer from '@/components/groupsPage/GroupsContainer'
 import { ChevronLeft, Settings } from 'lucide-react'
 import ExpensesList from '@/components/groupsPage/ExpensesList'
+import type { ExpensesByMonth } from '@/components/groupsPage/ExpensesList'
 import CreateExpense from '@/components/groupsPage/CreateExpense'
 
-const getAvatarUrl = (name: string) =>
-    `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}`
+// avatar helper (not used in this file currently)
 
 const mockGroupDetail = {
     id: 'g1',
@@ -17,7 +16,7 @@ const mockGroupDetail = {
     imageUrl: 'https://resizer.iproimg.com/unsafe/640x/filters:format(webp)/https://assets.iprofesional.com/assets/jpg/2022/11/545871.jpg',
 }
 
-const mockExpensesByMonth = [
+const mockExpensesByMonth: ExpensesByMonth = [
     {
         month: 'Marzo',
         expenses: [
@@ -131,9 +130,7 @@ export default function GroupDetailPage() {
                         </button>
 
                         <button
-                            onClick={() => {
-                                /* placeholder ajustes */
-                            }}
+                            onClick={() => navigate(`/groups/${group.id}/settings`)}
                             className="inline-flex items-center justify-center rounded-md p-2 bg-black/30 text-white hover:bg-black/40 cursor-pointer"
                             aria-label="Ajustes"
                         >

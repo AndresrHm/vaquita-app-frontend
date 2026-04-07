@@ -1,4 +1,4 @@
-import React from 'react'
+// React import not needed with automatic JSX runtime
 
 export type Expense = {
     id: string

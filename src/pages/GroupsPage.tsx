@@ -27,14 +27,7 @@ const mockGroups = [
   imageUrl: getAvatarUrl(group.name),
 }))
 
-function getInitials(name: string) {
-  return name
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? '')
-    .join('')
-}
+// initials util removed (not used in this file)
 
 export default function GroupsPage() {
   return (
