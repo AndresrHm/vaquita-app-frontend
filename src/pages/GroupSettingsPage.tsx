@@ -1,9 +1,13 @@
-import { ChevronLeft, Save, UserPlus, Trash2, LogOut, AlertTriangle, Camera } from 'lucide-react'
+import { ChevronLeft, Save, UserPlus, Trash2, LogOut, AlertTriangle, Camera, Crown, Check, X } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Button } from '@/components/ui/button'
 import ColumnContainer from '@/components/common/columnContainer'
 import Card from '@/components/common/card'
 import PageTitle from '@/components/common/pageTitle'
+import IconNavButton from '@/components/common/IconNavButton'
+import ActionButton from '@/components/common/ActionButton'
+import Select from '@/components/ui/select'
+import { useState } from 'react'
 
 const getAvatarUrl = (name: string) =>
     `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}`
@@ -68,6 +72,8 @@ export default function GroupSettingsPage() {
     // Visual-only: functional logic removed, keeps layout and mocked data.
     const members = mockGroup.members
     const error: string | null = null
+    const [imageUrl, setImageUrl] = useState(mockGroup.imageUrl)
+    const [imageError, setImageError] = useState(false)
 
     return (
         <div className="flex flex-col space-y-4 min-h-[calc(100vh-5rem)]">
@@ -75,9 +81,7 @@ export default function GroupSettingsPage() {
             <PageTitle>
                 <div className="max-w-2xl mx-auto px-4 flex items-center justify-between relative">
                     <div className="flex items-center space-x-3">
-                        <Button variant="ghost" onClick={() => { }}>
-                            <ChevronLeft className="w-4 h-4 mr-2" />
-                        </Button>
+                        <IconNavButton ariaLabel="Volver" onClick={() => window.history.back()} icon={<ChevronLeft className="h-5 w-5" />} />
                     </div>
                     <h2 className="absolute left-1/2 transform -translate-x-1/2 text-xl font-semibold text-foreground">Ajustes del grupo</h2>
                 </div>
@@ -88,20 +92,25 @@ export default function GroupSettingsPage() {
                     {error && <div className="text-sm text-red-600 bg-red-50 p-3 rounded">{error}</div>}
 
                     {/* Group Info */}
-                    <Card>
-                        <h3 className="text-md font-semibold mb-3">Información del grupo</h3>
+                    <Card className="hover:bg-transparent active:bg-transparent cursor-default">
+                        <h3 className="text-lg font-semibold mb-3">Información del grupo</h3>
                         <form onSubmit={(e) => e.preventDefault()} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium mb-1">Nombre del grupo</label>
-                                <input defaultValue={mockGroup.name} readOnly className="w-full px-3 py-2 border border-gray-200 rounded-md bg-gray-50" />
+                                <label className="block text-sm text-muted-foreground mb-1">Nombre del grupo</label>
+                                <input defaultValue={mockGroup.name} readOnly className="w-full px-3 py-2 border border-border rounded-md bg-white text-sm text-foreground" />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-1">Imagen (URL)</label>
+                                <label className="block text-sm text-muted-foreground mb-1">Imagen (URL)</label>
                                 <div className="flex items-center space-x-3">
-                                    <input defaultValue={mockGroup.imageUrl} readOnly className="flex-1 px-3 py-2 border border-gray-200 rounded-md bg-gray-50" />
+                                    <input value={imageUrl} onChange={(e) => { setImageUrl(e.target.value); setImageError(false) }} className="flex-1 px-3 py-2 border border-border rounded-md bg-white text-sm text-foreground" />
                                     <div className="flex items-center space-x-2">
-                                        <Avatar src={mockGroup.imageUrl} size={12} />
-                                        <Camera className="w-5 h-5 text-gray-400" />
+                                        {!imageError ? (
+                                            // preview
+                                            <img src={imageUrl} onError={() => setImageError(true)} alt="preview" className="w-20 h-20 rounded-md object-cover" />
+                                        ) : (
+                                            <div className="w-20 h-20 rounded-md bg-muted/50 flex items-center justify-center text-xs text-muted-foreground">No se pudo cargar la imagen</div>
+                                        )}
+                                        <Camera className="w-5 h-5 text-muted-foreground" />
                                     </div>
                                 </div>
                             </div>
@@ -109,10 +118,10 @@ export default function GroupSettingsPage() {
                     </Card>
 
                     {/* Members */}
-                    <Card>
+                    <Card className="hover:bg-transparent active:bg-transparent cursor-default">
                         <div className="flex items-center justify-between mb-3">
-                            <h3 className="text-md font-semibold">Miembros ({members.length})</h3>
-                            <Button onClick={() => { }}><UserPlus className="w-4 h-4 mr-2" />Agregar</Button>
+                            <h3 className="text-lg font-semibold">Miembros ({members.length})</h3>
+                            <ActionButton icon={<UserPlus className="w-4 h-4" />} onClick={() => { }}>Agregar</ActionButton>
                         </div>
                         <div className="space-y-3">
                             {members.map((m) => (
@@ -124,10 +133,14 @@ export default function GroupSettingsPage() {
                                             <div className="text-sm text-muted-foreground capitalize">{m.role}</div>
                                         </div>
                                     </div>
-                                    <div>
-                                        {m.role !== 'admin' && (
-                                            <Button variant="ghost" size="icon" disabled>
-                                                <Trash2 className="w-4 h-4" />
+                                    <div className="pr-3">
+                                        {m.role === 'admin' ? (
+                                            <div className="inline-flex items-center gap-2 text-muted-foreground font-semibold pr-1">
+                                                <Crown className="w-6 h-6" />
+                                            </div>
+                                        ) : (
+                                            <Button variant="ghost" size="icon" className="">
+                                                <Trash2 className="w-5 h-5 text-red-600" />
                                             </Button>
                                         )}
                                     </div>
@@ -137,16 +150,16 @@ export default function GroupSettingsPage() {
                     </Card>
 
                     {/* Currency & Preferences */}
-                    <Card>
-                        <h3 className="text-md font-semibold mb-3">Moneda y preferencias</h3>
+                    <Card className="hover:bg-transparent active:bg-transparent cursor-default">
+                        <h3 className="text-lg font-semibold mb-3">Moneda y preferencias</h3>
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium mb-1">Moneda por defecto</label>
-                                <select defaultValue={mockGroup.currency} disabled className="w-full px-3 py-2 border border-gray-200 rounded-md bg-gray-50">
+                                <label className="block text-sm text-muted-foreground mb-1">Moneda por defecto</label>
+                                <Select value={mockGroup.currency} onChange={() => { }} disabled>
                                     <option value="ARS">ARS — Peso argentino</option>
                                     <option value="USD">USD — US Dollar</option>
                                     <option value="EUR">EUR — Euro</option>
-                                </select>
+                                </Select>
                             </div>
                             <div className="flex items-center justify-between">
                                 <Toggle checked={!!mockGroup.simplifyDebts} onChange={() => { }} label="Simplificar deudas" />
@@ -157,23 +170,22 @@ export default function GroupSettingsPage() {
                         </div>
                     </Card>
 
-                    {/* Danger Zone */}
-                    <Card>
-                        <h3 className="text-md font-semibold mb-3 text-red-600">Zona peligrosa</h3>
+                    {/* Gestión del grupo */}
+                    <Card className="hover:bg-transparent active:bg-transparent cursor-default">
+                        <h3 className="text-lg font-semibold mb-3">Gestión del grupo</h3>
                         <div className="space-y-3">
-                            <Button variant="outline" className="w-full justify-start" disabled>
+                            <Button variant="outline" className="w-full justify-start text-red-400 border-red-200 hover:bg-red-50" disabled>
                                 <LogOut className="w-4 h-4 mr-2" /> Salir del grupo
                             </Button>
-                            <Button variant="destructive" className="w-full justify-start" disabled>
+                            <Button variant="outline" className="w-full justify-start text-red-400 border-red-200 hover:bg-red-50" disabled>
                                 <AlertTriangle className="w-4 h-4 mr-2" /> Eliminar grupo
                             </Button>
                         </div>
                     </Card>
 
-                    <div>
-                        <Button disabled>
-                            <Save className="w-4 h-4 mr-2" /> Guardar
-                        </Button>
+                    <div className="flex items-center justify-center-safe gap-4">
+                        <ActionButton icon={<Check className="w-5 h-5" />} disabled>Guardar</ActionButton>
+                        <ActionButton variant="secondary" icon={<X className="w-5 h-5" />}>Cancelar</ActionButton>
                     </div>
 
                 </main>
