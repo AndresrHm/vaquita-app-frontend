@@ -58,9 +58,7 @@ export default function GroupsPage() {
       </GroupsContainer>
 
       {/* Mini card/button al final para agregar grupo */}
-      <div className="mt-2">
-        <CreateGroupButton />
-      </div>
+      <CreateGroupButton />
     </div>
   )
 }
