@@ -35,11 +35,14 @@ function paymentLabel(type: Expense['paymentType']) {
     }
 }
 
-export default function ExpenseItem({ expense }: { expense: Expense }) {
+export default function ExpenseItem({ expense, month }: { expense: Expense; month: string }) {
+    const short = month ? month.slice(0, 3).toLowerCase() : ''
+
     return (
         <div className="flex items-center gap-3 rounded-md px-2 py-2 hover:bg-muted/50 active:bg-muted/70 transition">
             <div className="w-10 flex-shrink-0 text-center">
                 <div className="text-lg font-semibold text-foreground">{expense.date.day}</div>
+                <div className="text-xs text-muted-foreground mt-0.5">{short}</div>
             </div>
 
             <img src={expense.imageUrl} alt={expense.title} className="h-10 w-10 rounded-md object-cover" />

@@ -10,7 +10,7 @@ export default function MonthSection({ month, expenses }: { month: string; expen
 
             <div className="space-y-2">
                 {expenses.map((e) => (
-                    <ExpenseItem key={e.id} expense={e} />
+                    <ExpenseItem key={e.id} expense={e} month={month} />
                 ))}
             </div>
         </section>
