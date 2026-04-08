@@ -1,7 +1,7 @@
 import { ChevronLeft, Save, UserPlus, Trash2, LogOut, AlertTriangle, Camera } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Button } from '@/components/ui/button'
-import GroupsContainer from '@/components/groupsPage/GroupsContainer'
+import ColumnContainer from '@/components/common/columnContainer'
 import Card from '@/components/common/card'
 import PageTitle from '@/components/common/pageTitle'
 
@@ -83,7 +83,7 @@ export default function GroupSettingsPage() {
                 </div>
             </PageTitle>
 
-            <GroupsContainer>
+            <ColumnContainer>
                 <main className="max-w-2xl mx-auto space-y-6">
                     {error && <div className="text-sm text-red-600 bg-red-50 p-3 rounded">{error}</div>}
 
@@ -177,7 +177,7 @@ export default function GroupSettingsPage() {
                     </div>
 
                 </main>
-            </GroupsContainer>
+            </ColumnContainer>
 
             <Modal open={false} title="Salir del grupo">
                 ¿Estás seguro que quieres salir del grupo? Perderás acceso a los gastos.

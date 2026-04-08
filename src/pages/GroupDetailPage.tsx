@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom'
-import GroupsContainer from '@/components/groupsPage/GroupsContainer'
+import ColumnContainer from '@/components/common/columnContainer'
 import { ChevronLeft, Settings } from 'lucide-react'
 import ExpensesList from '@/components/groupsPage/ExpensesList'
 import type { ExpensesByMonth } from '@/components/groupsPage/ExpensesList'
@@ -144,7 +144,7 @@ export default function GroupDetailPage() {
                 </div>
             </div>
 
-            <GroupsContainer>
+            <ColumnContainer>
                 <div>
                     <div className="mt-4 text-sm text-foreground">Total pendiente: {group.currency} {group.outstanding.toLocaleString('es-AR')}</div>
 
@@ -153,7 +153,7 @@ export default function GroupDetailPage() {
                     </div>
 
                 </div>
-            </GroupsContainer>
+            </ColumnContainer>
 
             <CreateExpense onClick={() => { /* placeholder: abrir crear gasto */ }} />
         </div>

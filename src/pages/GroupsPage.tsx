@@ -1,7 +1,7 @@
 import GroupCard from '@/components/groupsPage/GroupCard'
 import GroupsSearch from '@/components/groupsPage/GroupsSearch'
 import CreateGroupButton from '@/components/groupsPage/CreateGroupButton'
-import GroupsContainer from '@/components/groupsPage/GroupsContainer'
+import ColumnContainer from '@/components/common/columnContainer'
 import PageTitle from '@/components/common/pageTitle'
 
 const getAvatarUrl = (name: string) =>
@@ -36,7 +36,7 @@ export default function GroupsPage() {
     <div className="flex flex-col space-y-4 min-h-[calc(100vh-5rem)]">
 
       <PageTitle>
-        <div className="pl-3">
+        <div className="pl-2.5 pt-2">
           <h2 className="text-xl font-semibold text-foreground">Tenés deudas</h2>
           <p className="mt-1 text-sm text-muted-foreground">Debes $8,430</p>
         </div>
@@ -45,11 +45,11 @@ export default function GroupsPage() {
       </PageTitle>
 
       {/* Contenedor de groupCards - estira para ocupar el espacio restante */}
-      <GroupsContainer>
+      <ColumnContainer>
         {mockGroups.map((g) => (
           <GroupCard key={g.id} group={g} />
         ))}
-      </GroupsContainer>
+      </ColumnContainer>
 
       {/* Mini card/button al final para agregar grupo */}
       <div className="mt-2">
