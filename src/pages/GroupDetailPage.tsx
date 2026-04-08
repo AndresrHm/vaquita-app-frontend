@@ -4,6 +4,7 @@ import { ChevronLeft, Settings } from 'lucide-react'
 import ExpensesList from '@/components/groupsPage/ExpensesList'
 import type { ExpensesByMonth } from '@/components/groupsPage/ExpensesList'
 import CreateExpense from '@/components/groupsPage/CreateExpense'
+import GroupDetailSearch from '@/components/groupsPage/GroupDetailSearch'
 
 // avatar helper (not used in this file currently)
 
@@ -113,7 +114,7 @@ export default function GroupDetailPage() {
     const group = groupId === mockGroupDetail.id ? mockGroupDetail : { ...mockGroupDetail, id: groupId }
 
     return (
-        <div className="flex flex-col space-y-4 min-h-[calc(98vh-5rem)]">
+        <div className="space-y-4">
             {/* Header image container (full-width within layout) */}
             <div className="-mx-4 rounded-b-2xl rounded-t-none overflow-hidden shadow-sm">
                 <div className="relative h-44 w-full">
@@ -145,14 +146,14 @@ export default function GroupDetailPage() {
             </div>
 
             <ColumnContainer>
-                <div>
-                    <div className="mt-4 text-sm text-foreground">Total pendiente: {group.currency} {group.outstanding.toLocaleString('es-AR')}</div>
+                <GroupDetailSearch />
 
-                    <div className="mt-4">
-                        <ExpensesList data={mockExpensesByMonth} />
-                    </div>
+                <div className="mt-4 text-sm text-foreground">Total pendiente: {group.currency} {group.outstanding.toLocaleString('es-AR')}</div>
 
+                <div className="mt-4">
+                    <ExpensesList data={mockExpensesByMonth} />
                 </div>
+
             </ColumnContainer>
 
             <CreateExpense onClick={() => { /* placeholder: abrir crear gasto */ }} />
