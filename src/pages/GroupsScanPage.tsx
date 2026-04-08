@@ -1,6 +1,9 @@
 import { useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Edit3, Sparkles, Upload } from 'lucide-react'
+import PageTitle from '@/components/common/pageTitle'
+import Card from '@/components/common/card'
+import ColumnContainer from '@/components/common/columnContainer'
 import { useNavigate } from 'react-router-dom'
 
 type LineItem = { id: string; label: string; amount: number }
@@ -22,18 +25,15 @@ export default function GroupsScanPage() {
 
   return (
     <div className="space-y-4">
-      <div className="-mx-4 rounded-b-2xl rounded-t-none border border-border bg-card/70 px-9 py-5 shadow-sm backdrop-blur-xl">
-        <h1 className="text-lg font-semibold text-foreground">Escanear con IA</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Placeholder mock: en el futuro se integra Gemini + OCR.
-        </p>
-      </div>
+      <PageTitle title="Escanear con IA" subtitle="Placeholder mock: en el futuro se integra Gemini + OCR." />
 
-      <div className="rounded-2xl bg-card/70 p-5 shadow-sm backdrop-blur-xl border border-border">
-        <h2 className="text-sm font-semibold text-foreground">Próxima acción</h2>
-        <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
-          Optimizá tu tiempo escaneando el ticket con nuestra IA.
-        </p>
+      <ColumnContainer>
+        <div className="pl-2">
+          <h2 className="text-sm font-semibold text-foreground">Próxima acción</h2>
+          <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
+            Optimizá tu tiempo escaneando el ticket con nuestra IA.
+          </p>
+        </div>
 
         <div className="mt-5 flex flex-col gap-3">
           {/* OPCIÓN ESTRELLA: ESCANEO IA */}
@@ -65,36 +65,36 @@ export default function GroupsScanPage() {
             </Button>
           </div>
         </div>
-      </div>
+      </ColumnContainer>
 
       {scanned ? (
-        <div className="rounded-2xl bg-card/70 p-5 shadow-sm backdrop-blur-xl border border-border">
+        <ColumnContainer>
           <>
-            <h2 className="text-sm font-semibold text-foreground">Ticket detectado (mock)</h2>
+            <h2 className="pl-2 text-sm font-semibold text-foreground">Ticket detectado (mock)</h2>
             <div className="mt-3 space-y-2">
               {mockDetected.map((it) => (
-                <div key={it.id} className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card px-3 py-2">
-                  <div className="text-sm font-medium text-foreground">{it.label}</div>
-                  <div className="text-sm font-semibold text-foreground">
+                <Card key={it.id} className="flex items-center justify-between gap-3">
+                  <div className="text-sm font-medium">{it.label}</div>
+                  <div className="text-sm font-semibold">
                     $ {it.amount.toLocaleString('es-AR')}
                   </div>
-                </div>
+                </Card>
               ))}
             </div>
-            <div className="mt-4 rounded-2xl border border-border bg-muted px-4 py-3">
+            <Card className="mt-4 px-4 py-3">
               <div className="flex items-center justify-between">
                 <div className="text-sm font-medium text-foreground">Total</div>
                 <div className="text-base font-semibold text-foreground">$ {total.toLocaleString('es-AR')}</div>
               </div>
               <div className="mt-2 text-xs text-muted-foreground">Siguiente paso: repartir entre miembros del group.</div>
-            </div>
+            </Card>
             <div className="mt-4">
               <Button className="w-full rounded-xl" onClick={() => setScanned(false)}>
                 Escanear otro ticket
               </Button>
             </div>
           </>
-        </div>
+        </ColumnContainer>
       ) : null}
     </div>
   )
