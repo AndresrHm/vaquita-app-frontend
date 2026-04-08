@@ -5,6 +5,7 @@ import ExpensesList from '@/components/groupsPage/ExpensesList'
 import type { ExpensesByMonth } from '@/components/groupsPage/ExpensesList'
 import CreateExpense from '@/components/groupsPage/CreateExpense'
 import GroupDetailSearch from '@/components/groupsPage/GroupDetailSearch'
+import IconNavButton from '@/components/common/IconNavButton'
 
 // avatar helper (not used in this file currently)
 
@@ -137,21 +138,9 @@ export default function GroupDetailPage() {
                     <div className="absolute inset-0 bg-gradient-to-b from-black/20 to-black/30" />
 
                     <div className="absolute inset-x-4 top-3 flex items-center justify-between">
-                        <button
-                            onClick={() => navigate(-1)}
-                            className="inline-flex items-center justify-center rounded-md p-2 bg-black/30 text-white hover:bg-black/40 cursor-pointer"
-                            aria-label="Volver"
-                        >
-                            <ChevronLeft className="h-5 w-5" />
-                        </button>
+                        <IconNavButton ariaLabel="Volver" onClick={() => navigate(-1)} icon={<ChevronLeft className="h-5 w-5" />} />
 
-                        <button
-                            onClick={() => navigate(`/groups/${group.id}/settings`)}
-                            className="inline-flex items-center justify-center rounded-md p-2 bg-black/30 text-white hover:bg-black/40 cursor-pointer"
-                            aria-label="Ajustes"
-                        >
-                            <Settings className="h-5 w-5" />
-                        </button>
+                        <IconNavButton ariaLabel="Ajustes" to={`/groups/${group.id}/settings`} icon={<Settings className="h-5 w-5" />} />
                     </div>
 
                     <div className="absolute left-4 bottom-4">
