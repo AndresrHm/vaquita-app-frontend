@@ -1,5 +1,5 @@
-import React from 'react'
-import ExpenseItem, { Expense } from './ExpenseItem'
+import ExpenseItem from './ExpenseItem'
+import type { Expense } from './ExpenseItem'
 
 export default function MonthSection({ month, expenses }: { month: string; expenses: Expense[] }) {
     return (

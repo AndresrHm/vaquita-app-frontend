@@ -1,4 +1,7 @@
 import { Search } from 'lucide-react'
+import PageTitle from '@/components/common/pageTitle'
+import Card from '@/components/common/card'
+import ColumnContainer from '@/components/common/columnContainer'
 
 const mockActivity = [
   { id: 'a1', title: 'Ticket escaneado', detail: 'Fotocopias - $3.200', date: 'Hoy' },
@@ -9,12 +12,10 @@ const mockActivity = [
 export default function ActivityPage() {
   return (
     <div className="space-y-4">
-      <div className="-mx-4 rounded-b-lg rounded-t-none border border-border bg-card/70 px-9 py-5 shadow-sm backdrop-blur-xl">
-        <h1 className="text-lg font-semibold text-foreground">Actividad</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Resumen de movimientos (mock).</p>
-      </div>
+      <PageTitle title="Actividad" subtitle="Resumen de movimientos (mock)." />
 
-      <div className="rounded-2xl border border-border bg-card/70 p-3 shadow-sm backdrop-blur-xl">
+      <ColumnContainer>
+        {/* Search movimientos */}
         <label className="flex items-center gap-2 rounded-xl border border-border bg-background/70 px-3 py-2">
           <Search className="h-4 w-4 text-muted-foreground" />
           <input
@@ -23,15 +24,10 @@ export default function ActivityPage() {
             className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
           />
         </label>
-      </div>
 
-      <div className="rounded-2xl border border-border bg-card/70 p-3 shadow-sm backdrop-blur-xl">
         <div className="max-h-[52vh] space-y-3 overflow-y-auto pr-1">
           {mockActivity.map((item) => (
-            <div
-              key={item.id}
-              className="rounded-2xl border border-border bg-background/70 p-4 shadow-sm"
-            >
+            <Card key={item.id}>
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <div className="text-sm font-semibold text-foreground">{item.title}</div>
@@ -39,10 +35,10 @@ export default function ActivityPage() {
                 </div>
                 <div className="text-right text-xs text-muted-foreground">{item.date}</div>
               </div>
-            </div>
+            </Card>
           ))}
         </div>
-      </div>
+      </ColumnContainer>
     </div>
   )
 }

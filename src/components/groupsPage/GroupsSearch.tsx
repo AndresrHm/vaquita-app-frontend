@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { Search, Sliders, UserPlus } from 'lucide-react'
 
@@ -50,7 +50,6 @@ export default function GroupsSearch({
             const el = containerRef.current
             if (!el) return
             const rect = el.getBoundingClientRect()
-            const dropdownWidth = 224 // approx w-56
             const right = Math.max(8, window.innerWidth - rect.right)
             const top = rect.bottom + 8
             setDropdownPos({ top, right })

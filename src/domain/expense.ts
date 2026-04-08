@@ -1,5 +1,7 @@
 import { Validable } from '@/types/validable'
-import type { ItemGastoDTO } from './itemGasto'
+import { InputError } from '@/types/inputError'
+import { ExpenseItem } from './expenseItem'
+import type { ExpenseItemDTO } from './expenseItemDTO'
 
 export type ExpenseJSON = {
     descripcion: string
@@ -9,7 +11,7 @@ export type ExpenseJSON = {
     monto: number
     categoria: string
     fecha: string
-    items: ItemGastoDTO[]
+    items: ExpenseItemDTO[]
 }
 
 const DEFAULT_CATEGORY = 'OTROS'
@@ -24,35 +26,48 @@ export class Expense extends Validable {
         public total = 0,
         public category = DEFAULT_CATEGORY,
         public date = new Date().toISOString().split('T')[0],
+        public items: ExpenseItem[] = [],
     ) {
         super()
     }
 
     validarEspecifico(): void {
-        const errors: string[] = []
-
         if (!this.groupId) {
-            errors.push('Seleccioná un grupo')
+            this.agregarError(new InputError('groupId', 'Seleccioná un grupo'))
         }
 
         if (this.participantIds.length === 0) {
-            errors.push('Seleccioná al menos una persona que participe')
+            this.agregarError(new InputError('participantIds', 'Seleccioná al menos una persona que participe'))
         }
 
         if (this.description.trim().length === 0) {
-            errors.push('Agregá una descripción')
+            this.agregarError(new InputError('description', 'Agregá una descripción'))
         }
 
         if (this.total <= 0 || Number.isNaN(this.total)) {
-            errors.push('Ingresá un monto válido')
+            this.agregarError(new InputError('total', 'Ingresá un monto válido'))
         }
 
         if (!this.category.trim()) {
-            errors.push('Elegí una categoría')
+            this.agregarError(new InputError('category', 'Elegí una categoría'))
         }
 
         if (!this.date.trim()) {
-            errors.push('Ingresá una fecha')
+            this.agregarError(new InputError('date', 'Ingresá una fecha'))
+        }
+
+        if (this.items.length > 0) {
+            const invalidItem = this.items.find(
+                (item) => !item.nombre.trim() || item.cantidad <= 0 || item.precioUnitario <= 0
+            )
+
+            if (invalidItem) {
+                this.agregarError(new InputError('items', 'Cada ítem debe tener nombre, cantidad y precio unitario válidos'))
+            }
+
+            if (this.total != this.totalItems()) {
+                this.agregarError(new InputError('itemsTotal', 'La suma de los valores de los ítems debe ser igual al total'))
+            }
         }
     }
 
@@ -65,7 +80,7 @@ export class Expense extends Validable {
             monto: this.total,
             categoria: this.category,
             fecha: this.date,
-            items: [] //TODO()
+            items: this.items.map((item) => item.toDTO()),
         }
     }
 
@@ -77,7 +92,8 @@ export class Expense extends Validable {
             json.descripcion,
             json.monto,
             json.categoria,
-            json.fecha
+            json.fecha,
+            (json.items ?? []).map((item) => new ExpenseItem(item.nombre, item.cantidad, item.precioUnitario))
         )
     }
 
@@ -90,6 +106,14 @@ export class Expense extends Validable {
             expense.total,
             expense.category,
             expense.date,
+            expense.items.map((item) => new ExpenseItem(item.nombre, item.cantidad, item.precioUnitario)),
         )
     }
+
+    private totalItems() {
+        var total = 0
+        this.items.forEach(it => total += it.total())
+        return total
+    }
+
 }
