@@ -4,6 +4,7 @@ import { Edit3, Sparkles, Upload } from 'lucide-react'
 import PageTitle from '@/components/common/pageTitle'
 import Card from '@/components/common/card'
 import ColumnContainer from '@/components/common/columnContainer'
+import { useNavigate } from 'react-router-dom'
 
 type LineItem = { id: string; label: string; amount: number }
 
@@ -19,6 +20,8 @@ export default function GroupsScanPage() {
   const total = useMemo(() => {
     return mockDetected.reduce((acc, it) => acc + it.amount, 0)
   }, [])
+
+  const navigate = useNavigate()
 
   return (
     <div className="space-y-4">
@@ -55,6 +58,7 @@ export default function GroupsScanPage() {
             <Button
               variant="ghost"
               className="flex-1 rounded-xl text-muted-foreground hover:text-foreground text-xs h-10"
+              onClick={() => navigate('/groups/expense/create')}
             >
               <Edit3 size={14} className="mr-2" />
               Manual

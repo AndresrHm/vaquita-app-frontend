@@ -52,9 +52,7 @@ export default function GroupsPage() {
       </ColumnContainer>
 
       {/* Mini card/button al final para agregar grupo */}
-      <div className="mt-2">
-        <CreateGroupButton />
-      </div>
+      <CreateGroupButton />
     </div>
   )
 }
