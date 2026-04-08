@@ -1,5 +1,5 @@
 import { Validable } from '@/types/validable'
-import type { ItemGastoDTO } from './itemGasto'
+import type { ExpenseItem } from './expenseItem'
 
 export type ExpenseJSON = {
     descripcion: string
@@ -9,7 +9,7 @@ export type ExpenseJSON = {
     monto: number
     categoria: string
     fecha: string
-    items: ItemGastoDTO[]
+    items: ExpenseItem[]
 }
 
 const DEFAULT_CATEGORY = 'OTROS'
@@ -24,6 +24,7 @@ export class Expense extends Validable {
         public total = 0,
         public category = DEFAULT_CATEGORY,
         public date = new Date().toISOString().split('T')[0],
+        public items: ExpenseItem[] = [],
     ) {
         super()
     }
@@ -54,6 +55,16 @@ export class Expense extends Validable {
         if (!this.date.trim()) {
             errors.push('Ingresá una fecha')
         }
+
+        if (this.items.length > 0) {
+            const invalidItem = this.items.find(
+                (item) => !item.nombre.trim() || item.cantidad <= 0 || item.precioUnitario <= 0
+            )
+
+            if (invalidItem) {
+                errors.push('Cada ítem debe tener nombre, cantidad y precio unitario válidos')
+            }
+        }
     }
 
     toJSON(): ExpenseJSON {
@@ -65,7 +76,7 @@ export class Expense extends Validable {
             monto: this.total,
             categoria: this.category,
             fecha: this.date,
-            items: [] //TODO()
+            items: this.items,
         }
     }
 
@@ -77,7 +88,8 @@ export class Expense extends Validable {
             json.descripcion,
             json.monto,
             json.categoria,
-            json.fecha
+            json.fecha,
+            json.items ?? []
         )
     }
 
@@ -90,6 +102,7 @@ export class Expense extends Validable {
             expense.total,
             expense.category,
             expense.date,
+            expense.items.map((item) => ({ ...item })),
         )
     }
 }

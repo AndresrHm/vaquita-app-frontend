@@ -3,9 +3,11 @@ import { useNavigate } from 'react-router-dom'
 import { ChevronLeft, Receipt, Calendar, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { CATEGORIES } from '@/components/createExpense/categories'
+import CreateExpenseItem from '@/components/createExpense/CreateExpenseItem'
 import FieldWrapper from '@/components/createExpense/FieldWrapper'
 import ParticipantDisplay from '@/components/createExpense/ParticipantDisplay'
 import { Expense } from '@/domain/expense'
+import type { ExpenseItem } from '@/domain/expenseItem'
 import { expenseService } from '@/service/expenseService'
 import ColumnContainer from '@/components/common/columnContainer'
 import PageTitle from '@/components/common/pageTitle'
@@ -62,6 +64,11 @@ export default function CreateManualExpensePage() {
       ? expense.participantIds.filter((v) => v !== id)
       : [...expense.participantIds, id]
     actualizarExpense({ participantIds: newParticipantIds })
+  }
+
+  const handleItemsChange = (items: ExpenseItem[]) => {
+    const totalFromItems = items.reduce((sum, item) => sum + item.cantidad * item.precioUnitario, 0)
+    actualizarExpense({ items, total: items.length > 0 ? totalFromItems : expense.total })
   }
 
   useEffect(() => {
@@ -183,6 +190,8 @@ export default function CreateManualExpensePage() {
                 />
               </div>
             </FieldWrapper>
+                
+                            <CreateExpenseItem items={expense.items} onChange={handleItemsChange} />
 
             {/* Categoría */}
             <FieldWrapper label="Categoría" instruction="Elegí un tipo de gasto">
@@ -193,8 +202,8 @@ export default function CreateManualExpensePage() {
                     type="button"
                     onClick={() => actualizarExpense({ category: category.id })}
                     className={`flex flex-col items-center gap-2 rounded-xl border p-3 transition-all ${expense.category === category.id
-                        ? 'border-primary bg-primary/10 text-primary'
-                        : 'border-border bg-background/70 text-muted-foreground hover:bg-muted'
+                      ? 'border-primary bg-primary/10 text-primary'
+                      : 'border-border bg-background/70 text-muted-foreground hover:bg-muted'
                       }`}
                   >
                     <span className="text-lg">{category.icon}</span>
