@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ChevronLeft, Receipt, Calendar, Users } from 'lucide-react'
+import { Receipt, Calendar, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { CATEGORIES } from '@/components/createExpense/categories'
 import CreateExpenseItem from '@/components/createExpense/CreateExpenseItem'
@@ -56,6 +56,7 @@ export default function CreateManualExpensePage() {
     const expenseClon = new Expense()
     Object.assign(expenseClon, expense)
     Object.assign(expenseClon, cambios)
+    expenseClon.validar()
     setExpense(expenseClon)
   }
 
@@ -67,8 +68,7 @@ export default function CreateManualExpensePage() {
   }
 
   const handleItemsChange = (items: ExpenseItem[]) => {
-    const totalFromItems = items.reduce((sum, item) => sum + item.cantidad * item.precioUnitario, 0)
-    actualizarExpense({ items, total: items.length > 0 ? totalFromItems : expense.total })
+    actualizarExpense({ items })
   }
 
   useEffect(() => {
@@ -190,8 +190,8 @@ export default function CreateManualExpensePage() {
                 />
               </div>
             </FieldWrapper>
-                
-                            <CreateExpenseItem items={expense.items} onChange={handleItemsChange} />
+
+            <CreateExpenseItem items={expense.items} onChange={handleItemsChange} />
 
             {/* Categoría */}
             <FieldWrapper label="Categoría" instruction="Elegí un tipo de gasto">
