@@ -92,7 +92,7 @@ export default function GroupSettingsPage() {
                     {error && <div className="text-sm text-red-600 bg-red-50 p-3 rounded">{error}</div>}
 
                     {/* Group Info */}
-                    <Card className="hover:bg-transparent active:bg-transparent cursor-default">
+                    <Card interactive={false}>
                         <h3 className="text-lg font-semibold mb-3">Información del grupo</h3>
                         <form onSubmit={(e) => e.preventDefault()} className="space-y-4">
                             <div>
@@ -118,10 +118,10 @@ export default function GroupSettingsPage() {
                     </Card>
 
                     {/* Members */}
-                    <Card className="hover:bg-transparent active:bg-transparent cursor-default">
+                    <Card interactive={false}>
                         <div className="flex items-center justify-between mb-3">
                             <h3 className="text-lg font-semibold">Miembros ({members.length})</h3>
-                            <ActionButton icon={<UserPlus className="w-4 h-4" />} onClick={() => { }}>Agregar</ActionButton>
+                            <ActionButton icon={<UserPlus className="w-4 h-4" />} onClick={() => { }} />
                         </div>
                         <div className="space-y-3">
                             {members.map((m) => (
@@ -150,7 +150,7 @@ export default function GroupSettingsPage() {
                     </Card>
 
                     {/* Currency & Preferences */}
-                    <Card className="hover:bg-transparent active:bg-transparent cursor-default">
+                    <Card interactive={false}>
                         <h3 className="text-lg font-semibold mb-3">Moneda y preferencias</h3>
                         <div className="space-y-4">
                             <div>
@@ -171,21 +171,22 @@ export default function GroupSettingsPage() {
                     </Card>
 
                     {/* Gestión del grupo */}
-                    <Card className="hover:bg-transparent active:bg-transparent cursor-default">
+                    <Card interactive={false}>
                         <h3 className="text-lg font-semibold mb-3">Gestión del grupo</h3>
                         <div className="space-y-3">
-                            <Button variant="outline" className="w-full justify-start text-red-400 border-red-200 hover:bg-red-50" disabled>
-                                <LogOut className="w-4 h-4 mr-2" /> Salir del grupo
+                            <Button variant="outline" className="w-full justify-start bg-red-50 border-red-200 text-red-500 hover:bg-red-100 py-2.5 text-base" disabled>
+                                <LogOut className="w-6 h-6 mr-3" /> Salir del grupo
                             </Button>
-                            <Button variant="outline" className="w-full justify-start text-red-400 border-red-200 hover:bg-red-50" disabled>
-                                <AlertTriangle className="w-4 h-4 mr-2" /> Eliminar grupo
+                            <Button variant="outline" className="w-full justify-start bg-red-50 border-red-200 text-red-500 hover:bg-red-100 py-2.5 text-base" disabled>
+                                <AlertTriangle className="w-6 h-6 mr-3" /> Eliminar grupo
                             </Button>
                         </div>
+                        <p className='text-xs text-gray-400 pt-2'>Esto está desactivado porque 1. es el admin, 2. hay deuda pendiente</p>
                     </Card>
 
                     <div className="flex items-center justify-center-safe gap-4">
-                        <ActionButton icon={<Check className="w-5 h-5" />} disabled>Guardar</ActionButton>
-                        <ActionButton variant="secondary" icon={<X className="w-5 h-5" />}>Cancelar</ActionButton>
+                        <ActionButton icon={<Check className="w-5 h-5" />} disabled className="text-base">Guardar</ActionButton>
+                        <ActionButton variant="secondary" icon={<X className="w-5 h-5" />} className="text-base">Cancelar</ActionButton>
                     </div>
 
                 </main>

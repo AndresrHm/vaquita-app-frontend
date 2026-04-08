@@ -11,10 +11,10 @@ export default function ActionButton({
         return (
             <button
                 type="button"
-                className={`inline-flex items-center gap-3 rounded-2xl border border-red-200 bg-background/70 px-3 py-2 text-sm font-medium text-red-400 shadow-sm hover:bg-red-50 transition ${className}`}
+                className={`inline-flex items-center gap-3 rounded-2xl border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-500 shadow-sm hover:bg-red-100 transition ${className}`}
                 {...props}
             >
-                {icon ? <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-red-100 text-red-400">{icon}</span> : null}
+                {icon ? <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-red-100 text-red-500">{icon}</span> : null}
                 {children}
             </button>
         )
