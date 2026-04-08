@@ -2,6 +2,7 @@ import { ChevronLeft, Save, UserPlus, Trash2, LogOut, AlertTriangle, Camera } fr
 import type { ReactNode } from 'react'
 import { Button } from '@/components/ui/button'
 import GroupsContainer from '@/components/groupsPage/GroupsContainer'
+import Card from '@/components/common/card'
 
 const getAvatarUrl = (name: string) =>
     `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}`
@@ -70,6 +71,7 @@ export default function GroupSettingsPage() {
     return (
         <div className="flex flex-col space-y-4 min-h-[calc(100vh-5rem)]">
 
+            {/* Go Back y Título */}
             <div className="-mx-4 rounded-b-2xl rounded-t-none overflow-hidden shadow-sm bg-white">
                 <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between relative">
                     <div className="flex items-center space-x-3">
@@ -77,17 +79,16 @@ export default function GroupSettingsPage() {
                             <ChevronLeft className="w-4 h-4 mr-2" />
                         </Button>
                     </div>
-                    <h2 className="absolute left-1/2 transform -translate-x-1/2 text-lg font-semibold">Ajustes del grupo</h2>
+                    <h2 className="absolute left-1/2 transform -translate-x-1/2 text-xl font-semibold text-foreground">Ajustes del grupo</h2>
                 </div>
             </div>
 
             <GroupsContainer>
-
                 <main className="max-w-2xl mx-auto px-4 py-6 space-y-6">
                     {error && <div className="text-sm text-red-600 bg-red-50 p-3 rounded">{error}</div>}
 
                     {/* Group Info */}
-                    <section className="bg-white rounded-lg shadow p-5">
+                    <Card>
                         <h3 className="text-md font-semibold mb-3">Información del grupo</h3>
                         <form onSubmit={(e) => e.preventDefault()} className="space-y-4">
                             <div>
@@ -105,10 +106,10 @@ export default function GroupSettingsPage() {
                                 </div>
                             </div>
                         </form>
-                    </section>
+                    </Card>
 
                     {/* Members */}
-                    <section className="bg-white rounded-lg shadow p-5">
+                    <Card>
                         <div className="flex items-center justify-between mb-3">
                             <h3 className="text-md font-semibold">Miembros ({members.length})</h3>
                             <Button onClick={() => { }}><UserPlus className="w-4 h-4 mr-2" />Agregar</Button>
@@ -133,10 +134,10 @@ export default function GroupSettingsPage() {
                                 </div>
                             ))}
                         </div>
-                    </section>
+                    </Card>
 
                     {/* Currency & Preferences */}
-                    <section className="bg-white rounded-lg shadow p-5">
+                    <Card>
                         <h3 className="text-md font-semibold mb-3">Moneda y preferencias</h3>
                         <div className="space-y-4">
                             <div>
@@ -154,10 +155,10 @@ export default function GroupSettingsPage() {
                                 <Toggle checked={!!mockGroup.notifications} onChange={() => { }} label="Notificaciones" />
                             </div>
                         </div>
-                    </section>
+                    </Card>
 
                     {/* Danger Zone */}
-                    <section className="bg-white rounded-lg shadow p-5 border-l-4 border-red-400">
+                    <Card>
                         <h3 className="text-md font-semibold mb-3 text-red-600">Zona peligrosa</h3>
                         <div className="space-y-3">
                             <Button variant="outline" className="w-full justify-start" disabled>
@@ -167,7 +168,7 @@ export default function GroupSettingsPage() {
                                 <AlertTriangle className="w-4 h-4 mr-2" /> Eliminar grupo
                             </Button>
                         </div>
-                    </section>
+                    </Card>
 
                     <div>
                         <Button disabled>
@@ -185,6 +186,6 @@ export default function GroupSettingsPage() {
             <Modal open={false} title="Eliminar grupo">
                 Esta acción eliminará el grupo y no se puede deshacer. Asegúrate de tener respaldo.
             </Modal>
-        </div>
+        </div >
     )
 }
