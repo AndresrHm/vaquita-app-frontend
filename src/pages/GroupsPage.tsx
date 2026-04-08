@@ -2,6 +2,7 @@ import GroupCard from '@/components/groupsPage/GroupCard'
 import GroupsSearch from '@/components/groupsPage/GroupsSearch'
 import CreateGroupButton from '@/components/groupsPage/CreateGroupButton'
 import GroupsContainer from '@/components/groupsPage/GroupsContainer'
+import PageTitle from '@/components/common/pageTitle'
 
 const getAvatarUrl = (name: string) =>
   `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}`
@@ -34,14 +35,14 @@ export default function GroupsPage() {
     // Título y search
     <div className="flex flex-col space-y-4 min-h-[calc(100vh-5rem)]">
 
-      <div className="rounded-b-2xl rounded-t-none border border-border bg-card/70 p-3 shadow-sm backdrop-blur-xl space-y-4">
+      <PageTitle>
         <div className="pl-3">
           <h2 className="text-xl font-semibold text-foreground">Tenés deudas</h2>
           <p className="mt-1 text-sm text-muted-foreground">Debes $8,430</p>
         </div>
 
         <GroupsSearch />
-      </div>
+      </PageTitle>
 
       {/* Contenedor de groupCards - estira para ocupar el espacio restante */}
       <GroupsContainer>

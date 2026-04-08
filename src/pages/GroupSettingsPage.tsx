@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { Button } from '@/components/ui/button'
 import GroupsContainer from '@/components/groupsPage/GroupsContainer'
 import Card from '@/components/common/card'
+import PageTitle from '@/components/common/pageTitle'
 
 const getAvatarUrl = (name: string) =>
     `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}`
@@ -71,9 +72,8 @@ export default function GroupSettingsPage() {
     return (
         <div className="flex flex-col space-y-4 min-h-[calc(100vh-5rem)]">
 
-            {/* Go Back y Título */}
-            <div className="-mx-4 rounded-b-2xl rounded-t-none overflow-hidden shadow-sm bg-white">
-                <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between relative">
+            <PageTitle>
+                <div className="max-w-2xl mx-auto px-4 flex items-center justify-between relative">
                     <div className="flex items-center space-x-3">
                         <Button variant="ghost" onClick={() => { }}>
                             <ChevronLeft className="w-4 h-4 mr-2" />
@@ -81,10 +81,10 @@ export default function GroupSettingsPage() {
                     </div>
                     <h2 className="absolute left-1/2 transform -translate-x-1/2 text-xl font-semibold text-foreground">Ajustes del grupo</h2>
                 </div>
-            </div>
+            </PageTitle>
 
             <GroupsContainer>
-                <main className="max-w-2xl mx-auto px-4 py-6 space-y-6">
+                <main className="max-w-2xl mx-auto space-y-6">
                     {error && <div className="text-sm text-red-600 bg-red-50 p-3 rounded">{error}</div>}
 
                     {/* Group Info */}
