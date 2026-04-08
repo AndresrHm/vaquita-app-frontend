@@ -1,5 +1,8 @@
 import React from 'react'
 
+// Este contenedor es ideal para usarlo como contenedor principal luego del header
+// Ocupa todo el alto disponible, es muy bueno para meter cards dentro
+
 export default function GroupsContainer({
     children,
     className = ''
