@@ -166,7 +166,7 @@ export default function GroupDetailPage() {
 
             </ColumnContainer>
 
-            <CreateExpense onClick={() => { /* placeholder: abrir crear gasto */ }} />
+            <CreateExpense onClick={() => navigate(`/groups/${group.id}/expense/create`)} />
         </div>
     )
 }

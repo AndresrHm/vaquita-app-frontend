@@ -12,7 +12,7 @@ export default function CreateExpense({ onClick }: { onClick?: () => void }) {
                 <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                     <PlusCircle className="h-5 w-5" />
                 </span>
-                Agregar gasto
+                Crear gasto
             </button>
         </div>
     )
