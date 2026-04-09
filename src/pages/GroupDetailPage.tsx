@@ -1,47 +1,113 @@
-import { useParams, useNavigate } from 'react-router-dom'
+/* eslint-disable no-undef */
+import { useParams } from 'react-router-dom'
 import { useState } from 'react'
-import { useEffect } from 'react'
 import ColumnContainer from '@/components/common/columnContainer'
-import { ChevronLeft, Settings } from 'lucide-react'
-import IconNavButton from '@/components/common/IconNavButton'
 import { useOnInit } from '@/customHooks/hooks'
-import { obtenerDetalleGrupo } from '@/service/groups'
-import type { GrupoDetalleDTO } from '@/domain/Grupo'
+import { obtenerDetalleGrupo, obtenerGastosGrupo } from '@/service/groups'
+import type { GrupoDetalleDTO, GrupoGastosPorAnioDTO } from '@/domain/Grupo'
 import GroupHeader from '@/components/groupsPage/GroupHeader'
+import { useRef, useEffect } from 'react'
+import ExpensesList, { type ExpensesByMonth } from '@/components/groupsPage/ExpensesList'
+import ExpenseItem, { type Expense } from '@/components/groupsPage/ExpenseItem'
 
 export default function GroupDetailPage() {
     const { groupId } = useParams()
-    const navigate = useNavigate()
-
     const grupoId = Number(groupId)
 
+    // Detalle del grupo (info básica)
     const [groupDetail, setGroupDetail] = useState<GrupoDetalleDTO | null>(null)
-    const [accentGradient, setAccentGradient] = useState<string>('linear-gradient(to bottom, rgba(0,0,0,0.05), rgba(0,0,0,0.10))')
-    const [badgeGradient, setBadgeGradient] = useState<string>('linear-gradient(to right, rgba(255,255,255,0.92), rgba(255,255,255,0.06))')
-    const [badgeTextColor, setBadgeTextColor] = useState<string>('#000')
-    const [chipVariant, setChipVariant] = useState<'light' | 'dark'>('light')
+
+    // Gastos del grupo
+    const [gastos, setGastos] = useState<GrupoGastosPorAnioDTO[]>([])
+    const [page, setPage] = useState(0)
+    const [hasNext, setHasNext] = useState(true)
+    const [loadingGastos, setLoadingGastos] = useState(false)
+
+    // Para el infinite scroll
+    const loadMoreRef = useRef<HTMLDivElement | null>(null)
+
+    useEffect(() => {
+        if (!loadMoreRef.current) return
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting) {
+                    void fetchGastos(page)
+                }
+            },
+            { threshold: 1 }
+        )
+
+        observer.observe(loadMoreRef.current)
+
+        return () => observer.disconnect()
+    }, [page, hasNext, loadingGastos])
+
+    const fetchGastos = async (pageToFetch: number) => {
+        if (loadingGastos || !hasNext) return
+
+        setLoadingGastos(true)
+
+        try {
+            const data = await obtenerGastosGrupo(grupoId, pageToFetch, 10)
+
+            setGastos(prev => mergeGastos(prev, data.content))
+            setHasNext(data.hasNext)
+            setPage(data.page + 1)
+        } catch (error) {
+            console.log(error)
+        } finally {
+            setLoadingGastos(false)
+        }
+    }
 
     useOnInit(() => {
-        // TODO
-        // if (Number.isNaN(grupoId)) {
-        //     navigate('/404')
-        //     return
-        // }
+        if (Number.isNaN(grupoId)) return
 
-        console.log('Grupo ID:', grupoId)
-
-        const fetchGroupDetail = async () => {
+        const fetchAll = async () => {
             try {
-                const data = await obtenerDetalleGrupo(Number(grupoId))
+                const data = await obtenerDetalleGrupo(grupoId)
                 setGroupDetail(data)
+
+                await fetchGastos(0)
             } catch (error) {
                 console.log(error)
             }
         }
 
-        void fetchGroupDetail()
+        void fetchAll()
     }, [grupoId])
 
+    const mergeGastos = (
+        prev: GrupoGastosPorAnioDTO[],
+        incoming: GrupoGastosPorAnioDTO[]
+    ): GrupoGastosPorAnioDTO[] => {
+        const result = [...prev]
+
+        incoming.forEach((newYear) => {
+            const existingYear = result.find(y => y.year === newYear.year)
+
+            if (!existingYear) {
+                result.push(newYear)
+                return
+            }
+
+            newYear.months.forEach((newMonth) => {
+                const existingMonth = existingYear.months.find(m => m.month === newMonth.month)
+
+                if (!existingMonth) {
+                    existingYear.months.push(newMonth)
+                    return
+                }
+
+                existingMonth.expenses.push(...newMonth.expenses)
+            })
+        })
+
+        return result
+    }
+
+    // Skeleton mientras carga el detalle del grupo
     if (groupDetail === null) {
         return (
             <div className="space-y-4">
@@ -68,6 +134,42 @@ export default function GroupDetailPage() {
                 <div className="p-4">
                     <p className="text-sm text-foreground">{groupDetail.descripcion}</p>
                     <p className="mt-2 text-sm text-foreground">Integrantes: {groupDetail.cantidadIntegrantes}</p>
+                </div>
+
+                <div className="mt-4 space-y-6">
+                    {gastos.length === 0 ? (
+                        <div className="p-4 text-sm text-muted-foreground">Aún no hay gastos</div>
+                    ) : (
+                        gastos.map((yearGroup) => {
+                            const months: ExpensesByMonth = yearGroup.months.map((m) => ({
+                                month: m.month,
+                                expenses: m.expenses.map((e) => ({
+                                    id: String(e.id),
+                                    date: { day: e.day },
+                                    title: e.title,
+                                    amount: e.amount,
+                                    currency: e.currency,
+                                    paymentType: e.paymentType as Expense['paymentType'],
+                                    imageUrl: e.imageUrl,
+                                })),
+                            }))
+
+                            return (
+                                <div key={yearGroup.year}>
+                                    <h2 className="rounded-md bg-muted/80 px-3 py-1 text-lg font-semibold text-muted-foreground">
+                                        {yearGroup.year}
+                                    </h2>
+                                    <ExpensesList data={months} />
+                                </div>
+                            )
+                        })
+                    )}
+
+                    {hasNext && (
+                        <div ref={loadMoreRef} className="h-10 flex items-center justify-center">
+                            {loadingGastos && <span>Cargando más...</span>}
+                        </div>
+                    )}
                 </div>
             </ColumnContainer>
         </div>
