@@ -1,18 +1,20 @@
 /* eslint-disable no-undef */
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { useState } from 'react'
 import ColumnContainer from '@/components/common/columnContainer'
 import { useOnInit } from '@/customHooks/hooks'
 import { obtenerDetalleGrupo, obtenerGastosGrupo } from '@/service/groups'
 import type { GrupoDetalleDTO, GrupoGastosPorAnioDTO } from '@/domain/Grupo'
 import GroupHeader from '@/components/groupsPage/GroupHeader'
-import { useRef, useEffect } from 'react'
 import ExpensesList, { type ExpensesByMonth } from '@/components/groupsPage/ExpensesList'
 import ExpenseItem, { type Expense } from '@/components/groupsPage/ExpenseItem'
+import CreateExpense from '@/components/groupsPage/CreateExpense'
 
 export default function GroupDetailPage() {
     const { groupId } = useParams()
     const grupoId = Number(groupId)
+    const navigate = useNavigate()
+
 
     // Detalle del grupo (info básica)
     const [groupDetail, setGroupDetail] = useState<GrupoDetalleDTO | null>(null)
@@ -22,26 +24,6 @@ export default function GroupDetailPage() {
     const [page, setPage] = useState(0)
     const [hasNext, setHasNext] = useState(true)
     const [loadingGastos, setLoadingGastos] = useState(false)
-
-    // Para el infinite scroll
-    const loadMoreRef = useRef<HTMLDivElement | null>(null)
-
-    useEffect(() => {
-        if (!loadMoreRef.current) return
-
-        const observer = new IntersectionObserver(
-            (entries) => {
-                if (entries[0].isIntersecting) {
-                    void fetchGastos(page)
-                }
-            },
-            { threshold: 1 }
-        )
-
-        observer.observe(loadMoreRef.current)
-
-        return () => observer.disconnect()
-    }, [page, hasNext, loadingGastos])
 
     const fetchGastos = async (pageToFetch: number) => {
         if (loadingGastos || !hasNext) return
@@ -100,7 +82,11 @@ export default function GroupDetailPage() {
                     return
                 }
 
-                existingMonth.expenses.push(...newMonth.expenses)
+                const existingIds = new Set(existingMonth.expenses.map(e => e.id))
+
+                const filteredExpenses = newMonth.expenses.filter(e => !existingIds.has(e.id))
+
+                existingMonth.expenses.push(...filteredExpenses)
             })
         })
 
@@ -166,12 +152,20 @@ export default function GroupDetailPage() {
                     )}
 
                     {hasNext && (
-                        <div ref={loadMoreRef} className="h-10 flex items-center justify-center">
-                            {loadingGastos && <span>Cargando más...</span>}
+                        <div className="flex justify-center py-4">
+                            <button
+                                onClick={() => void fetchGastos(page)}
+                                disabled={loadingGastos}
+                                className="px-4 py-2 rounded-md bg-primary text-primary-foreground disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {loadingGastos ? 'Cargando...' : 'Cargar más'}
+                            </button>
                         </div>
                     )}
                 </div>
             </ColumnContainer>
+
+            <CreateExpense onClick={() => navigate(`/groups/${groupDetail.id}/expense/create`)} />
         </div>
     )
 }
