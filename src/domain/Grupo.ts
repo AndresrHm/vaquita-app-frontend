@@ -1,3 +1,6 @@
+import type { Expense } from './expense'
+import type { Usuario } from './usuario'
+
 export interface UsuarioDTO {
   id: number
   nombre: string
@@ -18,6 +21,12 @@ export interface GrupoCreacionDTO {
   imagen: string
   integrantesIds: number[]
 }
+
+export interface GrupoNombreIdDTO {
+  id: number
+  nombre: string
+}
+
 
 export interface PageResponse<T> {
   content: T[]
@@ -56,7 +65,14 @@ export class Grupo {
     this.integrantes.push(nuevo)
   }
 
-  registrarGasto(gasto: Gasto): void {
+  registrarGasto(gasto: Expense): void {
     // TODO
+  }
+
+  static fromNombreIdJSON(json: GrupoNombreIdDTO): Grupo {
+    const grupo = new Grupo()
+    grupo.id = json.id
+    grupo.nombre = json.nombre
+    return grupo
   }
 }

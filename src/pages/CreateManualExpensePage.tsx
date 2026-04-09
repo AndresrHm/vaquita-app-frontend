@@ -13,24 +13,22 @@ import ColumnContainer from '@/components/common/columnContainer'
 import PageTitle from '@/components/common/pageTitle'
 import { usuarioService } from '@/service/usuarioService'
 import type { Usuario } from '@/domain/usuario'
+import type { Grupo } from '@/domain/Grupo'
+import { obtenerGruposDeUsuario } from '@/service/groups'
+import { useOnInit } from '@/customHooks/hooks'
 
 // Mock de usuario actual
 const mockCurrentUser = { id: 1, name: 'Juan' }
 
-// Mock de grupos (esto después vendrá del back)
-const mockUserGroups = [
-  { id: 1, name: 'Centro de Estudiantes', emoji: '📚' },
-  { id: 2, name: 'Los Pibes', emoji: '⚽' },
-  { id: 3, name: 'Depto Palermo', emoji: '🏠' },
-  { id: 4, name: 'Asado del Finde', emoji: '🔥' },
-]
 
 export default function CreateManualExpensePage() {
   const navigate = useNavigate()
 
   const [expense, setExpense] = useState(new Expense(undefined, mockCurrentUser.id))
   const [participants, setParticipants] = useState<Usuario[]>([])
+  const [groups, setGroups] = useState<Grupo[]>([])
   const [isParticipantsOpen, setIsParticipantsOpen] = useState(false)
+  const [isLoadingParticipants, setIsLoadingParticipants] = useState(false)
 
   const actualizarExpense = (cambios: Partial<Expense>) => {
     const expenseClon = new Expense()
@@ -51,31 +49,54 @@ export default function CreateManualExpensePage() {
     actualizarExpense({ items })
   }
 
+  const obtenerGrupos = async () => {
+    try {
+      const gruposBack = await obtenerGruposDeUsuario(mockCurrentUser.id)
+      setGroups(gruposBack)
+      console.log(groups)
+    } catch (error: unknown) {
+      console.log(error)
+    }
+  }
+
+  useOnInit(() => {
+    obtenerGrupos()
+  })
+
+
   useEffect(() => {
+    let isMounted = true
+
     const cargarYSetearParticipantes = async () => {
-      if (expense.groupId) {
-        try {
-          // 1. Buscamos los usuarios reales del grupo
-          const participantesBack = await usuarioService.obtenerUsuariosDeGrupo(expense.groupId)
+      if (!expense.groupId) {
+        setParticipants([])
+        actualizarExpense({ participantIds: [] })
+        return
+      }
+
+      try {
+        setIsLoadingParticipants(true)
+        const participantesBack = await usuarioService.obtenerUsuariosDeGrupo(expense.groupId)
+
+        if (isMounted) {
           setParticipants(participantesBack)
 
-          // 2. Por defecto, seleccionamos a todos los integrantes para el gasto
           const idsValidos = participantesBack
             .map((p) => p.id)
             .filter((id): id is number => id !== undefined)
 
           actualizarExpense({ participantIds: idsValidos })
-        } catch (error) {
-          console.error('Error al actualizar participantes:', error)
         }
-      } else {
-        // Si no hay grupo, limpiamos todo
-        setParticipants([])
-        actualizarExpense({ participantIds: [] })
+      } catch (error) {
+        console.error('Error al actualizar participantes:', error)
+      } finally {
+        if (isMounted) setIsLoadingParticipants(false)
       }
     }
 
     cargarYSetearParticipantes()
+
+    return () => { isMounted = false }
   }, [expense.groupId])
 
 
@@ -128,14 +149,13 @@ export default function CreateManualExpensePage() {
                 <select
                   value={expense.groupId || ''}
                   onChange={(e) => actualizarExpense({ groupId: Number(e.target.value) })}
-                  className="w-full bg-transparent text-sm text-foreground outline-none appearance-none cursor-pointer"
-                >
+                  className="w-full bg-transparent text-sm text-foreground outline-none appearance-none cursor-pointer">
                   <option value="" disabled className="bg-card text-muted-foreground">
                     Seleccioná un grupo
                   </option>
-                  {mockUserGroups.map((group) => (
+                  {groups.map((group) => (
                     <option key={group.id} value={String(group.id)} className="bg-card text-foreground">
-                      {group.emoji} {group.name}
+                      {group.nombre}
                     </option>
                   ))}
                 </select>
@@ -147,28 +167,43 @@ export default function CreateManualExpensePage() {
             <FieldWrapper label="¿Quiénes participan del gasto?">
               <div className="relative">
                 <div
-                  className={`relative flex items-center gap-3 rounded-xl border border-border bg-background/70 px-3 py-2.5 cursor-pointer ${!expense.groupId ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  onClick={() => expense.groupId && setIsParticipantsOpen(!isParticipantsOpen)}
+                  className={`relative flex items-center gap-3 rounded-xl border border-border bg-background/70 px-3 py-2.5 cursor-pointer 
+        ${(!expense.groupId || isLoadingParticipants) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  onClick={() => expense.groupId && !isLoadingParticipants && setIsParticipantsOpen(!isParticipantsOpen)}
                 >
-                  <Users className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <Users className={`h-4 w-4 text-muted-foreground shrink-0 ${isLoadingParticipants ? 'animate-pulse' : ''}`} />
                   <span className="w-full text-sm text-foreground">
-                    <ParticipantDisplay participants={participants} selectedIds={expense.participantIds} />
+                    {isLoadingParticipants ? (
+                      'Cargando integrantes...'
+                    ) : (
+                      <ParticipantDisplay participants={participants} selectedIds={expense.participantIds} />
+                    )}
                   </span>
-                  <div className="absolute right-3 pointer-events-none text-muted-foreground text-[10px]">▼</div>
+                  <div className="absolute right-3 pointer-events-none text-muted-foreground text-[10px]">
+                    {isLoadingParticipants ? '...' : '▼'}
+                  </div>
                 </div>
-                {isParticipantsOpen && expense.groupId && (
+
+                {/* Dropdown de participantes */}
+                {isParticipantsOpen && expense.groupId && !isLoadingParticipants && (
                   <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-xl shadow-lg z-10 max-h-40 overflow-y-auto">
-                    {participants.map((participant) => (
-                      <label key={participant.id} className="flex items-center gap-2 px-3 py-2 hover:bg-muted cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={expense.participantIds.includes(participant.id!)}
-                          onChange={() => handleToggleParticipant(participant.id!)}
-                          className="rounded"
-                        />
-                        <span className="text-sm">{participant.nombre}</span>
-                      </label>
-                    ))}
+                    {participants.length > 0 ? (
+                      participants.map((participant) => (
+                        <label key={participant.id} className="flex items-center gap-2 px-3 py-2 hover:bg-muted cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={expense.participantIds.includes(participant.id!)}
+                            onChange={() => handleToggleParticipant(participant.id!)}
+                            className="rounded border-primary text-primary focus:ring-primary"
+                          />
+                          <span className="text-sm">{participant.nombre}</span>
+                        </label>
+                      ))
+                    ) : (
+                      <div className="px-3 py-2 text-xs text-muted-foreground text-center italic">
+                        El grupo no tiene integrantes
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
