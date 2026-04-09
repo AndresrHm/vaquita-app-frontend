@@ -1,11 +1,13 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
+import { useEffect } from 'react'
 import ColumnContainer from '@/components/common/columnContainer'
 import { ChevronLeft, Settings } from 'lucide-react'
 import IconNavButton from '@/components/common/IconNavButton'
 import { useOnInit } from '@/customHooks/hooks'
 import { obtenerDetalleGrupo } from '@/service/groups'
 import type { GrupoDetalleDTO } from '@/domain/Grupo'
+import GroupHeader from '@/components/groupsPage/GroupHeader'
 
 export default function GroupDetailPage() {
     const { groupId } = useParams()
@@ -14,6 +16,10 @@ export default function GroupDetailPage() {
     const grupoId = Number(groupId)
 
     const [groupDetail, setGroupDetail] = useState<GrupoDetalleDTO | null>(null)
+    const [accentGradient, setAccentGradient] = useState<string>('linear-gradient(to bottom, rgba(0,0,0,0.05), rgba(0,0,0,0.10))')
+    const [badgeGradient, setBadgeGradient] = useState<string>('linear-gradient(to right, rgba(255,255,255,0.92), rgba(255,255,255,0.06))')
+    const [badgeTextColor, setBadgeTextColor] = useState<string>('#000')
+    const [chipVariant, setChipVariant] = useState<'light' | 'dark'>('light')
 
     useOnInit(() => {
         // TODO
@@ -56,22 +62,7 @@ export default function GroupDetailPage() {
 
     return (
         <div className="space-y-4">
-            <div className="-mx-4 rounded-b-2xl rounded-t-none overflow-hidden shadow-sm">
-                <div className="relative h-44 w-full">
-                    <img src={groupDetail.imagenUrl} alt={groupDetail.nombre} className="absolute inset-0 h-full w-full object-cover" />
-                    <div className="absolute inset-0 bg-gradient-to-b from-black/20 to-black/30" />
-
-                    <div className="absolute inset-x-4 top-3 flex items-center justify-between">
-                        <IconNavButton ariaLabel="Volver" onClick={() => navigate(-1)} icon={<ChevronLeft className="h-5 w-5" />} />
-
-                        <IconNavButton ariaLabel="Ajustes" to={`/groups/${groupDetail.id}/settings`} icon={<Settings className="h-5 w-5" />} />
-                    </div>
-
-                    <div className="absolute left-4 bottom-4">
-                        <h1 className="text-xl font-semibold text-white">{groupDetail.nombre}</h1>
-                    </div>
-                </div>
-            </div>
+            <GroupHeader groupDetail={groupDetail} />
 
             <ColumnContainer>
                 <div className="p-4">
