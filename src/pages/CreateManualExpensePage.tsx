@@ -11,6 +11,8 @@ import type { ExpenseItem } from '@/domain/expenseItem'
 import { expenseService } from '@/service/expenseService'
 import ColumnContainer from '@/components/common/columnContainer'
 import PageTitle from '@/components/common/pageTitle'
+import { usuarioService } from '@/service/usuarioService'
+import type { Usuario } from '@/domain/usuario'
 
 // Mock de usuario actual
 const mockCurrentUser = { id: 1, name: 'Juan' }
@@ -23,33 +25,11 @@ const mockUserGroups = [
   { id: 4, name: 'Asado del Finde', emoji: '🔥' },
 ]
 
-// Mock de participantes por grupo (esto después vendrá del back)
-const participantsByGroup: Record<number, { id: number; name: string }[]> = {
-  1: [
-    { id: 1, name: 'Juan' },
-    { id: 2, name: 'María' },
-    { id: 3, name: 'Pedro' },
-  ],
-  2: [
-    { id: 4, name: 'Ana' },
-    { id: 5, name: 'Luis' },
-  ],
-  3: [
-    { id: 6, name: 'Carlos' },
-    { id: 7, name: 'Sofia' },
-    { id: 8, name: 'Diego' },
-  ],
-  4: [
-    { id: 9, name: 'Laura' },
-    { id: 10, name: 'Miguel' },
-  ],
-}
-
 export default function CreateManualExpensePage() {
   const navigate = useNavigate()
 
   const [expense, setExpense] = useState(new Expense(undefined, mockCurrentUser.id))
-  const [participants, setParticipants] = useState<{ id: number; name: string }[]>([])
+  const [participants, setParticipants] = useState<Usuario[]>([])
   const [isParticipantsOpen, setIsParticipantsOpen] = useState(false)
 
   const actualizarExpense = (cambios: Partial<Expense>) => {
@@ -72,15 +52,32 @@ export default function CreateManualExpensePage() {
   }
 
   useEffect(() => {
-    if (expense.groupId) {
-      const groupParticipants = participantsByGroup[expense.groupId] || []
-      setParticipants(groupParticipants)
-      actualizarExpense({ participantIds: groupParticipants.map((participant) => participant.id) })
-    } else {
-      setParticipants([])
-      actualizarExpense({ participantIds: [] })
+    const cargarYSetearParticipantes = async () => {
+      if (expense.groupId) {
+        try {
+          // 1. Buscamos los usuarios reales del grupo
+          const participantesBack = await usuarioService.obtenerUsuariosDeGrupo(expense.groupId)
+          setParticipants(participantesBack)
+
+          // 2. Por defecto, seleccionamos a todos los integrantes para el gasto
+          const idsValidos = participantesBack
+            .map((p) => p.id)
+            .filter((id): id is number => id !== undefined)
+
+          actualizarExpense({ participantIds: idsValidos })
+        } catch (error) {
+          console.error('Error al actualizar participantes:', error)
+        }
+      } else {
+        // Si no hay grupo, limpiamos todo
+        setParticipants([])
+        actualizarExpense({ participantIds: [] })
+      }
     }
+
+    cargarYSetearParticipantes()
   }, [expense.groupId])
+
 
   const crearExpense = async () => {
     const expenseParaValidar = Expense.clone(expense)
@@ -91,7 +88,7 @@ export default function CreateManualExpensePage() {
       try {
         console.log(expense)
         console.log(expense.toJSON())
-        expenseService.createExpense(expense)
+        await expenseService.createExpense(expense)
         navigate('/')
       } catch (error: unknown) {
         console.error('Error creando gasto:', error)
@@ -165,11 +162,11 @@ export default function CreateManualExpensePage() {
                       <label key={participant.id} className="flex items-center gap-2 px-3 py-2 hover:bg-muted cursor-pointer">
                         <input
                           type="checkbox"
-                          checked={expense.participantIds.includes(participant.id)}
-                          onChange={() => handleToggleParticipant(participant.id)}
+                          checked={expense.participantIds.includes(participant.id!)}
+                          onChange={() => handleToggleParticipant(participant.id!)}
                           className="rounded"
                         />
-                        <span className="text-sm">{participant.name}</span>
+                        <span className="text-sm">{participant.nombre}</span>
                       </label>
                     ))}
                   </div>

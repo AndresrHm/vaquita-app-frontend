@@ -1,10 +1,7 @@
-interface Participant {
-  id: number
-  name: string
-}
+import type { Usuario } from '@/domain/usuario'
 
 interface ParticipantDisplayProps {
-  participants: Participant[]
+  participants: Usuario[]
   selectedIds: number[]
 }
 
@@ -23,14 +20,14 @@ export default function ParticipantDisplay({ participants, selectedIds }: Partic
 
   if (selectedIds.length > participants.length / 2) {
     const excludedNames = participants
-      .filter(p => !selectedIds.includes(p.id))
-      .map(p => p.name)
+      .filter(p => !selectedIds.includes(p.id!))
+      .map(p => p.nombre)
       .join(', ')
     return <span>Todos excepto {excludedNames}</span>
   }
 
   const selectedNames = selectedIds
-    .map(id => participants.find(p => p.id === id)?.name)
+    .map(id => participants.find(p => p.id === id)?.nombre)
     .filter(Boolean)
     .join(', ')
   return <span>{selectedNames}</span>
