@@ -115,14 +115,7 @@ export default function CreateExpense({ groupId, onBack }: Props) {
 
     return (
         <div className="flex flex-col space-y-4">
-            <PageTitle>
-                <div className="max-w-2xl mx-auto px-4 flex items-center justify-between relative">
-                    <div className="flex items-center space-x-3">
-                        <IconNavButton ariaLabel="Volver" onClick={() => window.history.back()} icon={<ChevronLeft className="h-5 w-5" />} />
-                    </div>
-                    <h2 className="absolute left-1/2 transform -translate-x-1/2 text-xl font-semibold text-foreground">Nuevo gasto</h2>
-                </div>
-            </PageTitle>
+            <PageTitle title='Nuevo gasto' subtitle='Registrá un movimiento rápido' onBack={() => window.history.back()} />
 
             <ColumnContainer>
                 <div className="space-y-4 pt-2">
