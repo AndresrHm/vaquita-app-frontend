@@ -2,15 +2,27 @@ import React from 'react'
 import { PlusCircle } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
+type Props = {
+    children?: React.ReactNode
+    fixed?: boolean
+    className?: string
+}
+
 export default function CreateGroupButton({
     children = 'Crear grupo',
-}: {
-    children?: React.ReactNode
-}) {
+    fixed = true,
+    className = '',
+}: Props) {
     const navigate = useNavigate()
 
     return (
-        <div className="fixed right-4 bottom-24 z-50">
+        <div
+            className={
+                fixed
+                    ? `fixed right-4 bottom-24 z-50 ${className}`
+                    : className
+            }
+        >
             <button
                 type="button"
                 onClick={() => navigate('/groups/new')}

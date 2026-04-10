@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { type GrupoDTO, type GrupoCreacionDTO, type GroupDetailPageResponse, Grupo, type GrupoNombreIdDTO, type GrupoDetalleDTO, type GrupoGastosPorAnioDTO } from '@/domain/Grupo'
+import { type GrupoDTO, type GrupoCreacionDTO, type GroupDetailPageResponse, Grupo, type GrupoNombreIdDTO, type GrupoDetalleDTO, type GrupoGastosPorAnioDTO, type GrupoCardDTO } from '@/domain/Grupo'
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080'
 
@@ -11,8 +11,8 @@ export async function obtenerGrupos(
   usuarioId: number,
   page: number,
   size: number,
-): Promise<GroupDetailPageResponse<GrupoDTO>> {
-  const { data } = await api.get<GroupDetailPageResponse<GrupoDTO>>('/grupo', {
+): Promise<GroupDetailPageResponse<GrupoCardDTO>> {
+  const { data } = await api.get<GroupDetailPageResponse<GrupoCardDTO>>('/grupo', {
     params: { usuarioId, page, size },
   })
   return data

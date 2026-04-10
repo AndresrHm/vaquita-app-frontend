@@ -1,6 +1,7 @@
 import type { Expense } from './expense'
 import type { Usuario } from './usuario'
 
+// ---------- Creación de grupo
 export interface UsuarioDTO {
   id: number
   nombre: string
@@ -113,4 +114,12 @@ export type GroupDetailPageResponse<T> = {
   totalElements: number
   totalPages: number
   hasNext: boolean
+}
+
+// --------------------------- Types para groups (listado de grupos)
+export type GrupoCardDTO = {
+  id: number
+  nombre: string
+  imagenUrl: string
+  estadoGrupo: string
 }

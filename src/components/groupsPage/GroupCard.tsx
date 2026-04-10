@@ -1,10 +1,10 @@
 import { Link } from 'react-router-dom'
 
 type Group = {
-  id: string
-  name: string
-  status: string
-  imageUrl?: string
+  id: number
+  nombre: string
+  estadoGrupo: string
+  imagenUrl?: string
 }
 
 export default function GroupCard({ group }: { group: Group }) {
@@ -15,15 +15,15 @@ export default function GroupCard({ group }: { group: Group }) {
     >
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          {group.imageUrl ? (
+          {group.imagenUrl ? (
             <img
-              src={group.imageUrl}
-              alt={group.name}
+              src={group.imagenUrl}
+              alt={group.nombre}
               className="h-12 w-14 shrink-0 rounded-md border border-border object-cover"
             />
           ) : (
             <div className="flex h-12 w-14 shrink-0 items-center justify-center rounded-md border border-border bg-muted/80 text-sm font-semibold text-muted-foreground">
-              {group.name
+              {group.nombre
                 .trim()
                 .split(/\s+/)
                 .slice(0, 2)
@@ -33,8 +33,8 @@ export default function GroupCard({ group }: { group: Group }) {
           )}
 
           <div>
-            <div className="text-sm font-semibold text-foreground">{group.name}</div>
-            <div className="mt-1 text-xs text-muted-foreground">{group.status}</div>
+            <div className="text-sm font-semibold text-foreground">{group.nombre}</div>
+            <div className="mt-1 text-xs text-muted-foreground">{group.estadoGrupo}</div>
           </div>
         </div>
 
