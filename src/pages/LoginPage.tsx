@@ -1,16 +1,44 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
+import { usuarioService } from '@/service/usuarioService'
+ // Verificá que la ruta sea correcta
 
 export default function LoginPage() {
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [status, setStatus] = useState<string | null>(null)
+  const [isError, setIsError] = useState(false) // Nuevo estado para manejar errores
 
   const isValid = useMemo(() => {
     return email.trim().length > 3 && password.trim().length >= 6
   }, [email, password])
+
+  // Función para manejar el envío del formulario
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!isValid) return
+
+    setIsError(false)
+    setStatus('Verificando credenciales...')
+
+    try {
+      // Llamamos al servicio con los datos del formulario
+      // Recordá que el backend espera "contrasena"
+      await usuarioService.login({ email, contrasena: password })
+
+      setStatus('¡Ingreso exitoso! Redirigiendo...')
+      
+      // Si todo sale bien, esperamos un momento y navegamos
+      setTimeout(() => navigate('/groups'), 1000) 
+
+    } catch (err: any) {
+      // Si el backend devuelve "Email o contraseña incorrectos", cae acá
+      setIsError(true)
+      setStatus(err.message)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-background px-4 py-6 flex items-center">
@@ -21,17 +49,7 @@ export default function LoginPage() {
             Accedé a Vaquita para administrar grupos y deudas.
           </p>
 
-          <form
-            className="mt-6 space-y-4"
-            onSubmit={(e) => {
-              e.preventDefault()
-              if (!isValid) return
-
-              // Mock: simulamos login exitoso.
-              setStatus('Login OK (mock). Redirigiendo...')
-              setTimeout(() => navigate('/groups'), 650)
-            }}
-          >
+          <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
             <label className="block">
               <span className="text-sm font-medium text-foreground">Email</span>
               <input
@@ -57,12 +75,16 @@ export default function LoginPage() {
               />
             </label>
 
-            <Button className="w-full rounded-xl" disabled={!isValid} type="submit">
+            <Button className="w-full rounded-xl" type="submit">
               Entrar
             </Button>
 
             {status ? (
-              <div className="rounded-xl border border-border bg-background/70 px-3 py-2 text-sm text-muted-foreground">
+              <div className={`rounded-xl border px-3 py-2 text-sm ${
+                isError 
+                  ? 'border-red-500 bg-red-50 text-red-600' 
+                  : 'border-border bg-background/70 text-muted-foreground'
+              }`}>
                 {status}
               </div>
             ) : null}
@@ -79,4 +101,3 @@ export default function LoginPage() {
     </div>
   )
 }
-

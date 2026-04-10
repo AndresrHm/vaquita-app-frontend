@@ -48,6 +48,17 @@ export interface UsuarioRegistradoDTO {
     contrasena: string;
 }
 
+export interface UsuarioLoginDTO {
+    email: string
+    contrasena: string
+}
+
+export interface UsuarioLogueadoDTO {
+    token: string
+    nombre: string
+    email: string
+}
+
 export interface UsuarioNombreIdDTO {
     id: number,
     nombre: string,

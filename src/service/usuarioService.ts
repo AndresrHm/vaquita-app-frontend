@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { Usuario, type UsuarioNombreIdDTO } from '../domain/usuario'
+import { Usuario, type UsuarioLoginDTO, type UsuarioLogueadoDTO, type UsuarioNombreIdDTO } from '../domain/usuario'
 
 const API_URL = 'http://localhost:8080/auth'
 
@@ -16,6 +16,22 @@ export const usuarioService = {
             return Usuario.fromJSON(data)
         } catch (error: any) {
             // Agregamos el return para que TS vea que el flujo termina aquí
+            return manejarError(error)
+        }
+    },
+
+    async login(credenciales: UsuarioLoginDTO): Promise<UsuarioLogueadoDTO> {
+        try {
+            const { data } = await axios.post<UsuarioLogueadoDTO>(`${API_URL}/login`, credenciales)
+            
+            if (data.token) {
+                localStorage.setItem('token', data.token)
+                localStorage.setItem('user_name', data.nombre) 
+                localStorage.setItem('user_email', data.email)
+            }
+            
+            return data
+        } catch (error: any) {
             return manejarError(error)
         }
     },
