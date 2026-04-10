@@ -76,3 +76,41 @@ export class Grupo {
     return grupo
   }
 }
+
+// --------------------------- Types para groupDetail (detalle y gastos)
+export type GrupoDetalleDTO = {
+  id: number
+  nombre: string
+  descripcion: string
+  imagenUrl: string
+  cantidadIntegrantes: number
+}
+
+export type GrupoGastoItemDTO = {
+  id: number
+  day: number
+  title: string
+  amount: number
+  currency: string
+  paymentType: string
+  imageUrl: string
+}
+
+export type GrupoGastosPorMesDTO = {
+  month: string
+  expenses: GrupoGastoItemDTO[]
+}
+
+export type GrupoGastosPorAnioDTO = {
+  year: number
+  months: GrupoGastosPorMesDTO[]
+}
+
+export type GroupDetailPageResponse<T> = {
+  content: T[]
+  page: number
+  size: number
+  totalElements: number
+  totalPages: number
+  hasNext: boolean
+}

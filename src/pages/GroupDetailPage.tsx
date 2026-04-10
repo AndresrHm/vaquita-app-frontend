@@ -1,172 +1,171 @@
-import { useParams, useNavigate } from 'react-router-dom'
+/* eslint-disable no-undef */
+import { useNavigate, useParams } from 'react-router-dom'
+import { useState } from 'react'
 import ColumnContainer from '@/components/common/columnContainer'
-import { ChevronLeft, Settings } from 'lucide-react'
-import ExpensesList from '@/components/groupsPage/ExpensesList'
-import type { ExpensesByMonth } from '@/components/groupsPage/ExpensesList'
+import { useOnInit } from '@/customHooks/hooks'
+import { obtenerDetalleGrupo, obtenerGastosGrupo } from '@/service/groups'
+import type { GrupoDetalleDTO, GrupoGastosPorAnioDTO } from '@/domain/Grupo'
+import GroupHeader from '@/components/groupsPage/GroupHeader'
+import ExpensesList, { type ExpensesByMonth } from '@/components/groupsPage/ExpensesList'
+import ExpenseItem, { type Expense } from '@/components/groupsPage/ExpenseItem'
 import CreateExpense from '@/components/groupsPage/CreateExpense'
-import GroupDetailSearch from '@/components/groupsPage/GroupDetailSearch'
-import IconNavButton from '@/components/common/IconNavButton'
-
-// avatar helper (not used in this file currently)
-
-const mockGroupDetail = {
-    id: 'g1',
-    name: 'Los Pibes',
-    status: 'Pendiente de pago',
-    outstanding: 12400,
-    currency: '$',
-    imageUrl: 'https://resizer.iproimg.com/unsafe/640x/filters:format(webp)/https://assets.iprofesional.com/assets/jpg/2022/11/545871.jpg',
-}
-
-type ExpensesByYear = {
-    year: number
-    months: ExpensesByMonth
-}[]
-
-const mockExpensesByYear: ExpensesByYear = [
-    {
-        year: 2026,
-        months: [
-            {
-                month: 'Marzo',
-                expenses: [
-                    {
-                        id: 'e1',
-                        date: { day: 28 },
-                        title: 'Supermercado',
-                        amount: 12500,
-                        currency: '$',
-                        paymentType: 'split_equal',
-                        imageUrl: 'https://cdn-icons-png.flaticon.com/512/891/891462.png'
-                    },
-                    {
-                        id: 'e2',
-                        date: { day: 15 },
-                        title: 'Cena en restaurante',
-                        amount: 8400,
-                        currency: '$',
-                        paymentType: 'paid_by_you',
-                        imageUrl: 'https://cdn-icons-png.flaticon.com/512/891/891462.png'
-                    },
-                    {
-                        id: 'e3',
-                        date: { day: 3 },
-                        title: 'Uber',
-                        amount: 3200,
-                        currency: '$',
-                        paymentType: 'you_owe',
-                        imageUrl: 'https://cdn-icons-png.flaticon.com/512/891/891462.png'
-                    }
-                ]
-            },
-            {
-                month: 'Febrero',
-                expenses: [
-                    {
-                        id: 'e4',
-                        date: { day: 22 },
-                        title: 'Entradas cine',
-                        amount: 5400,
-                        currency: '$',
-                        paymentType: 'split_equal',
-                        imageUrl: 'https://cdn-icons-png.flaticon.com/512/891/891462.png'
-                    },
-                    {
-                        id: 'e5',
-                        date: { day: 10 },
-                        title: 'Delivery',
-                        amount: 6100,
-                        currency: '$',
-                        paymentType: 'paid_by_other',
-                        imageUrl: 'https://cdn-icons-png.flaticon.com/512/891/891462.png'
-                    }
-                ]
-            }
-        ]
-    },
-    {
-        year: 2025,
-        months: [
-            {
-                month: 'Enero',
-                expenses: [
-                    {
-                        id: 'e6',
-                        date: { day: 30 },
-                        title: 'Nafta',
-                        amount: 15000,
-                        currency: '$',
-                        paymentType: 'you_owe',
-                        imageUrl: 'https://cdn-icons-png.flaticon.com/512/891/891462.png'
-                    },
-                    {
-                        id: 'e7',
-                        date: { day: 18 },
-                        title: 'Airbnb',
-                        amount: 45200,
-                        currency: '$',
-                        paymentType: 'split_unequal',
-                        imageUrl: 'https://cdn-icons-png.flaticon.com/512/891/891462.png'
-                    },
-                    {
-                        id: 'e8',
-                        date: { day: 5 },
-                        title: 'Compras varias',
-                        amount: 7800,
-                        currency: '$',
-                        paymentType: 'paid_by_you',
-                        imageUrl: 'https://cdn-icons-png.flaticon.com/512/891/891462.png'
-                    }
-                ]
-            }
-        ]
-    }
-]
 
 export default function GroupDetailPage() {
     const { groupId } = useParams()
+    const grupoId = Number(groupId)
     const navigate = useNavigate()
 
-    const group = groupId === mockGroupDetail.id ? mockGroupDetail : { ...mockGroupDetail, id: groupId }
+
+    // Detalle del grupo (info básica)
+    const [groupDetail, setGroupDetail] = useState<GrupoDetalleDTO | null>(null)
+
+    // Gastos del grupo
+    const [gastos, setGastos] = useState<GrupoGastosPorAnioDTO[]>([])
+    const [page, setPage] = useState(0)
+    const [hasNext, setHasNext] = useState(true)
+    const [loadingGastos, setLoadingGastos] = useState(false)
+
+    const fetchGastos = async (pageToFetch: number) => {
+        if (loadingGastos || !hasNext) return
+
+        setLoadingGastos(true)
+
+        try {
+            const data = await obtenerGastosGrupo(grupoId, pageToFetch, 10)
+
+            setGastos(prev => mergeGastos(prev, data.content))
+            setHasNext(data.hasNext)
+            setPage(data.page + 1)
+        } catch (error) {
+            console.log(error)
+        } finally {
+            setLoadingGastos(false)
+        }
+    }
+
+    useOnInit(() => {
+        if (Number.isNaN(grupoId)) return
+
+        const fetchAll = async () => {
+            try {
+                const data = await obtenerDetalleGrupo(grupoId)
+                setGroupDetail(data)
+
+                await fetchGastos(0)
+            } catch (error) {
+                console.log(error)
+            }
+        }
+
+        void fetchAll()
+    }, [grupoId])
+
+    const mergeGastos = (
+        prev: GrupoGastosPorAnioDTO[],
+        incoming: GrupoGastosPorAnioDTO[]
+    ): GrupoGastosPorAnioDTO[] => {
+        const result = [...prev]
+
+        incoming.forEach((newYear) => {
+            const existingYear = result.find(y => y.year === newYear.year)
+
+            if (!existingYear) {
+                result.push(newYear)
+                return
+            }
+
+            newYear.months.forEach((newMonth) => {
+                const existingMonth = existingYear.months.find(m => m.month === newMonth.month)
+
+                if (!existingMonth) {
+                    existingYear.months.push(newMonth)
+                    return
+                }
+
+                const existingIds = new Set(existingMonth.expenses.map(e => e.id))
+
+                const filteredExpenses = newMonth.expenses.filter(e => !existingIds.has(e.id))
+
+                existingMonth.expenses.push(...filteredExpenses)
+            })
+        })
+
+        return result
+    }
+
+    // Skeleton mientras carga el detalle del grupo
+    if (groupDetail === null) {
+        return (
+            <div className="space-y-4">
+                <div className="-mx-4 rounded-b-2xl rounded-t-none overflow-hidden shadow-sm">
+                    <div className="relative h-44 w-full bg-muted/60 animate-pulse" />
+                </div>
+
+                <ColumnContainer>
+                    <div className="p-4">
+                        <div className="h-6 w-1/3 rounded bg-muted/60 animate-pulse" />
+                        <div className="mt-3 h-4 w-2/3 rounded bg-muted/60 animate-pulse" />
+                        <div className="mt-2 h-4 w-1/4 rounded bg-muted/60 animate-pulse" />
+                    </div>
+                </ColumnContainer>
+            </div>
+        )
+    }
 
     return (
         <div className="space-y-4">
-            {/* Header image container (full-width within layout) */}
-            <div className="-mx-4 rounded-b-2xl rounded-t-none overflow-hidden shadow-sm">
-                <div className="relative h-44 w-full">
-                    <img src={group.imageUrl} alt={group.name} className="absolute inset-0 h-full w-full object-cover" />
-                    <div className="absolute inset-0 bg-gradient-to-b from-black/20 to-black/30" />
-
-                    <div className="absolute inset-x-4 top-3 flex items-center justify-between">
-                        <IconNavButton ariaLabel="Volver" onClick={() => navigate(-1)} icon={<ChevronLeft className="h-5 w-5" />} />
-
-                        <IconNavButton ariaLabel="Ajustes" to={`/groups/${group.id}/settings`} icon={<Settings className="h-5 w-5" />} />
-                    </div>
-
-                    <div className="absolute left-4 bottom-4">
-                        <h1 className="text-xl font-semibold text-white">{group.name}</h1>
-                    </div>
-                </div>
-            </div>
+            <GroupHeader groupDetail={groupDetail} />
 
             <ColumnContainer>
-                <GroupDetailSearch />
-
-                <div className="mt-4 text-sm text-foreground">Total pendiente: {group.currency} {group.outstanding.toLocaleString('es-AR')}</div>
-
-                {/* inline-block rounded-md bg-muted/80 px-3 py-1 text-xs font-semibold text-muted-foreground */}
-                <div className="mt-4 space-y-6">
-                    {mockExpensesByYear.map((yearGroup) => (
-                        <div key={yearGroup.year} className="">
-                            <h2 className="rounded-md bg-muted/80 px-3 py-1 text-lg font-semibold text-muted-foreground">{yearGroup.year}</h2>
-                            <ExpensesList data={yearGroup.months} />
-                        </div>
-                    ))}
+                <div className="p-4">
+                    <p className="text-sm text-foreground">{groupDetail.descripcion}</p>
+                    <p className="mt-2 text-sm text-foreground">Integrantes: {groupDetail.cantidadIntegrantes}</p>
                 </div>
 
+                <div className="mt-4 space-y-6">
+                    {gastos.length === 0 ? (
+                        <div className="p-4 text-sm text-muted-foreground">Aún no hay gastos</div>
+                    ) : (
+                        gastos.map((yearGroup) => {
+                            const months: ExpensesByMonth = yearGroup.months.map((m) => ({
+                                month: m.month,
+                                expenses: m.expenses.map((e) => ({
+                                    id: String(e.id),
+                                    date: { day: e.day },
+                                    title: e.title,
+                                    amount: e.amount,
+                                    currency: e.currency,
+                                    paymentType: e.paymentType as Expense['paymentType'],
+                                    imageUrl: e.imageUrl,
+                                })),
+                            }))
+
+                            return (
+                                <div key={yearGroup.year}>
+                                    <h2 className="rounded-md bg-muted/80 px-3 py-1 text-lg font-semibold text-muted-foreground">
+                                        {yearGroup.year}
+                                    </h2>
+                                    <ExpensesList data={months} />
+                                </div>
+                            )
+                        })
+                    )}
+
+                    {hasNext && (
+                        <div className="flex justify-center py-4">
+                            <button
+                                onClick={() => void fetchGastos(page)}
+                                disabled={loadingGastos}
+                                className="px-4 py-2 rounded-md bg-primary text-primary-foreground disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {loadingGastos ? 'Cargando...' : 'Cargar más'}
+                            </button>
+                        </div>
+                    )}
+                </div>
             </ColumnContainer>
 
-            <CreateExpense onClick={() => navigate(`/groups/${group.id}/expense/create`)} />
+            <CreateExpense onClick={() => navigate(`/groups/${groupDetail.id}/expense/create`)} />
         </div>
     )
 }
