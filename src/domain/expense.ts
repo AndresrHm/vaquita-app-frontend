@@ -46,7 +46,7 @@ export class Expense extends Validable {
             this.agregarError(new InputError('description', 'Agregá una descripción'))
         }
 
-        if (this.description.trim().length < MAX_CHARACTERS_DESCRIPTION) {
+        if (this.description.trim().length > MAX_CHARACTERS_DESCRIPTION) {
             this.agregarError(new InputError('description', `La descripción no puede tener más de ${MAX_CHARACTERS_DESCRIPTION} caracteres`))
         }
 
@@ -79,7 +79,7 @@ export class Expense extends Validable {
                 (item) => item.nombre.length > MAX_CHARACTERS_PRODUCT_NAME
             )
 
-            if (invalidProductName) {
+            if (invalidProductName != null) {
                 this.agregarError(new InputError('itemsName', `El nombre de un producto no puede superar los ${MAX_CHARACTERS_PRODUCT_NAME} caracteres`))
             }
         }
