@@ -15,6 +15,8 @@ export type ExpenseJSON = {
 }
 
 const DEFAULT_CATEGORY = 'OTROS'
+const MAX_CHARACTERS_DESCRIPTION = 50
+const MAX_CHARACTERS_PRODUCT_NAME = 20
 
 export class Expense extends Validable {
     id: number = 0
@@ -44,6 +46,10 @@ export class Expense extends Validable {
             this.agregarError(new InputError('description', 'Agregá una descripción'))
         }
 
+        if (this.description.trim().length < MAX_CHARACTERS_DESCRIPTION) {
+            this.agregarError(new InputError('description', `La descripción no puede tener más de ${MAX_CHARACTERS_DESCRIPTION} caracteres`))
+        }
+
         if (this.total <= 0 || Number.isNaN(this.total)) {
             this.agregarError(new InputError('total', 'Ingresá un monto válido'))
         }
@@ -67,6 +73,14 @@ export class Expense extends Validable {
 
             if (this.total != this.totalItems()) {
                 this.agregarError(new InputError('itemsTotal', 'La suma de los valores de los ítems debe ser igual al total'))
+            }
+
+            const invalidProductName = this.items.find(
+                (item) => item.nombre.length > MAX_CHARACTERS_PRODUCT_NAME
+            )
+
+            if (invalidProductName) {
+                this.agregarError(new InputError('itemsName', `El nombre de un producto no puede superar los ${MAX_CHARACTERS_PRODUCT_NAME} caracteres`))
             }
         }
     }
