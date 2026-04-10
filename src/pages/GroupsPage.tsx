@@ -39,8 +39,9 @@ export default function GroupsPage() {
         <div className="pl-2.5 pt-2">
           <h2 className="text-xl font-semibold text-foreground">Tenés deudas</h2>
           <p className="mt-1 text-sm text-muted-foreground">Debes $8,430</p>
+          <p className="mt-1 text-sm text-muted-foreground">TODO: que este título no esté hardcodeado</p>
+          <p className="mt-1 text-sm text-muted-foreground">TODO: search funcional con filtado funcional</p>
         </div>
-
         <GroupsSearch />
       </PageTitle>
 

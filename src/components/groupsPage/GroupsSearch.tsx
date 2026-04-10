@@ -1,6 +1,8 @@
+/* eslint-disable no-undef */
 import { useState, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
-import { Search, Sliders, UserPlus } from 'lucide-react'
+import { Search, Sliders, Users } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 
 const FILTER_OPTIONS = [
     { value: 'all', label: 'Todos los grupos' },
@@ -64,6 +66,8 @@ export default function GroupsSearch({
         }
     }, [open])
 
+    const navigate = useNavigate()
+
     return (
         <div ref={containerRef} className="relative">
             <div className="flex items-center gap-2">
@@ -105,11 +109,12 @@ export default function GroupsSearch({
                     onClick={(e) => {
                         e.stopPropagation()
                         onAddFriend?.()
+                        navigate('/groups/new')
                     }}
-                    aria-label="Agregar amigo"
+                    aria-label="Crear grupo"
                     className="inline-flex items-center justify-center rounded-md p-2 text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer active:bg-muted/80 active:rounded-md active:scale-[0.98] transition"
                 >
-                    <UserPlus className="h-5 w-5" />
+                    <Users className="h-5 w-5" />
                 </button>
             </div>
 
