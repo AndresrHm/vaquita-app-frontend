@@ -64,11 +64,12 @@ export default function GroupsPage() {
 
       <ColumnContainer>
         {/* Cantidad de grupos */}
-        {hasNext && groups.length > 0 && (
+        {/* TODO FIXEAR ESTO, tira el size actual */}
+        {/* {hasNext && groups.length > 0 && (
           <p className="mt-1 text-sm text-muted-foreground">
             Pertenecés a {groups.length} {groups.length === 1 ? 'grupo' : 'grupos'}
           </p>
-        )}
+        )} */}
 
         {/* Empty state */}
         {groups.length === 0 && !loading && (
