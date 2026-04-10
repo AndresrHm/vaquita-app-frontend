@@ -116,7 +116,6 @@ export default function CreateExpense({ groupId, onBack }: Props) {
     return (
         <div className="flex flex-col space-y-4">
             <PageTitle title='Nuevo gasto' subtitle='Registrá un movimiento rápido' onBack={() => window.history.back()} />
-
             <ColumnContainer>
                 <div className="space-y-4 pt-2">
                     <div className="rounded-2xl border border-border bg-card/70 p-6 shadow-sm backdrop-blur-xl flex flex-col items-center">
@@ -183,23 +182,32 @@ export default function CreateExpense({ groupId, onBack }: Props) {
 
                                 {isParticipantsOpen && effectiveGroupId && !isLoadingParticipants && (
                                     <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-xl shadow-lg z-10 max-h-40 overflow-y-auto">
-                                        {participants.length > 0 ? (
-                                            participants.map((participant) => (
-                                                <label key={participant.id} className="flex items-center gap-2 px-3 py-2 hover:bg-muted cursor-pointer">
+                                        {participants.map((participant) => {
+                                            const isCurrentUser = participant.id === mockCurrentUser.id
+
+                                            return (
+                                                <label
+                                                    key={participant.id}
+                                                    className={`flex items-center gap-2 px-3 py-2 hover:bg-muted cursor-pointer ${isCurrentUser ? 'opacity-70 cursor-not-allowed' : ''}`}
+                                                >
                                                     <input
                                                         type="checkbox"
                                                         checked={expense.participantIds.includes(participant.id!)}
-                                                        onChange={() => handleToggleParticipant(participant.id!)}
-                                                        className="rounded border-primary text-primary focus:ring-primary"
+                                                        // Deshabilitamos si es el usuario actual
+                                                        disabled={isCurrentUser}
+                                                        onChange={() => {
+                                                            if (!isCurrentUser) {
+                                                                handleToggleParticipant(participant.id!)
+                                                            }
+                                                        }}
+                                                        className="rounded border-primary text-primary focus:ring-primary disabled:opacity-50"
                                                     />
-                                                    <span className="text-sm">{participant.nombre}</span>
+                                                    <span className="text-sm">
+                                                        {participant.nombre} {isCurrentUser && '(Vos)'}
+                                                    </span>
                                                 </label>
-                                            ))
-                                        ) : (
-                                            <div className="px-3 py-2 text-xs text-muted-foreground text-center italic">
-                                                El grupo no tiene integrantes
-                                            </div>
-                                        )}
+                                            )
+                                        })}
                                     </div>
                                 )}
                             </div>
