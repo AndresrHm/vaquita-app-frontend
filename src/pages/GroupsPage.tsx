@@ -1,60 +1,112 @@
+import { useState } from 'react'
 import GroupCard from '@/components/groupsPage/GroupCard'
 import GroupsSearch from '@/components/groupsPage/GroupsSearch'
 import CreateGroupButton from '@/components/groupsPage/CreateGroupButton'
 import ColumnContainer from '@/components/common/columnContainer'
 import PageTitle from '@/components/common/pageTitle'
+import type { GrupoCardDTO } from '@/domain/Grupo'
+import { useOnInit } from '@/customHooks/hooks'
+import { obtenerGrupos } from '@/service/groupsService'
 
-const getAvatarUrl = (name: string) =>
-  `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}`
-
-const mockGroups = [
-  { id: 'g1', name: 'Centro de Estudiantes', status: 'Pendiente de pago', outstanding: 12400, currency: '$' },
-  { id: 'g2', name: 'Cátedra - Comisión 2', status: 'Parcialmente pagada', outstanding: 7800, currency: '$' },
-  { id: 'g3', name: 'Viaje de Fin de Año', status: 'Pagada', outstanding: 0, currency: '$' },
-
-  { id: 'g4', name: 'Depto Palermo', status: 'Pendiente de pago', outstanding: 45200, currency: '$' },
-  { id: 'g5', name: 'Cumple Juan', status: 'Parcialmente pagada', outstanding: 3200, currency: '$' },
-  { id: 'g6', name: 'Asado del Finde', status: 'Pendiente de pago', outstanding: 8900, currency: '$' },
-
-  { id: 'g7', name: 'Viaje a Bariloche', status: 'Parcialmente pagada', outstanding: 15600, currency: '$' },
-  { id: 'g8', name: 'Equipo de Fútbol 5', status: 'Pendiente de pago', outstanding: 5400, currency: '$' },
-  { id: 'g9', name: 'Regalo Profe', status: 'Pagada', outstanding: 0, currency: '$' },
-
-  { id: 'g10', name: 'Vacaciones Brasil', status: 'Pendiente de pago', outstanding: 68400, currency: '$' },
-  { id: 'g11', name: 'Salida Cine', status: 'Parcialmente pagada', outstanding: 2100, currency: '$' },
-  { id: 'g12', name: 'Gastos Oficina', status: 'Pagada', outstanding: 0, currency: '$' },
-].map(group => ({
-  ...group,
-  imageUrl: getAvatarUrl(group.name),
-}))
-
-// initials util removed (not used in this file)
+const PAGE_SIZE = 6
 
 export default function GroupsPage() {
-  return (
-    // Título y search
-    <div className="flex flex-col space-y-4 min-h-[calc(100vh-5rem)]">
+  const usuarioId = 1 // 🔴 luego reemplazar por auth real
 
+  const [groups, setGroups] = useState<GrupoCardDTO[]>([])
+  const [page, setPage] = useState(0)
+  const [hasNext, setHasNext] = useState(true)
+  const [loading, setLoading] = useState(false)
+
+  const fetchGroups = async (pageToFetch = 0) => {
+    if (loading) return
+
+    setLoading(true)
+
+    try {
+      const res = await obtenerGrupos(usuarioId, pageToFetch, PAGE_SIZE)
+
+      setGroups(prev =>
+        pageToFetch === 0
+          ? res.content
+          : [...prev, ...res.content]
+      )
+
+      setHasNext(res.hasNext)
+      setPage(pageToFetch)
+    } catch (err) {
+      console.error('Error fetching groups', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useOnInit(() => {
+    fetchGroups(0)
+  })
+
+  const handleLoadMore = () => {
+    if (!hasNext || loading) return
+    fetchGroups(page + 1)
+  }
+
+  return (
+    <div className="flex flex-col space-y-4 min-h-[calc(100vh-5rem)]">
       <PageTitle>
         <div className="pl-2.5 pt-2">
           <h2 className="text-xl font-semibold text-foreground">Tenés deudas</h2>
           <p className="mt-1 text-sm text-muted-foreground">Debes $8,430</p>
           <p className="mt-1 text-sm text-muted-foreground">TODO: que este título no esté hardcodeado</p>
-          <p className="mt-1 text-sm text-muted-foreground">TODO: search funcional con filtado funcional</p>
+          <p className="mt-1 text-sm text-muted-foreground">TODO: search funcional con filtrado funcional</p>
         </div>
         <GroupsSearch />
       </PageTitle>
 
-      {/* Contenedor de groupCards - estira para ocupar el espacio restante */}
       <ColumnContainer>
-        {mockGroups.map((g) => (
+        {/* Cantidad de grupos */}
+        {hasNext && groups.length > 0 && (
+          <p className="mt-1 text-sm text-muted-foreground">
+            Pertenecés a {groups.length} {groups.length === 1 ? 'grupo' : 'grupos'}
+          </p>
+        )}
+
+        {/* Empty state */}
+        {groups.length === 0 && !loading && (
+          <div className="fixed inset-0 flex items-center justify-center pointer-events-none">
+            <div className="pointer-events-auto text-center rounded-xl border-2 border-dashed bg-card p-8 shadow-sm max-w-sm w-full mx-4">
+              <p className="text-sm text-muted-foreground">
+                Todavía no tenés grupos...
+              </p>
+
+              <p className="mt-1 text-sm font-medium">
+                ¡Probá crear uno!
+              </p>
+
+              <div className="mt-4 flex justify-center">
+                <CreateGroupButton fixed={false} />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Lista */}
+        {groups.map((g) => (
           <GroupCard key={g.id} group={g} />
         ))}
+
+        {/* Cargar más */}
+        {hasNext && groups.length > 0 && (
+          <button
+            onClick={handleLoadMore}
+            disabled={loading}
+            className="mt-4 p-2 rounded-md bg-muted hover:bg-muted/80 text-sm"
+          >
+            {loading ? 'Cargando...' : 'Cargar más'}
+          </button>
+        )}
       </ColumnContainer>
 
-      {/* Mini card/button al final para agregar grupo */}
-      <CreateGroupButton />
+      {groups.length > 0 && <CreateGroupButton />}
     </div>
   )
 }
-

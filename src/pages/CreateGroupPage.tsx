@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ChevronLeft, Search, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { crearGrupo } from '@/service/groups'
+import { crearGrupo } from '@/service/groupsService'
 
 const mockFriends = [
   { id: 'u1', name: 'Lucía Fernández' },

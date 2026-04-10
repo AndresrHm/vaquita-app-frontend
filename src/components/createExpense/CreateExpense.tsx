@@ -13,7 +13,7 @@ import PageTitle from '@/components/common/pageTitle'
 import { usuarioService } from '@/service/usuarioService'
 import type { Usuario } from '@/domain/usuario'
 import type { Grupo } from '@/domain/Grupo'
-import { obtenerGruposDeUsuario } from '@/service/groups'
+import { obtenerGruposDeUsuario } from '@/service/groupsService'
 import { useOnInit } from '@/customHooks/hooks'
 import IconNavButton from '../common/IconNavButton'
 
