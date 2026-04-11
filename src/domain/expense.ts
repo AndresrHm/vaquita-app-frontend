@@ -12,6 +12,7 @@ export type ExpenseJSON = {
     categoria: string
     fecha: string
     items: ExpenseItemDTO[]
+    tipoGasto: string //Temporal
 }
 
 const DEFAULT_CATEGORY = 'OTROS'
@@ -95,6 +96,7 @@ export class Expense extends Validable {
             categoria: this.category,
             fecha: this.date,
             items: this.items.map((item) => item.toDTO()),
+            tipoGasto: 'PARTES_IGUALES' //Temporal
         }
     }
 

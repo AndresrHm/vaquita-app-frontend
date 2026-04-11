@@ -11,7 +11,7 @@ import { obtenerGrupos } from '@/service/groupsService'
 const PAGE_SIZE = 6
 
 export default function GroupsPage() {
-  const usuarioId = 1 // 🔴 luego reemplazar por auth real
+  const usuarioId = Number(localStorage.id)
 
   const [groups, setGroups] = useState<GrupoCardDTO[]>([])
   const [page, setPage] = useState(0)
