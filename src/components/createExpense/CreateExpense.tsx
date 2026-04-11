@@ -16,6 +16,7 @@ import type { Grupo } from '@/domain/Grupo'
 import { obtenerGruposDeUsuario } from '@/service/groupsService'
 import { useOnInit } from '@/customHooks/hooks'
 import IconNavButton from '../common/IconNavButton'
+import { useNavigate } from 'react-router-dom'
 
 const mockCurrentUser = { id: 1, name: 'Juan' }
 
@@ -33,6 +34,8 @@ export default function CreateExpense({ groupId, onBack }: Props) {
     const [selectedGroupId, setSelectedGroupId] = useState<number | undefined>(undefined)
 
     const effectiveGroupId = (groupId ?? selectedGroupId) as number | undefined
+
+    const navigate = useNavigate()
 
     const actualizarExpense = (cambios: Partial<Expense>) => {
         const expenseClon = new Expense()
@@ -66,40 +69,34 @@ export default function CreateExpense({ groupId, onBack }: Props) {
         obtenerGrupos()
     })
 
-    useEffect(() => {
-        let isMounted = true
+    const cambiarGrupo = async (id: number | undefined) => {
+        setSelectedGroupId(id)
 
-        const cargarYSetearParticipantes = async () => {
-            if (!effectiveGroupId) {
-                setParticipants([])
-                actualizarExpense({ participantIds: [] })
-                return
-            }
-
-            try {
-                setIsLoadingParticipants(true)
-                const participantesBack = await usuarioService.obtenerUsuariosDeGrupo(Number(effectiveGroupId))
-
-                if (isMounted) {
-                    setParticipants(participantesBack)
-
-                    const idsValidos = participantesBack
-                        .map((p) => p.id)
-                        .filter((id): id is number => id !== undefined)
-
-                    actualizarExpense({ participantIds: idsValidos, groupId: Number(effectiveGroupId) })
-                }
-            } catch (error) {
-                console.error('Error al actualizar participantes:', error)
-            } finally {
-                if (isMounted) setIsLoadingParticipants(false)
-            }
+        if (!id) {
+            setParticipants([])
+            actualizarExpense({ participantIds: [], groupId: undefined })
+            return
         }
 
-        cargarYSetearParticipantes()
+        try {
+            setIsLoadingParticipants(true)
+            const participantesBack = await usuarioService.obtenerUsuariosDeGrupo(id)
 
-        return () => { isMounted = false }
-    }, [effectiveGroupId])
+            setParticipants(participantesBack)
+            const idsValidos = participantesBack
+                .map((p) => p.id)
+                .filter((id): id is number => id !== undefined)
+
+            actualizarExpense({
+                participantIds: idsValidos,
+                groupId: id
+            })
+        } catch (error) {
+            console.error('Error al cargar participantes:', error)
+        } finally {
+            setIsLoadingParticipants(false)
+        }
+    }
 
     const crearExpense = async () => {
         const expenseParaValidar = Expense.clone(expense)
@@ -109,6 +106,7 @@ export default function CreateExpense({ groupId, onBack }: Props) {
         if (expenseParaValidar.valido()) {
             try {
                 await expenseService.createExpense(expense)
+                navigate('/')
             } catch (error: unknown) {
                 console.error('Error creando gasto:', error)
             }
@@ -117,15 +115,7 @@ export default function CreateExpense({ groupId, onBack }: Props) {
 
     return (
         <div className="flex flex-col space-y-4">
-            <PageTitle>
-                <div className="max-w-2xl mx-auto px-4 flex items-center justify-between relative">
-                    <div className="flex items-center space-x-3">
-                        <IconNavButton ariaLabel="Volver" onClick={() => window.history.back()} icon={<ChevronLeft className="h-5 w-5" />} />
-                    </div>
-                    <h2 className="absolute left-1/2 transform -translate-x-1/2 text-xl font-semibold text-foreground">Nuevo gasto</h2>
-                </div>
-            </PageTitle>
-
+            <PageTitle title='Nuevo gasto' subtitle='Registrá un movimiento rápido' onBack={() => window.history.back()} />
             <ColumnContainer>
                 <div className="space-y-4 pt-2">
                     <div className="rounded-2xl border border-border bg-card/70 p-6 shadow-sm backdrop-blur-xl flex flex-col items-center">
@@ -151,7 +141,10 @@ export default function CreateExpense({ groupId, onBack }: Props) {
                                     <Users className="h-4 w-4 text-muted-foreground shrink-0" />
                                     <select
                                         value={expense.groupId || ''}
-                                        onChange={(e) => { const val = Number(e.target.value) || undefined; setSelectedGroupId(val); actualizarExpense({ groupId: val }) }}
+                                        onChange={(e) => {
+                                            const val = Number(e.target.value) || undefined
+                                            cambiarGrupo(val)
+                                        }}
                                         className="w-full bg-transparent text-sm text-foreground outline-none appearance-none cursor-pointer">
                                         <option value="" disabled className="bg-card text-muted-foreground">
                                             Seleccioná un grupo
@@ -189,23 +182,32 @@ export default function CreateExpense({ groupId, onBack }: Props) {
 
                                 {isParticipantsOpen && effectiveGroupId && !isLoadingParticipants && (
                                     <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-xl shadow-lg z-10 max-h-40 overflow-y-auto">
-                                        {participants.length > 0 ? (
-                                            participants.map((participant) => (
-                                                <label key={participant.id} className="flex items-center gap-2 px-3 py-2 hover:bg-muted cursor-pointer">
+                                        {participants.map((participant) => {
+                                            const isCurrentUser = participant.id === mockCurrentUser.id
+
+                                            return (
+                                                <label
+                                                    key={participant.id}
+                                                    className={`flex items-center gap-2 px-3 py-2 hover:bg-muted cursor-pointer ${isCurrentUser ? 'opacity-70 cursor-not-allowed' : ''}`}
+                                                >
                                                     <input
                                                         type="checkbox"
                                                         checked={expense.participantIds.includes(participant.id!)}
-                                                        onChange={() => handleToggleParticipant(participant.id!)}
-                                                        className="rounded border-primary text-primary focus:ring-primary"
+                                                        // Deshabilitamos si es el usuario actual
+                                                        disabled={isCurrentUser}
+                                                        onChange={() => {
+                                                            if (!isCurrentUser) {
+                                                                handleToggleParticipant(participant.id!)
+                                                            }
+                                                        }}
+                                                        className="rounded border-primary text-primary focus:ring-primary disabled:opacity-50"
                                                     />
-                                                    <span className="text-sm">{participant.nombre}</span>
+                                                    <span className="text-sm">
+                                                        {participant.nombre} {isCurrentUser && '(Vos)'}
+                                                    </span>
                                                 </label>
-                                            ))
-                                        ) : (
-                                            <div className="px-3 py-2 text-xs text-muted-foreground text-center italic">
-                                                El grupo no tiene integrantes
-                                            </div>
-                                        )}
+                                            )
+                                        })}
                                     </div>
                                 )}
                             </div>
