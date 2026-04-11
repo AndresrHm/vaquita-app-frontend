@@ -54,3 +54,8 @@ export async function obtenerGastosGrupo(
 
   return data
 }
+
+export async function obtenerGrupoPorId(id: number): Promise<GrupoNombreIdDTO> {
+  const { data } = await api.get<GrupoNombreIdDTO>(`/grupo/${id}`)
+  return data
+}

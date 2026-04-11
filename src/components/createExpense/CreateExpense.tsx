@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { Receipt, Calendar, Users, ChevronLeft } from 'lucide-react'
+import { useState } from 'react'
+import { Receipt, Calendar, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { CATEGORIES } from '@/components/createExpense/categories'
 import CreateExpenseItem from '@/components/createExpense/CreateExpenseItem'
@@ -13,27 +13,29 @@ import PageTitle from '@/components/common/pageTitle'
 import { usuarioService } from '@/service/usuarioService'
 import type { Usuario } from '@/domain/usuario'
 import type { Grupo } from '@/domain/Grupo'
-import { obtenerGruposDeUsuario } from '@/service/groupsService'
+import { obtenerGrupoPorId, obtenerGruposDeUsuario } from '@/service/groupsService'
 import { useOnInit } from '@/customHooks/hooks'
-import IconNavButton from '../common/IconNavButton'
 import { useNavigate } from 'react-router-dom'
 
 const mockCurrentUser = { id: 1, name: 'Juan' }
 
 type Props = {
-    groupId?: string | number | undefined
+    groupId?: number
+    groupName?: string
     onBack?: () => void
 }
 
-export default function CreateExpense({ groupId, onBack }: Props) {
+export default function CreateExpense({ groupId, groupName, onBack }: Props) {
     const [expense, setExpense] = useState(new Expense(undefined, mockCurrentUser.id))
     const [participants, setParticipants] = useState<Usuario[]>([])
     const [groups, setGroups] = useState<Grupo[]>([])
     const [isParticipantsOpen, setIsParticipantsOpen] = useState(false)
     const [isLoadingParticipants, setIsLoadingParticipants] = useState(false)
-    const [selectedGroupId, setSelectedGroupId] = useState<number | undefined>(undefined)
-
+    const [selectedGroupId, setSelectedGroupId] = useState<number | undefined>(
+        groupId ? Number(groupId) : undefined // Si llega la id por props la usamos directamente (nuevo gasto desde groupDetail)
+    )
     const effectiveGroupId = (groupId ?? selectedGroupId) as number | undefined
+    const [groupNameState, setGroupNameState] = useState<string | undefined>(groupName)
 
     const navigate = useNavigate()
 
@@ -65,8 +67,15 @@ export default function CreateExpense({ groupId, onBack }: Props) {
         }
     }
 
+    // Si se pasa la id de grupo usamos esa misma (crear gasto dentro de groupDetail)
     useOnInit(() => {
-        obtenerGrupos()
+        if (groupId) {
+            const id = Number(groupId)
+            cambiarGrupo(id)
+            obtenerNombreGrupo(id)
+        } else {
+            obtenerGrupos()
+        }
     })
 
     const cambiarGrupo = async (id: number | undefined) => {
@@ -113,6 +122,15 @@ export default function CreateExpense({ groupId, onBack }: Props) {
         }
     }
 
+    const obtenerNombreGrupo = async (id: number) => {
+        try {
+            const grupo = await obtenerGrupoPorId(id)
+            setGroupNameState(grupo.nombre)
+        } catch (error) {
+            console.error('Error al obtener nombre del grupo:', error)
+        }
+    }
+
     return (
         <div className="flex flex-col space-y-4">
             <PageTitle title='Nuevo gasto' subtitle='Registrá un movimiento rápido' onBack={() => window.history.back()} />
@@ -135,8 +153,8 @@ export default function CreateExpense({ groupId, onBack }: Props) {
                     </div>
 
                     <div className="rounded-2xl border border-border bg-card/70 p-4 shadow-sm backdrop-blur-xl space-y-4">
-                        {!groupId && (
-                            <FieldWrapper label="¿A qué grupo pertenece?" instruction="Seleccioná un grupo">
+                        <FieldWrapper label="Grupo">
+                            {!groupId ? (
                                 <div className="relative flex items-center gap-3 rounded-xl border border-border bg-background/70 px-3 py-2.5">
                                     <Users className="h-4 w-4 text-muted-foreground shrink-0" />
                                     <select
@@ -157,8 +175,15 @@ export default function CreateExpense({ groupId, onBack }: Props) {
                                     </select>
                                     <div className="absolute right-3 pointer-events-none text-muted-foreground text-[10px]">▼</div>
                                 </div>
-                            </FieldWrapper>
-                        )}
+                            ) : (
+                                <div className="flex items-center gap-3 rounded-xl border border-border bg-background/70 px-3 py-2.5">
+                                    <Users className="h-4 w-4 text-muted-foreground shrink-0" />
+                                    <span className="text-sm text-foreground">
+                                        {groupName || groupNameState || 'Grupo'}
+                                    </span>
+                                </div>
+                            )}
+                        </FieldWrapper>
 
                         <FieldWrapper label="¿Quiénes participan del gasto?">
                             <div className="relative">

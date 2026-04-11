@@ -1,7 +1,7 @@
 // React import not required with automatic JSX runtime
 import { PlusCircle } from 'lucide-react'
 
-export default function CreateExpense({ onClick }: { onClick?: () => void }) {
+export default function CreateExpenseButton({ onClick }: { onClick?: () => void }) {
     return (
         <div className="fixed right-4 bottom-24 z-[60]">
             <button
