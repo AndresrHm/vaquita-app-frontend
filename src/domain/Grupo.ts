@@ -123,3 +123,18 @@ export type GrupoCardDTO = {
   imagenUrl: string
   estadoGrupo: string
 }
+
+// --------------------------- Types para settings
+export type GrupoSettingsDTO = {
+  id: number
+  nombre: string
+  descripcion: string
+  imagenUrl: string
+  moneda: string
+  simplificarDeudas: boolean
+}
+
+export type GrupoUsuarioContextoDTO = {
+  esAdmin: boolean
+  tieneDeudas: boolean
+}

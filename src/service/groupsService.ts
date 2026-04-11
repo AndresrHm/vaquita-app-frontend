@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { type GrupoDTO, type GrupoCreacionDTO, type GroupDetailPageResponse, Grupo, type GrupoNombreIdDTO, type GrupoDetalleDTO, type GrupoGastosPorAnioDTO, type GrupoCardDTO } from '@/domain/Grupo'
+import { type GrupoDTO, type GrupoCreacionDTO, type GroupDetailPageResponse, Grupo, type GrupoNombreIdDTO, type GrupoDetalleDTO, type GrupoGastosPorAnioDTO, type GrupoCardDTO, type GrupoSettingsDTO, type GrupoUsuarioContextoDTO } from '@/domain/Grupo'
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080'
 
@@ -33,12 +33,6 @@ export async function obtenerGruposDeUsuario(usuarioId: number): Promise<Grupo[]
   return data.map(userJson => Grupo.fromNombreIdJSON(userJson))
 }
 
-export async function obtenerDetalleGrupo(
-  grupoId: number
-): Promise<GrupoDetalleDTO> {
-  const { data } = await api.get<GrupoDetalleDTO>(`/grupo/${grupoId}/detalle`)
-  return data
-}
 
 export async function obtenerGastosGrupo(
   grupoId: number,
@@ -55,6 +49,26 @@ export async function obtenerGastosGrupo(
   return data
 }
 
+// Usado en groupDetail
+export async function obtenerDetalleGrupo(
+  grupoId: number
+): Promise<GrupoDetalleDTO> {
+  const { data } = await api.get<GrupoDetalleDTO>(`/grupo/${grupoId}/detalle`)
+  return data
+}
+
+// Usado en groupSettings
+export async function obtenerGrupoSettings(id: number): Promise<GrupoSettingsDTO> {
+  const { data } = await api.get<GrupoSettingsDTO>(`/grupo/${id}/settings`)
+  return data
+}
+
+export async function obtenerGrupoContexto(id: number): Promise<GrupoUsuarioContextoDTO> {
+  const { data } = await api.get<GrupoUsuarioContextoDTO>(`/grupo/${id}/contexto`)
+  return data
+}
+
+// Usado en createExpense para grupo específico
 export async function obtenerGrupoPorId(id: number): Promise<GrupoNombreIdDTO> {
   const { data } = await api.get<GrupoNombreIdDTO>(`/grupo/${id}`)
   return data
