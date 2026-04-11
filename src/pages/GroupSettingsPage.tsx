@@ -1,4 +1,4 @@
-import { ChevronLeft, Save, UserPlus, Trash2, LogOut, AlertTriangle, Camera, Crown, Check, X } from 'lucide-react'
+import { ChevronLeft, UserPlus, Trash2, LogOut, AlertTriangle, Camera, Crown, Check, X } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Button } from '@/components/ui/button'
 import ColumnContainer from '@/components/common/columnContainer'
@@ -8,25 +8,11 @@ import IconNavButton from '@/components/common/IconNavButton'
 import ActionButton from '@/components/common/ActionButton'
 import Select from '@/components/ui/select'
 import { useState } from 'react'
-
-const getAvatarUrl = (name: string) =>
-    `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}`
-
-type Member = { id: string; name: string; role: 'admin' | 'member'; avatar: string }
-
-const mockGroup = {
-    id: 'g1',
-    name: 'Viaje a Bariloche',
-    imageUrl: getAvatarUrl('Viaje a Bariloche'),
-    currency: 'ARS',
-    simplifyDebts: true,
-    notifications: true,
-    members: [
-        { id: 'u1', name: 'Sofía', role: 'admin', avatar: getAvatarUrl('Sofía') },
-        { id: 'u2', name: 'Mateo', role: 'member', avatar: getAvatarUrl('Mateo') },
-        { id: 'u3', name: 'Lucía', role: 'member', avatar: getAvatarUrl('Lucía') },
-    ] as Member[],
-}
+import type { GrupoContextoUsuarioDTO, GrupoSettingsDTO, Miembro } from '@/domain/Grupo'
+import { useOnInit } from '@/customHooks/hooks'
+import { obtenerGrupoContexto, obtenerGrupoSettings } from '@/service/groupsService'
+import { usuarioService } from '@/service/usuarioService'
+import { useParams } from 'react-router-dom'
 
 function Avatar({ src, alt, size = 10 }: { src: string; alt?: string; size?: number }) {
     const px = size * 4
@@ -69,11 +55,51 @@ function Modal({ open, title, children, onClose, onConfirm }: { open: boolean; t
 }
 
 export default function GroupSettingsPage() {
-    // Visual-only: functional logic removed, keeps layout and mocked data.
-    const members = mockGroup.members
-    const error: string | null = null
-    const [imageUrl, setImageUrl] = useState(mockGroup.imageUrl)
+    const [formularioGrupo, setFormularioGrupo] = useState<GrupoSettingsDTO>({} as GrupoSettingsDTO)
+    const [miembros, setMiembros] = useState<Miembro[]>([])
+    const [contexto, setContexto] = useState<GrupoContextoUsuarioDTO>({} as GrupoContextoUsuarioDTO)
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
     const [imageError, setImageError] = useState(false)
+    const imageUrl = formularioGrupo?.imagenUrl || ''
+    const fallbackImage = 'https://t4.ftcdn.net/jpg/06/57/37/01/360_F_657370150_pdNeG5pjI976ZasVbKN9VqH1rfoykdYU.jpg'
+    const { id } = useParams()
+    const groupId = Number(id)
+
+    const updateGroupField = (field: keyof GrupoSettingsDTO, value: unknown) => {
+        if (!formularioGrupo) return
+
+        setFormularioGrupo({
+            ...formularioGrupo,
+            [field]: value
+        })
+    }
+
+    useOnInit(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true)
+
+                const [grupo, miembros, contexto] = await Promise.all([
+                    obtenerGrupoSettings(groupId),
+                    usuarioService.obtenerMiembrosDeGrupoSettings(groupId),
+                    obtenerGrupoContexto(groupId)
+                ])
+
+                setFormularioGrupo(grupo)
+                setMiembros(miembros)
+                setContexto(contexto)
+
+            } catch (e) {
+                console.error(e)
+                setError('Error al cargar el grupo. Intentá recargar la página.')
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        fetchData()
+    })
 
     return (
         <div className="flex flex-col space-y-4 min-h-[calc(100vh-5rem)]">
@@ -88,108 +114,157 @@ export default function GroupSettingsPage() {
             </PageTitle>
 
             <ColumnContainer>
-                <main className="max-w-2xl mx-auto space-y-6">
-                    {error && <div className="text-sm text-red-600 bg-red-50 p-3 rounded">{error}</div>}
-
-                    {/* Group Info */}
-                    <Card interactive={false}>
-                        <h3 className="text-lg font-semibold mb-3">Información del grupo</h3>
-                        <form onSubmit={(e) => e.preventDefault()} className="space-y-4">
-                            <div>
-                                <label className="block text-sm text-muted-foreground mb-1">Nombre del grupo</label>
-                                <input defaultValue={mockGroup.name} readOnly className="w-full px-3 py-2 border border-border rounded-md bg-white text-sm text-foreground" />
+                {loading || error ? (
+                    // 🟣 Skeleton
+                    <div className="max-w-2xl mx-auto space-y-4 animate-pulse">
+                        {error && (
+                            <div className="d-flex justify-content-center align-items-center text-center text-sm text-red-600 bg-red-50 p-3 rounded-xl">
+                                {error}
                             </div>
-                            <div>
-                                <label className="block text-sm text-muted-foreground mb-1">Imagen (URL)</label>
-                                <div className="flex items-center space-x-3">
-                                    <input value={imageUrl} onChange={(e) => { setImageUrl(e.target.value); setImageError(false) }} className="flex-1 px-3 py-2 border border-border rounded-md bg-white text-sm text-foreground" />
-                                    <div className="flex items-center space-x-2">
-                                        {!imageError ? (
-                                            // preview
-                                            <img src={imageUrl} onError={() => setImageError(true)} alt="preview" className="w-20 h-20 rounded-md object-cover" />
-                                        ) : (
-                                            <div className="w-20 h-20 rounded-md bg-muted/50 flex items-center justify-center text-xs text-muted-foreground">No se pudo cargar la imagen</div>
-                                        )}
-                                        <Camera className="w-5 h-5 text-muted-foreground" />
-                                    </div>
+                        )}
+                        <div className="h-24 bg-muted rounded-xl" />
+                        <div className="h-40 bg-muted rounded-xl" />
+                        <div className="h-40 bg-muted rounded-xl" />
+                    </div>
+                ) : (
+
+                    <main className="max-w-2xl mx-auto space-y-6">
+
+                        {/* Group Info */}
+                        <Card interactive={false}>
+                            <h3 className="text-lg font-semibold mb-3">Información del grupo</h3>
+                            <form onSubmit={(e) => e.preventDefault()} className="space-y-4">
+                                <div>
+                                    <label className="block text-sm text-muted-foreground mb-1">Nombre del grupo</label>
+                                    <input
+                                        value={formularioGrupo.nombre || ''}
+                                        onChange={(e) => updateGroupField('nombre', e.target.value)}
+                                        className="w-full px-3 py-2 border border-border rounded-md bg-white text-sm text-foreground"
+                                    />
                                 </div>
-                            </div>
-                        </form>
-                    </Card>
-
-                    {/* Members */}
-                    <Card interactive={false}>
-                        <div className="flex items-center justify-between mb-3">
-                            <h3 className="text-lg font-semibold">Miembros ({members.length})</h3>
-                            <ActionButton icon={<UserPlus className="w-4 h-4" />} onClick={() => { }} />
-                        </div>
-                        <div className="space-y-3">
-                            {members.map((m) => (
-                                <div key={m.id} className="flex items-center justify-between">
+                                <div>
+                                    <label className="block text-sm text-muted-foreground mb-1">Descripción</label>
+                                    <input
+                                        value={formularioGrupo?.descripcion || ''}
+                                        onChange={(e) => updateGroupField('descripcion', e.target.value)}
+                                        className="w-full px-3 py-2 border border-border rounded-md bg-white text-sm text-foreground"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm text-muted-foreground mb-1">Imagen (URL)</label>
                                     <div className="flex items-center space-x-3">
-                                        <Avatar src={m.avatar} alt={m.name} />
-                                        <div>
-                                            <div className="font-medium">{m.name}</div>
-                                            <div className="text-sm text-muted-foreground capitalize">{m.role}</div>
+                                        <input
+                                            value={imageUrl}
+                                            onChange={(e) => {
+                                                setImageError(false)
+                                                updateGroupField('imagenUrl', e.target.value)
+                                            }}
+                                            className="flex-1 px-3 py-2 border border-border rounded-md bg-white text-sm text-foreground"
+                                        />
+                                        <div className="flex items-center space-x-2">
+                                            <img
+                                                src={!imageError && imageUrl ? imageUrl : fallbackImage}
+                                                onError={() => setImageError(true)}
+                                                alt="preview"
+                                                className="w-20 h-20 rounded-md object-cover"
+                                            />
+                                            <Camera className="w-5 h-5 text-muted-foreground" />
                                         </div>
                                     </div>
-                                    <div className="pr-3">
-                                        {m.role === 'admin' ? (
-                                            <div className="inline-flex items-center gap-2 text-muted-foreground font-semibold pr-1">
-                                                <Crown className="w-6 h-6" />
-                                            </div>
-                                        ) : (
-                                            <Button variant="ghost" size="icon" className="">
-                                                <Trash2 className="w-5 h-5 text-red-600" />
-                                            </Button>
-                                        )}
-                                    </div>
                                 </div>
-                            ))}
-                        </div>
-                    </Card>
+                            </form>
+                        </Card>
 
-                    {/* Currency & Preferences */}
-                    <Card interactive={false}>
-                        <h3 className="text-lg font-semibold mb-3">Moneda y preferencias</h3>
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-sm text-muted-foreground mb-1">Moneda por defecto</label>
-                                <Select value={mockGroup.currency} onChange={() => { }} disabled>
-                                    <option value="ARS">ARS — Peso argentino</option>
-                                    <option value="USD">USD — US Dollar</option>
-                                    <option value="EUR">EUR — Euro</option>
-                                </Select>
+                        {/* Members */}
+                        <Card interactive={false}>
+                            <div className="flex items-center justify-between mb-3">
+                                <h3 className="text-lg font-semibold">Miembros ({miembros?.length})</h3>
+                                <ActionButton icon={<UserPlus className="w-4 h-4" />} onClick={() => { }} />
                             </div>
-                            <div className="flex items-center justify-between">
-                                <Toggle checked={!!mockGroup.simplifyDebts} onChange={() => { }} label="Simplificar deudas" />
+                            <div className="space-y-3">
+                                {miembros?.map((m) => (
+                                    <div key={m.id} className="flex items-center justify-between">
+                                        <div className="flex items-center space-x-3">
+                                            <Avatar src={m.imagenUrl} alt={m.nombre} />
+                                            <div>
+                                                <div className="font-medium">{m.nombre}</div>
+                                                <div className="text-sm text-muted-foreground capitalize">{m.rol}</div>
+                                            </div>
+                                        </div>
+                                        <div className="pr-3">
+                                            {m.rol === 'admin' ? (
+                                                <div className="inline-flex items-center gap-2 text-muted-foreground font-semibold pr-1">
+                                                    <Crown className="w-6 h-6" />
+                                                </div>
+                                            ) : (
+                                                <Button variant="ghost" size="icon" className="">
+                                                    <Trash2 className="w-5 h-5 text-red-600" />
+                                                </Button>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
-                            <div className="flex items-center justify-between">
-                                <Toggle checked={!!mockGroup.notifications} onChange={() => { }} label="Notificaciones" />
+                        </Card>
+
+                        {/* Currency & Preferences */}
+                        <Card interactive={false}>
+                            <h3 className="text-lg font-semibold mb-3">Moneda y preferencias</h3>
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm text-muted-foreground mb-1">Moneda por defecto</label>
+                                    <Select value={formularioGrupo?.moneda || ''} onChange={() => { }} disabled>
+                                        <option value="ARS">ARS — Peso argentino</option>
+                                        <option value="USD">USD — US Dollar</option>
+                                        <option value="EUR">EUR — Euro</option>
+                                    </Select>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <Toggle
+                                        checked={formularioGrupo.simplificarDeudas}
+                                        onChange={(v) => updateGroupField('simplificarDeudas', v)}
+                                        label="Simplificar deudas"
+                                    />
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <Toggle
+                                        checked={formularioGrupo.notificaciones}
+                                        onChange={(v) => updateGroupField('notificaciones', v)}
+                                        label="Notificaciones" />
+                                </div>
                             </div>
+                        </Card>
+
+                        {/* Gestión del grupo */}
+                        <Card interactive={false}>
+                            <h3 className="text-lg font-semibold mb-3">Gestión del grupo</h3>
+                            <div className="space-y-3">
+                                <Button variant="outline" className="w-full justify-start bg-red-50 border-red-200 text-red-500 hover:bg-red-100 py-2.5 text-base" disabled>
+                                    <LogOut className="w-6 h-6 mr-3" /> Salir del grupo
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    className="w-full justify-start bg-red-50 border-red-200 text-red-500 hover:bg-red-100 py-2.5 text-base"
+                                    disabled={!contexto?.esAdmin || contexto?.tieneDeudas}
+                                >
+                                    <AlertTriangle className="w-6 h-6 mr-3" /> Eliminar grupo
+                                </Button>
+                            </div>
+                            {/* todo mejorar esto, que aparezca al clickear el button desactivado */}
+                            {contexto && contexto.tieneDeudas && (
+                                <p className='text-xs text-gray-400 pt-2'>
+                                    No podés salir del grupo porque tenés deudas pendientes.
+                                </p>
+                            )}
+                        </Card>
+
+                        <div className="flex items-center justify-center-safe gap-4">
+                            <ActionButton icon={<Check className="w-5 h-5" />} disabled className="text-base">Guardar</ActionButton>
+                            <ActionButton variant="secondary" icon={<X className="w-5 h-5" />} className="text-base">Cancelar</ActionButton>
                         </div>
-                    </Card>
 
-                    {/* Gestión del grupo */}
-                    <Card interactive={false}>
-                        <h3 className="text-lg font-semibold mb-3">Gestión del grupo</h3>
-                        <div className="space-y-3">
-                            <Button variant="outline" className="w-full justify-start bg-red-50 border-red-200 text-red-500 hover:bg-red-100 py-2.5 text-base" disabled>
-                                <LogOut className="w-6 h-6 mr-3" /> Salir del grupo
-                            </Button>
-                            <Button variant="outline" className="w-full justify-start bg-red-50 border-red-200 text-red-500 hover:bg-red-100 py-2.5 text-base" disabled>
-                                <AlertTriangle className="w-6 h-6 mr-3" /> Eliminar grupo
-                            </Button>
-                        </div>
-                        <p className='text-xs text-gray-400 pt-2'>Esto está desactivado porque 1. es el admin, 2. hay deuda pendiente</p>
-                    </Card>
-
-                    <div className="flex items-center justify-center-safe gap-4">
-                        <ActionButton icon={<Check className="w-5 h-5" />} disabled className="text-base">Guardar</ActionButton>
-                        <ActionButton variant="secondary" icon={<X className="w-5 h-5" />} className="text-base">Cancelar</ActionButton>
-                    </div>
-
-                </main>
+                    </main>
+                )}
             </ColumnContainer>
 
             <Modal open={false} title="Salir del grupo">

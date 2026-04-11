@@ -132,9 +132,17 @@ export type GrupoSettingsDTO = {
   imagenUrl: string
   moneda: string
   simplificarDeudas: boolean
+  notificaciones: boolean
 }
 
-export type GrupoUsuarioContextoDTO = {
+export type GrupoContextoUsuarioDTO = {
   esAdmin: boolean
   tieneDeudas: boolean
+}
+
+export type Miembro = {
+  id: string;
+  nombre: string;
+  rol: 'admin' | 'member';
+  imagenUrl: string
 }

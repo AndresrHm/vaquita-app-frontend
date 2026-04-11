@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { type GrupoDTO, type GrupoCreacionDTO, type GroupDetailPageResponse, Grupo, type GrupoNombreIdDTO, type GrupoDetalleDTO, type GrupoGastosPorAnioDTO, type GrupoCardDTO, type GrupoSettingsDTO, type GrupoUsuarioContextoDTO } from '@/domain/Grupo'
+import { type GrupoDTO, type GrupoCreacionDTO, type GroupDetailPageResponse, Grupo, type GrupoNombreIdDTO, type GrupoDetalleDTO, type GrupoGastosPorAnioDTO, type GrupoCardDTO, type GrupoSettingsDTO, type GrupoContextoUsuarioDTO } from '@/domain/Grupo'
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080'
 
@@ -63,8 +63,8 @@ export async function obtenerGrupoSettings(id: number): Promise<GrupoSettingsDTO
   return data
 }
 
-export async function obtenerGrupoContexto(id: number): Promise<GrupoUsuarioContextoDTO> {
-  const { data } = await api.get<GrupoUsuarioContextoDTO>(`/grupo/${id}/contexto`)
+export async function obtenerGrupoContexto(id: number): Promise<GrupoContextoUsuarioDTO> {
+  const { data } = await api.get<GrupoContextoUsuarioDTO>(`/grupo/${id}/contexto`)
   return data
 }
 
