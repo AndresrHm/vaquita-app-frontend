@@ -1,4 +1,4 @@
-/* eslint-disable no-undef */
+ 
 import { useNavigate, useParams } from 'react-router-dom'
 import { useState } from 'react'
 import ColumnContainer from '@/components/common/columnContainer'
@@ -7,7 +7,7 @@ import { obtenerDetalleGrupo, obtenerGastosGrupo } from '@/service/groupsService
 import type { GrupoDetalleDTO, GrupoGastosPorAnioDTO } from '@/domain/Grupo'
 import GroupHeader from '@/components/groupsPage/GroupHeader'
 import ExpensesList, { type ExpensesByMonth } from '@/components/groupsPage/ExpensesList'
-import ExpenseItem, { type Expense } from '@/components/groupsPage/ExpenseItem'
+import { type Expense } from '@/components/groupsPage/ExpenseItem'
 import CreateExpenseButton from '@/components/groupsPage/CreateExpenseButton'
 
 export default function GroupDetailPage() {

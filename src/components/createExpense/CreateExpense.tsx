@@ -22,10 +22,9 @@ const mockCurrentUser = { id: 1, name: 'Juan' }
 type Props = {
     groupId?: number
     groupName?: string
-    onBack?: () => void
 }
 
-export default function CreateExpense({ groupId, groupName, onBack }: Props) {
+export default function CreateExpense({ groupId, groupName }: Props) {
     const [expense, setExpense] = useState(new Expense(undefined, mockCurrentUser.id))
     const [participants, setParticipants] = useState<Usuario[]>([])
     const [groups, setGroups] = useState<Grupo[]>([])

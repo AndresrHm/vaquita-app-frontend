@@ -120,18 +120,18 @@ export default function RegisterPage() {
     // --- 1. VALIDACIÓN DEL FRONTEND (El Guardia) ---
     const erroresFront: string[] = [] // Armamos nuestra libreta en React
     
-    if (usuario.nombre.trim() === '') erroresFront.push("• Faltó escribir tu nombre")
+    if (usuario.nombre.trim() === '') erroresFront.push('• Faltó escribir tu nombre')
     
     if (usuario.email.trim() === '') {
-        erroresFront.push("• Faltó escribir tu email")
+        erroresFront.push('• Faltó escribir tu email')
     } else if (!usuario.email.includes('@')) {
-        erroresFront.push("• El email no parece válido")
+        erroresFront.push('• El email no parece válido')
     }
 
     if (usuario.contrasena.trim() === '') {
-        erroresFront.push("• Faltó la contraseña")
+        erroresFront.push('• Faltó la contraseña')
     } else if (usuario.contrasena.trim().length < 6) {
-        erroresFront.push("• La contraseña es muy corta")
+        erroresFront.push('• La contraseña es muy corta')
     }
 
     // Si el guardia encontró errores, los muestra y corta el viaje acá mismo
