@@ -8,7 +8,7 @@ import type { GrupoDetalleDTO, GrupoGastosPorAnioDTO } from '@/domain/Grupo'
 import GroupHeader from '@/components/groupsPage/GroupHeader'
 import ExpensesList, { type ExpensesByMonth } from '@/components/groupsPage/ExpensesList'
 import ExpenseItem, { type Expense } from '@/components/groupsPage/ExpenseItem'
-import CreateExpense from '@/components/groupsPage/CreateExpense'
+import CreateExpenseButton from '@/components/groupsPage/CreateExpenseButton'
 
 export default function GroupDetailPage() {
     const { groupId } = useParams()
@@ -165,7 +165,7 @@ export default function GroupDetailPage() {
                 </div>
             </ColumnContainer>
 
-            <CreateExpense onClick={() => navigate(`/groups/${groupDetail.id}/expense/create`)} />
+            <CreateExpenseButton onClick={() => navigate(`/groups/${groupDetail.id}/expense/create`)} />
         </div>
     )
 }
