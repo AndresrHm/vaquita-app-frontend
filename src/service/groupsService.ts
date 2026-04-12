@@ -78,6 +78,14 @@ export async function obtenerMiembrosDeGrupoSettings(grupoId: number): Promise<M
   return data
 }
 
+export async function actualizarGrupoSettings(
+  grupoId: number,
+  dto: GrupoSettingsDTO
+): Promise<GrupoSettingsDTO> {
+  const { data } = await api.patch<GrupoSettingsDTO>(`/grupo/${grupoId}/settings`, { body: dto })
+  return data
+}
+
 // Usado en createExpense para grupo específico
 export async function obtenerGrupoPorId(id: number): Promise<GrupoNombreIdDTO> {
   const { data } = await api.get<GrupoNombreIdDTO>(`/grupo/${id}`)

@@ -10,7 +10,7 @@ import Select from '@/components/ui/select'
 import { useState } from 'react'
 import type { GrupoContextoUsuarioDTO, GrupoSettingsDTO, Miembro } from '@/domain/Grupo'
 import { useOnInit } from '@/customHooks/hooks'
-import { obtenerGrupoUsuarioContexto, obtenerGrupoSettings, obtenerMiembrosDeGrupoSettings } from '@/service/groupsService'
+import { obtenerGrupoUsuarioContexto, obtenerGrupoSettings, obtenerMiembrosDeGrupoSettings, actualizarGrupoSettings } from '@/service/groupsService'
 import { useParams } from 'react-router-dom'
 
 function Avatar({ src, alt, size = 10 }: { src?: string; alt?: string; size?: number }) {
@@ -66,6 +66,7 @@ function Modal({ open, title, children, onClose, onConfirm }: { open: boolean; t
 }
 
 export default function GroupSettingsPage() {
+    const [initialData, setInitialData] = useState<GrupoSettingsDTO | null>(null)
     const [formularioGrupo, setFormularioGrupo] = useState<GrupoSettingsDTO>({} as GrupoSettingsDTO)
     const [miembros, setMiembros] = useState<Miembro[]>([])
     const [contextoUsuario, setContextoUsuario] = useState<GrupoContextoUsuarioDTO>({} as GrupoContextoUsuarioDTO)
@@ -86,6 +87,44 @@ export default function GroupSettingsPage() {
         })
     }
 
+    const isDirty = JSON.stringify(formularioGrupo) !== JSON.stringify(initialData)
+
+
+    const validate = () => {
+        if (!formularioGrupo.nombre?.trim()) {
+            setError('El nombre del grupo es obligatorio')
+            return false
+        }
+        return true
+    }
+
+    const handleSave = async () => {
+        try {
+            if (!validate()) return
+
+            if (!isDirty) return
+
+            setLoading(true)
+
+            const updated = await actualizarGrupoSettings(parsedGroupId, formularioGrupo)
+
+            setFormularioGrupo(updated)
+            setInitialData(updated)
+
+        } catch (e) {
+            console.error(e)
+            setError('No se pudo guardar el grupo')
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const handleCancel = () => {
+        if (initialData) {
+            setFormularioGrupo(initialData)
+        }
+    }
+
     useOnInit(() => {
         const fetchData = async () => {
             try {
@@ -97,6 +136,7 @@ export default function GroupSettingsPage() {
                     obtenerGrupoUsuarioContexto(parsedGroupId)
                 ])
 
+                setInitialData(grupo)
                 setFormularioGrupo(grupo)
                 setMiembros(miembros)
                 setContextoUsuario(contexto)
@@ -269,10 +309,26 @@ export default function GroupSettingsPage() {
                             )}
                         </Card>
 
-                        <div className="flex items-center justify-center-safe gap-4">
-                            <ActionButton icon={<Check className="w-5 h-5" />} disabled className="text-base">Guardar</ActionButton>
-                            <ActionButton variant="secondary" icon={<X className="w-5 h-5" />} className="text-base">Cancelar</ActionButton>
-                        </div>
+                        {isDirty && (
+                            <div className="flex items-center justify-center-safe gap-4">
+                                <ActionButton
+                                    icon={<Check className="w-5 h-5" />}
+                                    onClick={handleSave}
+                                    className="text-base"
+                                >
+                                    Guardar
+                                </ActionButton>
+
+                                <ActionButton
+                                    variant="secondary"
+                                    icon={<X className="w-5 h-5" />}
+                                    onClick={handleCancel}
+                                    className="text-base"
+                                >
+                                    Cancelar
+                                </ActionButton>
+                            </div>
+                        )}
 
                     </main>
                 )}
