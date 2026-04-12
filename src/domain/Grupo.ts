@@ -133,6 +133,7 @@ export type GrupoSettingsDTO = {
   moneda: string
   simplificarDeudas: boolean
   notificaciones: boolean
+  modoRata: boolean
 }
 
 export type GrupoContextoUsuarioDTO = {

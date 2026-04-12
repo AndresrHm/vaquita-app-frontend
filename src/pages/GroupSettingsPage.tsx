@@ -304,6 +304,12 @@ export default function GroupSettingsPage() {
                                         onChange={(v) => updateGroupField('notificaciones', v)}
                                         label="Notificaciones" />
                                 </div>
+                                <div className="flex items-center justify-between">
+                                    <Toggle
+                                        checked={formularioGrupo.modoRata}
+                                        onChange={(v) => updateGroupField('modoRata', v)}
+                                        label="Modo rata 🐀" />
+                                </div>
                             </div>
                         </Card>
 
