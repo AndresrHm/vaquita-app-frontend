@@ -202,8 +202,8 @@ export default function GroupSettingsPage() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm text-muted-foreground mb-1">Imagen (URL)</label>
-                                    <div className="flex items-center space-x-3">
+                                    <label className="block text-sm text-muted-foreground">Imagen (URL)</label>
+                                    <div className="flex items-center space-x-1">
                                         <input
                                             value={imageUrl}
                                             onChange={(e) => {
@@ -217,9 +217,8 @@ export default function GroupSettingsPage() {
                                                 src={!imageError && imageUrl ? imageUrl : fallbackImage}
                                                 onError={() => setImageError(true)}
                                                 alt="preview"
-                                                className="w-20 h-20 rounded-md object-cover"
+                                                className="w-30 h-20 rounded-md object-cover"
                                             />
-                                            <Camera className="w-5 h-5 text-muted-foreground" />
                                         </div>
                                     </div>
                                 </div>

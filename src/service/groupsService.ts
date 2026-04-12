@@ -82,7 +82,8 @@ export async function actualizarGrupoSettings(
   grupoId: number,
   dto: GrupoSettingsDTO
 ): Promise<GrupoSettingsDTO> {
-  const { data } = await api.patch<GrupoSettingsDTO>(`/grupo/${grupoId}/settings`, { body: dto })
+  console.log('Actualizando grupo con DTO:', dto)
+  const { data } = await api.patch<GrupoSettingsDTO>(`/grupo/${grupoId}/settings`, dto)
   return data
 }
 
