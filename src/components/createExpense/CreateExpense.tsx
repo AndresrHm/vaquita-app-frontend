@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import { useState } from 'react'
 import { Receipt, Calendar, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -17,14 +18,10 @@ import { obtenerGrupoPorId, obtenerGruposDeUsuario } from '@/service/groupsServi
 import { useOnInit } from '@/customHooks/hooks'
 import { useNavigate, useParams } from 'react-router-dom'
 
-const mockCurrentUser = { id: 1, name: 'Juan' }
 
-type Props = {
-    onBack?: () => void
-}
-
-export default function CreateExpense({ onBack }: Props) {
-    const [expense, setExpense] = useState(new Expense(undefined, mockCurrentUser.id))
+export default function CreateExpense() {
+    // eslint-disable-next-line no-undef
+    const [expense, setExpense] = useState(new Expense(undefined, Number(localStorage.id)))
     const [participants, setParticipants] = useState<Usuario[]>([])
     const [groups, setGroups] = useState<Grupo[]>([])
     const [isParticipantsOpen, setIsParticipantsOpen] = useState(false)
@@ -59,7 +56,7 @@ export default function CreateExpense({ onBack }: Props) {
 
     const obtenerGrupos = async () => {
         try {
-            const gruposBack = await obtenerGruposDeUsuario(mockCurrentUser.id)
+            const gruposBack = await obtenerGruposDeUsuario(Number(localStorage.id))
             setGroups(gruposBack)
         } catch (error: unknown) {
             console.log(error)
@@ -207,7 +204,7 @@ export default function CreateExpense({ onBack }: Props) {
                                 {isParticipantsOpen && effectiveGroupId && !isLoadingParticipants && (
                                     <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-xl shadow-lg z-10 max-h-40 overflow-y-auto">
                                         {participants.map((participant) => {
-                                            const isCurrentUser = participant.id === mockCurrentUser.id
+                                            const isCurrentUser = participant.id === Number(localStorage.id)
 
                                             return (
                                                 <label
