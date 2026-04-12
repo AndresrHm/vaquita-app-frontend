@@ -28,6 +28,7 @@ export const usuarioService = {
                 localStorage.setItem('token', data.token)
                 localStorage.setItem('user_name', data.nombre) 
                 localStorage.setItem('user_email', data.email)
+                localStorage.setItem('id', data.id.toString())
             }
             
             return data

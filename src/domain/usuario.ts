@@ -54,6 +54,7 @@ export interface UsuarioLoginDTO {
 }
 
 export interface UsuarioLogueadoDTO {
+    id: number
     token: string
     nombre: string
     email: string
