@@ -17,8 +17,6 @@ import { obtenerGrupoPorId, obtenerGruposDeUsuario } from '@/service/groupsServi
 import { useOnInit } from '@/customHooks/hooks'
 import { useNavigate } from 'react-router-dom'
 
-const mockCurrentUser = { id: 1, name: 'Juan' }
-
 type Props = {
     groupId?: number
     groupName?: string
