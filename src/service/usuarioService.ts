@@ -52,10 +52,4 @@ export const usuarioService = {
         const { data } = await axios.get<UsuarioNombreIdDTO[]>(`${API_URL}/grupo/${grupoId}`)
         return data.map(userJson => Usuario.fromNombreIdJSON(userJson))
     },
-
-    // Usado en groupSettings
-    async obtenerMiembrosDeGrupoSettings(grupoId: number): Promise<Miembro[]> {
-        const { data } = await axios.get<Miembro[]>(`${API_URL}/grupo/${grupoId}`)
-        return data
-    },
 }

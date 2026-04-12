@@ -10,14 +10,25 @@ import Select from '@/components/ui/select'
 import { useState } from 'react'
 import type { GrupoContextoUsuarioDTO, GrupoSettingsDTO, Miembro } from '@/domain/Grupo'
 import { useOnInit } from '@/customHooks/hooks'
-import { obtenerGrupoContexto, obtenerGrupoSettings } from '@/service/groupsService'
-import { usuarioService } from '@/service/usuarioService'
+import { obtenerGrupoUsuarioContexto, obtenerGrupoSettings, obtenerMiembrosDeGrupoSettings } from '@/service/groupsService'
 import { useParams } from 'react-router-dom'
 
-function Avatar({ src, alt, size = 10 }: { src: string; alt?: string; size?: number }) {
+function Avatar({ src, alt, size = 10 }: { src?: string; alt?: string; size?: number }) {
     const px = size * 4
+    const fallback = 'https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'
+
+    const [error, setError] = useState(false)
+
+    const finalSrc = !error && src ? src : fallback
+
     return (
-        <img src={src} alt={alt ?? 'avatar'} style={{ width: px, height: px }} className="rounded-full object-cover" />
+        <img
+            src={finalSrc}
+            onError={() => setError(true)}
+            alt={alt ?? 'avatar'}
+            style={{ width: px, height: px }}
+            className="rounded-full object-cover"
+        />
     )
 }
 
@@ -57,14 +68,14 @@ function Modal({ open, title, children, onClose, onConfirm }: { open: boolean; t
 export default function GroupSettingsPage() {
     const [formularioGrupo, setFormularioGrupo] = useState<GrupoSettingsDTO>({} as GrupoSettingsDTO)
     const [miembros, setMiembros] = useState<Miembro[]>([])
-    const [contexto, setContexto] = useState<GrupoContextoUsuarioDTO>({} as GrupoContextoUsuarioDTO)
+    const [contextoUsuario, setContextoUsuario] = useState<GrupoContextoUsuarioDTO>({} as GrupoContextoUsuarioDTO)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [imageError, setImageError] = useState(false)
     const imageUrl = formularioGrupo?.imagenUrl || ''
     const fallbackImage = 'https://t4.ftcdn.net/jpg/06/57/37/01/360_F_657370150_pdNeG5pjI976ZasVbKN9VqH1rfoykdYU.jpg'
-    const { id } = useParams()
-    const groupId = Number(id)
+    const { groupId } = useParams()
+    const parsedGroupId = Number(groupId)
 
     const updateGroupField = (field: keyof GrupoSettingsDTO, value: unknown) => {
         if (!formularioGrupo) return
@@ -81,14 +92,14 @@ export default function GroupSettingsPage() {
                 setLoading(true)
 
                 const [grupo, miembros, contexto] = await Promise.all([
-                    obtenerGrupoSettings(groupId),
-                    usuarioService.obtenerMiembrosDeGrupoSettings(groupId),
-                    obtenerGrupoContexto(groupId)
+                    obtenerGrupoSettings(parsedGroupId),
+                    obtenerMiembrosDeGrupoSettings(parsedGroupId),
+                    obtenerGrupoUsuarioContexto(parsedGroupId)
                 ])
 
                 setFormularioGrupo(grupo)
                 setMiembros(miembros)
-                setContexto(contexto)
+                setContextoUsuario(contexto)
 
             } catch (e) {
                 console.error(e)
@@ -245,13 +256,13 @@ export default function GroupSettingsPage() {
                                 <Button
                                     variant="outline"
                                     className="w-full justify-start bg-red-50 border-red-200 text-red-500 hover:bg-red-100 py-2.5 text-base"
-                                    disabled={!contexto?.esAdmin || contexto?.tieneDeudas}
+                                    disabled={!contextoUsuario?.esAdmin || contextoUsuario?.tieneDeudas}
                                 >
                                     <AlertTriangle className="w-6 h-6 mr-3" /> Eliminar grupo
                                 </Button>
                             </div>
                             {/* todo mejorar esto, que aparezca al clickear el button desactivado */}
-                            {contexto && contexto.tieneDeudas && (
+                            {contextoUsuario && contextoUsuario.tieneDeudas && (
                                 <p className='text-xs text-gray-400 pt-2'>
                                     No podés salir del grupo porque tenés deudas pendientes.
                                 </p>

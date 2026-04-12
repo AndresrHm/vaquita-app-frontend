@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { type GrupoDTO, type GrupoCreacionDTO, type GroupDetailPageResponse, Grupo, type GrupoNombreIdDTO, type GrupoDetalleDTO, type GrupoGastosPorAnioDTO, type GrupoCardDTO, type GrupoSettingsDTO, type GrupoContextoUsuarioDTO } from '@/domain/Grupo'
+import { type GrupoDTO, type GrupoCreacionDTO, type GroupDetailPageResponse, Grupo, type GrupoNombreIdDTO, type GrupoDetalleDTO, type GrupoGastosPorAnioDTO, type GrupoCardDTO, type GrupoSettingsDTO, type GrupoContextoUsuarioDTO, type Miembro } from '@/domain/Grupo'
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080'
 
@@ -63,8 +63,18 @@ export async function obtenerGrupoSettings(id: number): Promise<GrupoSettingsDTO
   return data
 }
 
-export async function obtenerGrupoContexto(id: number): Promise<GrupoContextoUsuarioDTO> {
-  const { data } = await api.get<GrupoContextoUsuarioDTO>(`/grupo/${id}/contexto`)
+export async function obtenerGrupoUsuarioContexto(id: number): Promise<GrupoContextoUsuarioDTO> {
+  const { data } = await api.get<GrupoContextoUsuarioDTO>(`/grupo/${id}/contexto`, {
+    params: {
+      usuarioId: 1, // TODO: Reemplazar con ID del usuario logueado
+    }
+  })
+  return data
+}
+
+export async function obtenerMiembrosDeGrupoSettings(grupoId: number): Promise<Miembro[]> {
+  const { data } = await api.get<Miembro[]>(`/grupo/${grupoId}/miembros`)
+  console.log('Miembros obtenidos:', data)
   return data
 }
 
