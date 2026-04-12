@@ -7,16 +7,19 @@ import PageTitle from '@/components/common/pageTitle'
 import type { GrupoCardDTO } from '@/domain/Grupo'
 import { useOnInit } from '@/customHooks/hooks'
 import { obtenerGrupos } from '@/service/groupsService'
+import { expenseService } from '@/service/expenseService'
+import { formatCurrency } from '@/utils/formatCurrency'
 
 const PAGE_SIZE = 6
 
 export default function GroupsPage() {
-  const usuarioId = 1 // 🔴 luego reemplazar por auth real
+  const usuarioId = Number(localStorage.id)
 
   const [groups, setGroups] = useState<GrupoCardDTO[]>([])
   const [page, setPage] = useState(0)
   const [hasNext, setHasNext] = useState(true)
   const [loading, setLoading] = useState(false)
+  const [debt, setDebt] = useState(0)
 
   const fetchGroups = async (pageToFetch = 0) => {
     if (loading) return
@@ -41,8 +44,20 @@ export default function GroupsPage() {
     }
   }
 
+  const getDebt = async (userId: number) => {
+    try {
+      const debtFetch = await expenseService.getUserDebt(userId)
+
+      setDebt(debtFetch)
+    } catch (err) {
+      console.error('Error fetching current debt', err)
+    }
+  }
+
   useOnInit(() => {
     fetchGroups(0)
+    getDebt(Number(localStorage.id))
+    console.log(debt)
   })
 
   const handleLoadMore = () => {
@@ -54,10 +69,12 @@ export default function GroupsPage() {
     <div className="flex flex-col space-y-4 min-h-[calc(100vh-5rem)]">
       <PageTitle>
         <div className="pl-2.5 pt-2">
-          <h2 className="text-xl font-semibold text-foreground">Tenés deudas</h2>
-          <p className="mt-1 text-sm text-muted-foreground">Debes $8,430</p>
-          <p className="mt-1 text-sm text-muted-foreground">TODO: que este título no esté hardcodeado</p>
-          <p className="mt-1 text-sm text-muted-foreground">TODO: search funcional con filtrado funcional</p>
+          <h2 className="text-xl font-semibold text-foreground">
+            {debt > 0 ? 'Tenés deuda' : 'Estás al día'}
+          </h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {debt > 0 ? `Debés ${formatCurrency(debt)}` : 'No debés nada, ¡genial!'}
+          </p>
         </div>
         <GroupsSearch />
       </PageTitle>
