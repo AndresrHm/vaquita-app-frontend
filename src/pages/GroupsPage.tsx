@@ -8,7 +8,6 @@ import type { GrupoCardDTO } from '@/domain/Grupo'
 import { useOnInit } from '@/customHooks/hooks'
 import { obtenerGrupos } from '@/service/groupsService'
 import { expenseService } from '@/service/expenseService'
-import { formatCurrency } from '@/utils/formatCurrency'
 
 const PAGE_SIZE = 6
 
@@ -73,7 +72,7 @@ export default function GroupsPage() {
             {debt > 0 ? 'Tenés deuda' : 'Estás al día'}
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            {debt > 0 ? `Debés ${formatCurrency(debt)}` : 'No debés nada, ¡genial!'}
+            {debt > 0 ? `Debés $${debt}` : 'No debés nada, ¡genial!'}
           </p>
         </div>
         <GroupsSearch />
