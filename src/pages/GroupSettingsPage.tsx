@@ -10,7 +10,7 @@ import Select from '@/components/ui/select'
 import { useState } from 'react'
 import type { GrupoContextoUsuarioDTO, GrupoSettingsDTO, Miembro } from '@/domain/Grupo'
 import { useOnInit } from '@/customHooks/hooks'
-import { obtenerGrupoUsuarioContexto, obtenerGrupoSettings, obtenerMiembrosDeGrupoSettings, actualizarGrupoSettings } from '@/service/groupsService'
+import { obtenerGrupoUsuarioContexto, obtenerGrupoSettings, obtenerMiembrosDeGrupoSettings, actualizarGrupoSettings, eliminarMiembro } from '@/service/groupsService'
 import { useParams } from 'react-router-dom'
 
 function Avatar({ src, alt, size = 10 }: { src?: string; alt?: string; size?: number }) {
@@ -51,7 +51,7 @@ function Modal({ open, title, children, onClose, onConfirm }: { open: boolean; t
     if (!open) return null
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-            <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-5">
+            <div className="bg-white rounded-lg shadow-lg w-full max-w-sm p-5">
                 <h3 className="text-lg font-semibold mb-3">{title}</h3>
                 <div className="text-sm text-muted-foreground">{children}</div>
                 <div className="mt-4 flex justify-end space-x-2">
@@ -71,6 +71,7 @@ export default function GroupSettingsPage() {
     const [miembros, setMiembros] = useState<Miembro[]>([])
     const [contextoUsuario, setContextoUsuario] = useState<GrupoContextoUsuarioDTO>({} as GrupoContextoUsuarioDTO)
     const [loading, setLoading] = useState(true)
+    const [memberToDelete, setMemberToDelete] = useState<Miembro | null>(null)
     const [error, setError] = useState<string | null>(null)
     const [imageError, setImageError] = useState(false)
     const imageUrl = formularioGrupo?.imagenUrl || ''
@@ -122,6 +123,22 @@ export default function GroupSettingsPage() {
     const handleCancel = () => {
         if (initialData) {
             setFormularioGrupo(initialData)
+        }
+    }
+
+    const handleRemoveMember = async (memberId: number) => {
+        try {
+            setLoading(true)
+
+            await eliminarMiembro(parsedGroupId, contextoUsuario.usuarioId, memberId)
+
+            setMiembros(prev => prev.filter(m => m.id !== memberId))
+
+        } catch (e) {
+            console.error(e)
+            setError('No se pudo eliminar el miembro')
+        } finally {
+            setLoading(false)
         }
     }
 
@@ -237,7 +254,7 @@ export default function GroupSettingsPage() {
                                         <div className="flex items-center space-x-3">
                                             <Avatar src={m.imagenUrl} alt={m.nombre} />
                                             <div>
-                                                <div className="font-medium">{m.nombre}</div>
+                                                <div className="font-medium">{m.nombre} {contextoUsuario.usuarioId === m.id && '(Tú)'}</div>
                                                 <div className="text-sm text-muted-foreground capitalize">{m.rol}</div>
                                             </div>
                                         </div>
@@ -246,11 +263,15 @@ export default function GroupSettingsPage() {
                                                 <div className="inline-flex items-center gap-2 text-muted-foreground font-semibold pr-1">
                                                     <Crown className="w-6 h-6" />
                                                 </div>
-                                            ) : (
-                                                <Button variant="ghost" size="icon" className="">
+                                            ) : contextoUsuario.esAdmin && m.id !== contextoUsuario.usuarioId ? (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => setMemberToDelete(m)}
+                                                >
                                                     <Trash2 className="w-5 h-5 text-red-600" />
                                                 </Button>
-                                            )}
+                                            ) : null}
                                         </div>
                                     </div>
                                 ))}
@@ -289,7 +310,8 @@ export default function GroupSettingsPage() {
                         {/* Gestión del grupo */}
                         <Card interactive={false}>
                             <h3 className="text-lg font-semibold mb-3">Gestión del grupo</h3>
-                            <p className="text-xs text-gray-400 pb-2">esto es funcional, pero en el backend aún no está hecho</p>
+                            <p className="text-xs text-gray-400 pb-2">falta realizar las acciones de salir de grupo y eliminar</p>
+                            <p className="text-xs text-gray-400 pb-2">aunque sí funciona el disabled (llega si tiene deudas y si es admin)</p>
                             <div className="space-y-3">
                                 <Button variant="outline" className="w-full justify-start bg-red-50 border-red-200 text-red-500 hover:bg-red-100 py-2.5 text-base" disabled>
                                     <LogOut className="w-6 h-6 mr-3" /> Salir del grupo
@@ -341,6 +363,20 @@ export default function GroupSettingsPage() {
 
             <Modal open={false} title="Eliminar grupo">
                 Esta acción eliminará el grupo y no se puede deshacer. Asegúrate de tener respaldo.
+            </Modal>
+
+            <Modal
+                open={!!memberToDelete}
+                title="Eliminar miembro"
+                onClose={() => setMemberToDelete(null)}
+                onConfirm={() => {
+                    if (memberToDelete) {
+                        handleRemoveMember(memberToDelete.id)
+                        setMemberToDelete(null)
+                    }
+                }}
+            >
+                ¿Seguro que querés eliminar a {memberToDelete?.nombre}?
             </Modal>
         </div >
     )

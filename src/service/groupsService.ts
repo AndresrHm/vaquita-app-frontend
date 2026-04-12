@@ -74,7 +74,6 @@ export async function obtenerGrupoUsuarioContexto(id: number): Promise<GrupoCont
 
 export async function obtenerMiembrosDeGrupoSettings(grupoId: number): Promise<Miembro[]> {
   const { data } = await api.get<Miembro[]>(`/grupo/${grupoId}/miembros`)
-  console.log('Miembros obtenidos:', data)
   return data
 }
 
@@ -82,8 +81,21 @@ export async function actualizarGrupoSettings(
   grupoId: number,
   dto: GrupoSettingsDTO
 ): Promise<GrupoSettingsDTO> {
-  console.log('Actualizando grupo con DTO:', dto)
   const { data } = await api.patch<GrupoSettingsDTO>(`/grupo/${grupoId}/settings`, dto)
+  return data
+}
+
+export async function eliminarMiembro(
+  grupoId: number,
+  usuarioId: number,
+  usuarioAEliminarId: number,
+): Promise<number> {
+  const { data } = await api.delete<number>(`/grupo/${grupoId}/miembros`, {
+    params: {
+      usuarioId,
+      usuarioAEliminarId,
+    }
+  })
   return data
 }
 

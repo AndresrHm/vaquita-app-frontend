@@ -136,12 +136,13 @@ export type GrupoSettingsDTO = {
 }
 
 export type GrupoContextoUsuarioDTO = {
+  usuarioId: number,
   esAdmin: boolean
   tieneDeudas: boolean
 }
 
 export type Miembro = {
-  id: string;
+  id: number;
   nombre: string;
   rol: 'admin' | 'member';
   imagenUrl: string
