@@ -260,6 +260,7 @@ export default function GroupSettingsPage() {
                         {/* Currency & Preferences */}
                         <Card interactive={false}>
                             <h3 className="text-lg font-semibold mb-3">Moneda y preferencias</h3>
+                            <p className="text-xs text-gray-400 pb-2">esto es funcional, pero en el backend aún no está hecho</p>
                             <div className="space-y-4">
                                 <div>
                                     <label className="block text-sm text-muted-foreground mb-1">Moneda por defecto</label>
@@ -288,6 +289,7 @@ export default function GroupSettingsPage() {
                         {/* Gestión del grupo */}
                         <Card interactive={false}>
                             <h3 className="text-lg font-semibold mb-3">Gestión del grupo</h3>
+                            <p className="text-xs text-gray-400 pb-2">esto es funcional, pero en el backend aún no está hecho</p>
                             <div className="space-y-3">
                                 <Button variant="outline" className="w-full justify-start bg-red-50 border-red-200 text-red-500 hover:bg-red-100 py-2.5 text-base" disabled>
                                     <LogOut className="w-6 h-6 mr-3" /> Salir del grupo
