@@ -1,17 +1,22 @@
+import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Search } from 'lucide-react'
 import PageTitle from '@/components/common/pageTitle'
 import ColumnContainer from '@/components/common/columnContainer'
 import FriendCard from '@/components/friendsPage/FriendCard'
-
-const mockFriends = [
-  { id: 'u1', name: 'Lucía', role: 'Integrante', due: 2100, imageUrl: '' },
-  { id: 'u2', name: 'Martín', role: 'Integrante', due: 5400, imageUrl: '' },
-  { id: 'u3', name: 'Juan Carlos', role: 'Integrante', due: 1200, imageUrl: '' },
-]
-
+import { usuarioService } from '@/service/usuarioService'
 
 export default function FriendsPage() {
+  const [friends, setFriends] = useState<{ id: string; name: string; role: string; due: number; imageUrl: string }[]>([])
+
+  useEffect(() => {
+    const userId = Number(localStorage.getItem('id'))
+    if (!userId) return
+    usuarioService.obtenerAmigos(userId).then((data) => {
+      setFriends(data.map((u) => ({ id: String(u.id), name: u.nombre, role: 'Amigo', due: 0, imageUrl: '' })))
+    }).catch(() => {})
+  }, [])
+
   return (
     <div className="space-y-4">
       <PageTitle title="Amigos" subtitle="Agregá y organizá participantes." />
@@ -31,7 +36,7 @@ export default function FriendsPage() {
 
         {/* Lista de amigos */}
         <div className="mt-3 max-h-[42vh] space-y-3 overflow-y-auto pr-1">
-          {mockFriends.map((f) => (
+          {friends.map((f) => (
             <FriendCard key={f.id} friend={f} />
           ))}
         </div>

@@ -1,16 +1,10 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ChevronLeft, Search, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { crearGrupo } from '@/service/groupsService'
-
-const mockFriends = [
-  { id: 'u1', name: 'Lucía Fernández' },
-  { id: 'u2', name: 'Martín Gómez' },
-  { id: 'u3', name: 'Juan Carlos Pérez' },
-  { id: 'u4', name: 'Sofía Rodríguez' },
-  { id: 'u5', name: 'Diego Torres' },
-]
+import { usuarioService } from '@/service/usuarioService'
+import type { Usuario } from '@/domain/usuario'
 
 function getInitials(name: string) {
   return name
@@ -30,12 +24,19 @@ export default function CreateGroupPage() {
   const [status, setStatus] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [friends, setFriends] = useState<Usuario[]>([])
+
+  useEffect(() => {
+    const userId = Number(localStorage.getItem('id'))
+    if (!userId) return
+    usuarioService.obtenerAmigos(userId).then(setFriends).catch(() => {})
+  }, [])
 
   const filteredFriends = useMemo(() => {
     const q = search.trim().toLowerCase()
-    if (!q) return mockFriends
-    return mockFriends.filter((f) => f.name.toLowerCase().includes(q))
-  }, [search])
+    if (!q) return friends
+    return friends.filter((f) => f.nombre.toLowerCase().includes(q))
+  }, [search, friends])
 
   const isValid = groupName.trim().length >= 2
 
@@ -56,8 +57,8 @@ export default function CreateGroupPage() {
     setError(null)
 
     try {
-      // TODO: reemplazar 1 por el id del usuario autenticado
-      await crearGrupo(1, {
+      const userId = Number(localStorage.getItem('id'))
+      await crearGrupo(userId, {
         nombre: groupName.trim(),
         descripcion: description.trim(),
         imagen: '',
@@ -148,12 +149,13 @@ export default function CreateGroupPage() {
               <p className="py-4 text-center text-sm text-muted-foreground">Sin resultados</p>
             ) : (
               filteredFriends.map((f) => {
-                const selected = selectedIds.has(f.id)
+                const fId = String(f.id)
+                const selected = selectedIds.has(fId)
                 return (
                   <button
-                    key={f.id}
+                    key={fId}
                     type="button"
-                    onClick={() => toggleMember(f.id)}
+                    onClick={() => toggleMember(fId)}
                     className={[
                       'w-full flex items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-left transition',
                       selected
@@ -163,9 +165,9 @@ export default function CreateGroupPage() {
                   >
                     <div className="flex items-center gap-3">
                       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border bg-muted/80 text-xs font-semibold text-muted-foreground">
-                        {getInitials(f.name)}
+                        {getInitials(f.nombre)}
                       </div>
-                      <span className="text-sm font-medium text-foreground">{f.name}</span>
+                      <span className="text-sm font-medium text-foreground">{f.nombre}</span>
                     </div>
 
                     <span

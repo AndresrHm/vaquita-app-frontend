@@ -51,4 +51,9 @@ export const usuarioService = {
         const { data } = await axios.get<UsuarioNombreIdDTO[]>(`${API_URL}/grupo/${grupoId}`)
         return data.map(userJson => Usuario.fromNombreIdJSON(userJson))
     },
+
+    async obtenerAmigos(usuarioId: number): Promise<Usuario[]> {
+        const { data } = await axios.get<UsuarioNombreIdDTO[]>(`${API_URL}/amigos/${usuarioId}`)
+        return data.map(userJson => Usuario.fromNombreIdJSON(userJson))
+    },
 }
