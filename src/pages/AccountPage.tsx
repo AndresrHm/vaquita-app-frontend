@@ -2,6 +2,7 @@
 import PageTitle from '@/components/common/pageTitle'
 import Card from '@/components/common/card'
 import ColumnContainer from '@/components/common/columnContainer'
+import UserExpensesButton from '@/components/accountPage/UserExpensesButton'
 
 const mockUser = {
   name: 'Juan',
@@ -35,6 +36,8 @@ export default function AccountPage() {
             <div className="mt-1 text-xs text-muted-foreground">On (mock)</div>
           </Card>
         </div>
+
+        <UserExpensesButton />
 
         <Button className="mt-4 w-full rounded-xl" variant="secondary" type="button">
           Cerrar sesión (mock)
