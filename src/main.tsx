@@ -15,6 +15,7 @@ import CreateGroupPage from '@/pages/CreateGroupPage.tsx'
 import LoginPage from '@/pages/LoginPage.tsx'
 import RegisterPage from '@/pages/RegisterPage'
 import CreateManualExpensePage from './pages/CreateManualExpensePage'
+import UserExpensesPage from '@/pages/UserExpensesPage'
 
 const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -33,6 +34,7 @@ const router = createBrowserRouter([
       { path: 'friends', element: <FriendsPage /> },
       { path: 'activity', element: <ActivityPage /> },
       { path: 'account', element: <AccountPage /> },
+      { path: 'account/expenses', element: <UserExpensesPage /> },
     ]
   },
   { path: '*', element: <Navigate to="/" replace /> }
