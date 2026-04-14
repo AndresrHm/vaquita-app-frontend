@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { Usuario, type UsuarioLoginDTO, type UsuarioLogueadoDTO, type UsuarioNombreIdDTO } from '../domain/usuario'
+import type { Miembro } from '@/domain/Grupo'
 
 const API_URL = 'http://localhost:8080/auth'
 
@@ -23,14 +24,15 @@ export const usuarioService = {
     async login(credenciales: UsuarioLoginDTO): Promise<UsuarioLogueadoDTO> {
         try {
             const { data } = await axios.post<UsuarioLogueadoDTO>(`${API_URL}/login`, credenciales)
-            
+
+            // todo: revisar ''localStorage' is not defined.'
             if (data.token) {
                 localStorage.setItem('token', data.token)
-                localStorage.setItem('user_name', data.nombre) 
+                localStorage.setItem('user_name', data.nombre)
                 localStorage.setItem('user_email', data.email)
                 localStorage.setItem('id', data.id.toString())
             }
-            
+
             return data
         } catch (error: any) {
             return manejarError(error)
