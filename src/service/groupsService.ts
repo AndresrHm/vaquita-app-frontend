@@ -99,6 +99,13 @@ export async function eliminarMiembro(
   return data
 }
 
+export async function agregarMiembros(
+  grupoId: number,
+  usuarioIds: number[],
+): Promise<void> {
+  await api.post(`/grupo/${grupoId}/miembros`, { usuarioIds })
+}
+
 // Usado en createExpense para grupo específico
 export async function obtenerGrupoPorId(id: number): Promise<GrupoNombreIdDTO> {
   const { data } = await api.get<GrupoNombreIdDTO>(`/grupo/${id}`)

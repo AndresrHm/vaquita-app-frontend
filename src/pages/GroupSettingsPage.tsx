@@ -10,7 +10,9 @@ import Select from '@/components/ui/select'
 import { useState } from 'react'
 import type { GrupoContextoUsuarioDTO, GrupoSettingsDTO, Miembro } from '@/domain/Grupo'
 import { useOnInit } from '@/customHooks/hooks'
-import { obtenerGrupoUsuarioContexto, obtenerGrupoSettings, obtenerMiembrosDeGrupoSettings, actualizarGrupoSettings, eliminarMiembro } from '@/service/groupsService'
+import { obtenerGrupoUsuarioContexto, obtenerGrupoSettings, obtenerMiembrosDeGrupoSettings, actualizarGrupoSettings, eliminarMiembro, agregarMiembros } from '@/service/groupsService'
+import { usuarioService } from '@/service/usuarioService'
+import type { Usuario } from '@/domain/usuario'
 import { useParams } from 'react-router-dom'
 
 function Avatar({ src, alt, size = 10 }: { src?: string; alt?: string; size?: number }) {
@@ -72,6 +74,10 @@ export default function GroupSettingsPage() {
     const [contextoUsuario, setContextoUsuario] = useState<GrupoContextoUsuarioDTO>({} as GrupoContextoUsuarioDTO)
     const [loading, setLoading] = useState(true)
     const [memberToDelete, setMemberToDelete] = useState<Miembro | null>(null)
+    const [addFriendsOpen, setAddFriendsOpen] = useState(false)
+    const [friends, setFriends] = useState<Usuario[]>([])
+    const [selectedFriendIds, setSelectedFriendIds] = useState<Set<number>>(new Set())
+    const [addingMembers, setAddingMembers] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [imageError, setImageError] = useState(false)
     const imageUrl = formularioGrupo?.imagenUrl || ''
@@ -139,6 +145,43 @@ export default function GroupSettingsPage() {
             setError('No se pudo eliminar el miembro')
         } finally {
             setLoading(false)
+        }
+    }
+
+    const handleOpenAddFriends = async () => {
+        try {
+            const amigos = await usuarioService.obtenerAmigos(contextoUsuario.usuarioId)
+            const memberIds = new Set(miembros.map(m => m.id))
+            setFriends(amigos.filter(a => a.id !== undefined && !memberIds.has(a.id!)))
+            setSelectedFriendIds(new Set())
+            setAddFriendsOpen(true)
+        } catch (e) {
+            console.error(e)
+            setError('No se pudieron cargar los amigos')
+        }
+    }
+
+    const toggleFriend = (id: number) => {
+        setSelectedFriendIds(prev => {
+            const next = new Set(prev)
+            next.has(id) ? next.delete(id) : next.add(id)
+            return next
+        })
+    }
+
+    const handleConfirmAddFriends = async () => {
+        if (selectedFriendIds.size === 0) return
+        try {
+            setAddingMembers(true)
+            await agregarMiembros(parsedGroupId, [...selectedFriendIds])
+            const updatedMembers = await obtenerMiembrosDeGrupoSettings(parsedGroupId)
+            setMiembros(updatedMembers)
+            setAddFriendsOpen(false)
+        } catch (e) {
+            console.error(e)
+            setError('No se pudieron agregar los miembros')
+        } finally {
+            setAddingMembers(false)
         }
     }
 
@@ -246,7 +289,7 @@ export default function GroupSettingsPage() {
                         <Card interactive={false}>
                             <div className="flex items-center justify-between mb-3">
                                 <h3 className="text-lg font-semibold">Miembros ({miembros?.length})</h3>
-                                <ActionButton icon={<UserPlus className="w-4 h-4" />} onClick={() => { }} />
+                                <ActionButton icon={<UserPlus className="w-4 h-4" />} onClick={handleOpenAddFriends} />
                             </div>
                             <div className="space-y-3">
                                 {miembros?.map((m) => (
@@ -370,6 +413,41 @@ export default function GroupSettingsPage() {
             <Modal open={false} title="Eliminar grupo">
                 Esta acción eliminará el grupo y no se puede deshacer. Asegúrate de tener respaldo.
             </Modal>
+
+            {addFriendsOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+                    <div className="bg-white rounded-lg shadow-lg w-full max-w-sm p-5">
+                        <h3 className="text-lg font-semibold mb-3">Agregar amigos al grupo</h3>
+                        <div className="max-h-64 overflow-y-auto space-y-2">
+                            {friends.length === 0 ? (
+                                <p className="text-sm text-muted-foreground">No tenés amigos para agregar.</p>
+                            ) : (
+                                friends.map(f => (
+                                    <label key={f.id} className="flex items-center space-x-3 cursor-pointer p-2 rounded-md hover:bg-muted">
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedFriendIds.has(f.id!)}
+                                            onChange={() => toggleFriend(f.id!)}
+                                            className="w-4 h-4 accent-primary"
+                                        />
+                                        <Avatar alt={f.nombre} />
+                                        <span className="text-sm font-medium">{f.nombre}</span>
+                                    </label>
+                                ))
+                            )}
+                        </div>
+                        <div className="mt-4 flex justify-end space-x-2">
+                            <Button variant="outline" onClick={() => setAddFriendsOpen(false)}>Cancelar</Button>
+                            <Button
+                                onClick={handleConfirmAddFriends}
+                                disabled={selectedFriendIds.size === 0 || addingMembers}
+                            >
+                                {addingMembers ? 'Agregando…' : 'Confirmar'}
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <Modal
                 open={!!memberToDelete}
