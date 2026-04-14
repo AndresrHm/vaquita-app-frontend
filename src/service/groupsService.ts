@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { type GrupoDTO, type GrupoCreacionDTO, type GroupDetailPageResponse, Grupo, type GrupoNombreIdDTO, type GrupoDetalleDTO, type GrupoGastosPorAnioDTO, type GrupoCardDTO } from '@/domain/Grupo'
+import { type GrupoDTO, type GrupoCreacionDTO, type GroupDetailPageResponse, Grupo, type GrupoNombreIdDTO, type GrupoDetalleDTO, type GrupoGastosPorAnioDTO, type GrupoCardDTO, type GrupoSettingsDTO, type GrupoContextoUsuarioDTO, type Miembro } from '@/domain/Grupo'
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080'
 
@@ -33,12 +33,6 @@ export async function obtenerGruposDeUsuario(usuarioId: number): Promise<Grupo[]
   return data.map(userJson => Grupo.fromNombreIdJSON(userJson))
 }
 
-export async function obtenerDetalleGrupo(
-  grupoId: number
-): Promise<GrupoDetalleDTO> {
-  const { data } = await api.get<GrupoDetalleDTO>(`/grupo/${grupoId}/detalle`)
-  return data
-}
 
 export async function obtenerGastosGrupo(
   grupoId: number,
@@ -55,6 +49,57 @@ export async function obtenerGastosGrupo(
   return data
 }
 
+// Usado en groupDetail
+export async function obtenerDetalleGrupo(
+  grupoId: number
+): Promise<GrupoDetalleDTO> {
+  const { data } = await api.get<GrupoDetalleDTO>(`/grupo/${grupoId}/detalle`)
+  return data
+}
+
+// Usado en groupSettings
+export async function obtenerGrupoSettings(id: number): Promise<GrupoSettingsDTO> {
+  const { data } = await api.get<GrupoSettingsDTO>(`/grupo/${id}/settings`)
+  return data
+}
+
+export async function obtenerGrupoUsuarioContexto(id: number): Promise<GrupoContextoUsuarioDTO> {
+  const { data } = await api.get<GrupoContextoUsuarioDTO>(`/grupo/${id}/contexto`, {
+    params: {
+      usuarioId: 1, // TODO: Reemplazar con ID del usuario logueado
+    }
+  })
+  return data
+}
+
+export async function obtenerMiembrosDeGrupoSettings(grupoId: number): Promise<Miembro[]> {
+  const { data } = await api.get<Miembro[]>(`/grupo/${grupoId}/miembros`)
+  return data
+}
+
+export async function actualizarGrupoSettings(
+  grupoId: number,
+  dto: GrupoSettingsDTO
+): Promise<GrupoSettingsDTO> {
+  const { data } = await api.patch<GrupoSettingsDTO>(`/grupo/${grupoId}/settings`, dto)
+  return data
+}
+
+export async function eliminarMiembro(
+  grupoId: number,
+  usuarioId: number,
+  usuarioAEliminarId: number,
+): Promise<number> {
+  const { data } = await api.delete<number>(`/grupo/${grupoId}/miembros`, {
+    params: {
+      usuarioId,
+      usuarioAEliminarId,
+    }
+  })
+  return data
+}
+
+// Usado en createExpense para grupo específico
 export async function obtenerGrupoPorId(id: number): Promise<GrupoNombreIdDTO> {
   const { data } = await api.get<GrupoNombreIdDTO>(`/grupo/${id}`)
   return data

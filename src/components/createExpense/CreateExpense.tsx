@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import { useState } from 'react'
 import { Receipt, Calendar, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -15,25 +16,22 @@ import type { Usuario } from '@/domain/usuario'
 import type { Grupo } from '@/domain/Grupo'
 import { obtenerGrupoPorId, obtenerGruposDeUsuario } from '@/service/groupsService'
 import { useOnInit } from '@/customHooks/hooks'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 
-type Props = {
-    groupId?: number
-    groupName?: string
-    onBack?: () => void
-}
 
-export default function CreateExpense({ groupId, groupName, onBack }: Props) {
+export default function CreateExpense() {
+    // eslint-disable-next-line no-undef
     const [expense, setExpense] = useState(new Expense(undefined, Number(localStorage.id)))
     const [participants, setParticipants] = useState<Usuario[]>([])
     const [groups, setGroups] = useState<Grupo[]>([])
     const [isParticipantsOpen, setIsParticipantsOpen] = useState(false)
     const [isLoadingParticipants, setIsLoadingParticipants] = useState(false)
+    const { groupId } = useParams()
     const [selectedGroupId, setSelectedGroupId] = useState<number | undefined>(
         groupId ? Number(groupId) : undefined // Si llega la id por props la usamos directamente (nuevo gasto desde groupDetail)
     )
     const effectiveGroupId = (groupId ?? selectedGroupId) as number | undefined
-    const [groupNameState, setGroupNameState] = useState<string | undefined>(groupName)
+    const [groupNameState, setGroupNameState] = useState<string | undefined>()
 
     const navigate = useNavigate()
 
@@ -177,7 +175,7 @@ export default function CreateExpense({ groupId, groupName, onBack }: Props) {
                                 <div className="flex items-center gap-3 rounded-xl border border-border bg-background/70 px-3 py-2.5">
                                     <Users className="h-4 w-4 text-muted-foreground shrink-0" />
                                     <span className="text-sm text-foreground">
-                                        {groupName || groupNameState || 'Grupo'}
+                                        {groupNameState || 'Grupo'}
                                     </span>
                                 </div>
                             )}
