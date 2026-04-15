@@ -19,6 +19,7 @@ export default function CreateGroupPage() {
   const navigate = useNavigate()
   const [groupName, setGroupName] = useState('')
   const [description, setDescription] = useState('')
+  const [imageUrl, setImageUrl] = useState('')
   const [search, setSearch] = useState('')
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [status, setStatus] = useState<string | null>(null)
@@ -61,7 +62,7 @@ export default function CreateGroupPage() {
       await crearGrupo(userId, {
         nombre: groupName.trim(),
         descripcion: description.trim(),
-        imagen: '',
+        imagenUrl: imageUrl.trim(),
         integrantesIds: Array.from(selectedIds).map(Number),
       })
       setStatus('Grupo creado. Redirigiendo...')
@@ -119,6 +120,20 @@ export default function CreateGroupPage() {
               onChange={(e) => setDescription(e.target.value)}
               type="text"
               placeholder="¿De qué trata el grupo?"
+              className="mt-2 w-full rounded-xl border border-border bg-input px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
+            />
+          </label>
+
+          <label className="block">
+            <span className="text-sm font-medium text-foreground">
+              Imagen (URL){' '}
+              <span className="font-normal text-muted-foreground">(opcional)</span>
+            </span>
+            <input
+              value={imageUrl}
+              onChange={(e) => setImageUrl(e.target.value)}
+              type="text"
+              placeholder="https://..."
               className="mt-2 w-full rounded-xl border border-border bg-input px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
             />
           </label>
