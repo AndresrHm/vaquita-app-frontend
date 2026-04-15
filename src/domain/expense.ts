@@ -2,6 +2,9 @@ import { Validable } from '@/types/validable'
 import { InputError } from '@/types/inputError'
 import { ExpenseItem } from './expenseItem'
 import type { ExpenseItemDTO } from './expenseItemDTO'
+import { ExpenseAllocation } from './expenseAllocation'
+import type { ExpenseAllocationDTO } from './expenseAllocationDTO'
+import { TipoDivision } from './enums/tipoDivision'
 
 export type ExpenseJSON = {
     descripcion: string
@@ -12,7 +15,8 @@ export type ExpenseJSON = {
     categoria: string
     fecha: string
     items: ExpenseItemDTO[]
-    tipoGasto: string //Temporal
+    tipoGasto: TipoDivision
+    asignacionesExactas: ExpenseAllocationDTO[]
 }
 
 const DEFAULT_CATEGORY = 'OTROS'
@@ -30,6 +34,8 @@ export class Expense extends Validable {
         public category = DEFAULT_CATEGORY,
         public date = new Date().toISOString().split('T')[0],
         public items: ExpenseItem[] = [],
+        public tipoDivision: TipoDivision = TipoDivision.PARTES_IGUALES,
+        public allocations: ExpenseAllocation[] = [],
     ) {
         super()
     }
@@ -87,6 +93,11 @@ export class Expense extends Validable {
     }
 
     toJSON(): ExpenseJSON {
+        const asignacionesMap: Record<number, number> = {}
+        this.allocations.forEach(alloc => {
+            asignacionesMap[alloc.participantId] = alloc.total
+        })
+
         return {
             grupoID: this.groupId,
             pagadorID: this.pagadorId,
@@ -96,22 +107,25 @@ export class Expense extends Validable {
             categoria: this.category,
             fecha: this.date,
             items: this.items.map((item) => item.toDTO()),
-            tipoGasto: 'PARTES_IGUALES' //Temporal
+            asignacionesExactas: asignacionesMap as any,
+            tipoGasto: this.tipoDivision
         }
     }
-
-    static fromJSON(json: ExpenseJSON): Expense {
-        return new Expense(
-            json.grupoID,
-            json.pagadorID,
-            json.participantesIDs,
-            json.descripcion,
-            json.monto,
-            json.categoria,
-            json.fecha,
-            (json.items ?? []).map((item) => new ExpenseItem(item.nombre, item.cantidad, item.precioUnitario))
-        )
-    }
+    /* No se usa (por ahora)
+        static fromJSON(json: ExpenseJSON): Expense {
+            return new Expense(
+                json.grupoID,
+                json.pagadorID,
+                json.participantesIDs,
+                json.descripcion,
+                json.monto,
+                json.categoria,
+                json.fecha,
+                (json.items ?? []).map((item) => new ExpenseItem(item.nombre, item.cantidad, item.precioUnitario)),
+                json.tipoGasto,
+                (json.asignacionesExactas ?? []).map((allocation) => new ExpenseAllocation(allocation.participantId, allocation.total))
+            )
+        }*/
 
     public static clone(expense: Expense): Expense {
         return new Expense(
@@ -123,6 +137,8 @@ export class Expense extends Validable {
             expense.category,
             expense.date,
             expense.items.map((item) => new ExpenseItem(item.nombre, item.cantidad, item.precioUnitario)),
+            expense.tipoDivision,
+            expense.allocations.map((allocation) => new ExpenseAllocation(allocation.participantId, allocation.total)),
         )
     }
 

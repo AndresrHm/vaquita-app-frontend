@@ -6,7 +6,7 @@ export default function CreateManualExpensePage() {
 
   return (
     <div className="min-h-[calc(100vh-5rem)]">
-      <CreateExpense onBack={() => navigate(-1)} />
+      <CreateExpense on-back={() => navigate(-1)} />
     </div>
   )
 }

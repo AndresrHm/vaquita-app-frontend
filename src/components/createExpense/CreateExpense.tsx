@@ -17,10 +17,11 @@ import type { Grupo } from '@/domain/Grupo'
 import { obtenerGrupoPorId, obtenerGruposDeUsuario } from '@/service/groupsService'
 import { useOnInit } from '@/customHooks/hooks'
 import { useNavigate, useParams } from 'react-router-dom'
+import { TipoDivision } from '@/domain/enums/TipoDivision'
+import { ExpenseAllocation } from '@/domain/expenseAllocation'
 
 
 export default function CreateExpense() {
-    // eslint-disable-next-line no-undef
     const [expense, setExpense] = useState(new Expense(undefined, Number(localStorage.id)))
     const [participants, setParticipants] = useState<Usuario[]>([])
     const [groups, setGroups] = useState<Grupo[]>([])
@@ -32,6 +33,7 @@ export default function CreateExpense() {
     )
     const effectiveGroupId = (groupId ?? selectedGroupId) as number | undefined
     const [groupNameState, setGroupNameState] = useState<string | undefined>()
+    const [divisionType, setDivisionType] = useState<TipoDivision>(TipoDivision.PARTES_IGUALES)
 
     const navigate = useNavigate()
 
@@ -103,6 +105,18 @@ export default function CreateExpense() {
         }
     }
 
+    const handleExactAmountChange = (participantId: number, amount: number) => {
+        const otrasAsignaciones = expense.allocations.filter(a => a.participantId !== participantId)
+        const nuevasAsignaciones = [...otrasAsignaciones, new ExpenseAllocation(participantId, amount)]
+
+        actualizarExpense({
+            tipoDivision: TipoDivision.PARTES_EXACTAS,
+            allocations: nuevasAsignaciones
+        })
+    }
+
+    const totalAsignado = expense.allocations.reduce((acc, curr) => acc + curr.total, 0)
+
     const crearExpense = async () => {
         const expenseParaValidar = Expense.clone(expense)
         expenseParaValidar.validar()
@@ -113,7 +127,7 @@ export default function CreateExpense() {
                 await expenseService.createExpense(expense)
                 navigate('/')
             } catch (error: unknown) {
-                console.error('Error creando gasto:', error)
+                console.error('Error creando gasto:', error.message)
             }
         }
     }
@@ -138,7 +152,7 @@ export default function CreateExpense() {
                             <span className="text-3xl font-bold text-primary">$</span>
                             <input
                                 type="number"
-                                step="0.01"
+                                step="1000"
                                 placeholder="0"
                                 inputMode="decimal"
                                 value={expense.total || ''}
@@ -233,6 +247,64 @@ export default function CreateExpense() {
                                 )}
                             </div>
                         </FieldWrapper>
+                        {/* Selector de Tipo de División */}
+                        <FieldWrapper label="Método de división">
+                            <div className="flex p-1 bg-background/50 rounded-xl border border-border">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setDivisionType(TipoDivision.PARTES_IGUALES)
+                                        actualizarExpense({ tipoDivision: TipoDivision.PARTES_IGUALES })
+                                    }}
+                                    className={`flex-1 py-2 text-xs font-medium rounded-lg transition-all ${divisionType === TipoDivision.PARTES_IGUALES ? 'bg-card shadow-sm text-primary' : 'text-muted-foreground'}`}
+                                >
+                                    Partes Iguales
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setDivisionType(TipoDivision.PARTES_EXACTAS)}
+                                    className={`flex-1 py-2 text-xs font-medium rounded-lg transition-all ${divisionType === TipoDivision.PARTES_EXACTAS ? 'bg-card shadow-sm text-primary' : 'text-muted-foreground'}`}
+                                >
+                                    Partes Exactas
+                                </button>
+                            </div>
+                        </FieldWrapper>
+
+                        {/* Sección Dinámica para Partes Exactas */}
+                        {divisionType === TipoDivision.PARTES_EXACTAS && (
+                            <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                                <span className="text-[10px] font-semibold text-muted-foreground uppercase px-1">Asignar montos</span>
+                                <div className="rounded-xl border border-border bg-background/30 divide-y divide-border/50">
+                                    {participants
+                                        .filter(p => expense.participantIds.includes(p.id!))
+                                        .map((participant) => (
+                                            <div key={participant.id} className="flex items-center justify-between p-3 gap-4">
+                                                <div className="flex flex-col">
+                                                    <span className="text-sm font-medium">{participant.nombre}</span>
+                                                    {participant.id === Number(localStorage.id) && <span className="text-[9px] text-primary">Pagador</span>}
+                                                </div>
+                                                <div className="flex items-center gap-2 bg-background/50 rounded-lg px-2 border border-border focus-within:border-primary/50 transition-colors">
+                                                    <span className="text-xs text-muted-foreground">$</span>
+                                                    <input
+                                                        type="number"
+                                                        placeholder="0.00"
+                                                        className="w-20 bg-transparent py-1.5 text-sm outline-none text-right"
+                                                        value={expense.allocations.find(a => a.participantId === participant.id)?.total ?? ''}
+                                                        onChange={(e) => handleExactAmountChange(participant.id!, Number(e.target.value))}
+                                                    />
+                                                </div>
+                                            </div>
+                                        ))}
+                                </div>
+                                {/* Validador visual de suma */}
+                                <div className="flex justify-between px-2">
+                                    <span className="text-[10px] text-muted-foreground">Suma asignada:</span>
+                                    <span className={`text-[10px] font-bold ${Math.abs(totalAsignado - expense.total) < 0.01 ? 'text-green-500' : 'text-destructive'}`}>
+                                        ${totalAsignado.toFixed(2)} / ${expense.total.toFixed(2)}
+                                    </span>
+                                </div>
+                            </div>
+                        )}
 
                         <FieldWrapper label="Descripción" instruction="¿En qué se gastó?">
                             <div className="flex items-center gap-3 rounded-xl border border-border bg-background/70 px-3 py-2.5">
