@@ -54,6 +54,7 @@ import { Button } from '@/components/ui/button'
 import PageTitle from '@/components/common/pageTitle'
 import Card from '@/components/common/card'
 import ColumnContainer from '@/components/common/columnContainer'
+import UserExpensesButton from '@/components/accountPage/UserExpensesButton'
 
 export default function AccountPage() {
   const navigate = useNavigate()
@@ -99,6 +100,8 @@ export default function AccountPage() {
             <div className="mt-1 text-xs text-muted-foreground">Activadas</div>
           </Card>
         </div>
+
+        <UserExpensesButton />
 
         {/* Botón de cierre de sesión real */}
         <Button 
