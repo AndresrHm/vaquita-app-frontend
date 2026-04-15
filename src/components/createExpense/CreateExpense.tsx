@@ -19,6 +19,11 @@ import { useOnInit } from '@/customHooks/hooks'
 import { useNavigate, useParams } from 'react-router-dom'
 import { TipoDivision } from '@/domain/enums/tipoDivision'
 import { ExpenseAllocation } from '@/domain/expenseAllocation'
+import DivisionTypeSelector from './DivisionTypeSelector'
+import ExactAmountAllocator from './ExactAmountAllocator'
+import CategorySelector from './CategorySelector'
+import ParticipantSelector from './ParticipantSelector'
+import GroupSelector from './GroupSelector'
 
 
 export default function CreateExpense() {
@@ -164,163 +169,46 @@ export default function CreateExpense() {
                     </div>
 
                     <div className="rounded-2xl border border-border bg-card/70 p-4 shadow-sm backdrop-blur-xl space-y-4">
-                        <FieldWrapper label="Grupo">
-                            <div className="relative">
-                                {/* Trigger: El botón que abre el dropdown */}
-                                <div
-                                    className={`relative flex items-center gap-3 rounded-xl border border-border bg-background/70 px-3 py-2.5 cursor-pointer 
-            ${groupId ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                    onClick={() => !groupId && setIsGroupsOpen(!isGroupsOpen)}
-                                >
-                                    <Users className="h-4 w-4 text-muted-foreground shrink-0" />
-                                    <span className="w-full text-sm text-foreground">
-                                        {groups.find(g => g.id === expense.groupId)?.nombre || (groupId ? groupNameState : 'Seleccioná un grupo')}
-                                    </span>
-                                    <div className="absolute right-3 pointer-events-none text-muted-foreground text-[10px]">
-                                        {groupId ? '' : (isGroupsOpen ? '▲' : '▼')}
-                                    </div>
-                                </div>
+                        <GroupSelector
+                            groups={groups}
+                            selectedGroupId={expense.groupId}
+                            currentGroupName={groupNameState}
+                            isOpen={isGroupsOpen}
+                            onToggleOpen={() => setIsGroupsOpen(!isGroupsOpen)}
+                            onSelect={(id) => cambiarGrupo(id)}
+                            disabled={!!groupId} // Si viene por URL, está deshabilitado
+                        />
 
-                                {/* Dropdown: Aparece solo si no venís de un grupo específico */}
-                                {isGroupsOpen && !groupId && (
-                                    <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-xl shadow-lg z-50 max-h-40 overflow-y-auto">
-                                        {groups.map((group) => {
-                                            const isSelected = expense.groupId === group.id
+                        <ParticipantSelector
+                            participants={participants}
+                            selectedIds={expense.participantIds}
+                            currentUser={{ id: Number(localStorage.id) } as Usuario} // O el objeto usuario que tengas
+                            isLoading={isLoadingParticipants}
+                            isOpen={isParticipantsOpen}
+                            enabled={!!effectiveGroupId}
+                            onToggleOpen={() => setIsParticipantsOpen(!isParticipantsOpen)}
+                            onToggleParticipant={handleToggleParticipant}
+                        />
 
-                                            return (
-                                                <label
-                                                    key={group.id}
-                                                    className="flex items-center gap-2 px-3 py-2 hover:bg-muted cursor-pointer"
-                                                >
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={isSelected}
-                                                        onChange={() => {
-                                                            cambiarGrupo(Number(group.id))
-                                                            setIsGroupsOpen(false)
-                                                        }}
-                                                        className="rounded border-border accent-primary focus:ring-primary"
-                                                    />
-                                                    <span className="text-sm">
-                                                        {group.nombre}
-                                                    </span>
-                                                </label>
-                                            )
-                                        })}
-                                    </div>
-                                )}
-                            </div>
-                        </FieldWrapper>
-
-                        <FieldWrapper label="¿Quiénes participan del gasto?">
-                            <div className="relative">
-                                <div
-                                    className={`relative flex items-center gap-3 rounded-xl border border-border bg-background/70 px-3 py-2.5 cursor-pointer 
-        ${(!effectiveGroupId || isLoadingParticipants) ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                    onClick={() => effectiveGroupId && !isLoadingParticipants && setIsParticipantsOpen(!isParticipantsOpen)}
-                                >
-                                    <Users className={`h-4 w-4 text-muted-foreground shrink-0 ${isLoadingParticipants ? 'animate-pulse' : ''}`} />
-                                    <span className="w-full text-sm text-foreground">
-                                        {isLoadingParticipants ? (
-                                            'Cargando integrantes...'
-                                        ) : (
-                                            <ParticipantDisplay participants={participants} selectedIds={expense.participantIds} />
-                                        )}
-                                    </span>
-                                    <div className="absolute right-3 pointer-events-none text-muted-foreground text-[10px]">
-                                        {isLoadingParticipants ? '...' : '▼'}
-                                    </div>
-                                </div>
-
-                                {isParticipantsOpen && effectiveGroupId && !isLoadingParticipants && (
-                                    <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-xl shadow-lg z-10 max-h-40 overflow-y-auto">
-                                        {participants.map((participant) => {
-                                            const isCurrentUser = participant.id === Number(localStorage.id)
-
-                                            return (
-                                                <label
-                                                    key={participant.id}
-                                                    className={`flex items-center gap-2 px-3 py-2 hover:bg-muted cursor-pointer ${isCurrentUser ? 'opacity-70 cursor-not-allowed' : ''}`}
-                                                >
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={expense.participantIds.includes(participant.id!)}
-                                                        // Deshabilitamos si es el usuario actual
-                                                        disabled={isCurrentUser}
-                                                        onChange={() => {
-                                                            if (!isCurrentUser) {
-                                                                handleToggleParticipant(participant.id!)
-                                                            }
-                                                        }}
-                                                        className="rounded border-border accent-primary focus:ring-primary"
-                                                    />
-                                                    <span className="text-sm">
-                                                        {participant.nombre} {isCurrentUser && '(Vos)'}
-                                                    </span>
-                                                </label>
-                                            )
-                                        })}
-                                    </div>
-                                )}
-                            </div>
-                        </FieldWrapper>
                         {/* Selector de Tipo de División */}
                         <FieldWrapper label="Método de división">
-                            <div className="flex p-1 bg-background/50 rounded-xl border border-border">
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        setDivisionType(TipoDivision.PARTES_IGUALES)
-                                        actualizarExpense({ tipoDivision: TipoDivision.PARTES_IGUALES })
-                                    }}
-                                    className={`flex-1 py-2 text-xs font-medium rounded-lg transition-all ${divisionType === TipoDivision.PARTES_IGUALES ? 'bg-card shadow-sm text-primary' : 'text-muted-foreground'}`}
-                                >
-                                    Partes Iguales
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setDivisionType(TipoDivision.PARTES_EXACTAS)}
-                                    className={`flex-1 py-2 text-xs font-medium rounded-lg transition-all ${divisionType === TipoDivision.PARTES_EXACTAS ? 'bg-card shadow-sm text-primary' : 'text-muted-foreground'}`}
-                                >
-                                    Partes Exactas
-                                </button>
-                            </div>
+                            <DivisionTypeSelector
+                                value={divisionType}
+                                onChange={(type) => {
+                                    setDivisionType(type)
+                                    actualizarExpense({ tipoDivision: type })
+                                }}
+                            />
                         </FieldWrapper>
 
                         {/* Sección Dinámica para Partes Exactas */}
                         {divisionType === TipoDivision.PARTES_EXACTAS && (
-                            <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
-                                <span className="text-[10px] font-semibold text-muted-foreground uppercase px-1">Asignar montos</span>
-                                <div className="rounded-xl border border-border bg-background/30 divide-y divide-border/50">
-                                    {participants
-                                        .filter(p => expense.participantIds.includes(p.id!))
-                                        .map((participant) => (
-                                            <div key={participant.id} className="flex items-center justify-between p-3 gap-4">
-                                                <div className="flex flex-col">
-                                                    <span className="text-sm font-medium">{participant.nombre}</span>
-                                                    {participant.id === Number(localStorage.id) && <span className="text-[9px] text-primary">Pagador</span>}
-                                                </div>
-                                                <div className="flex items-center gap-2 bg-background/50 rounded-lg px-2 border border-border focus-within:border-primary/50 transition-colors">
-                                                    <span className="text-xs text-muted-foreground">$</span>
-                                                    <input
-                                                        type="number"
-                                                        placeholder="0.00"
-                                                        className="w-20 bg-transparent py-1.5 text-sm outline-none text-right"
-                                                        value={expense.allocations.find(a => a.participantId === participant.id)?.total ?? ''}
-                                                        onChange={(e) => handleExactAmountChange(participant.id!, Number(e.target.value))}
-                                                    />
-                                                </div>
-                                            </div>
-                                        ))}
-                                </div>
-                                {/* Validador visual de suma */}
-                                <div className="flex justify-between px-2">
-                                    <span className="text-[10px] text-muted-foreground">Suma asignada:</span>
-                                    <span className={`text-[10px] font-bold ${Math.abs(totalAsignado - expense.total) < 0.01 ? 'text-green-500' : 'text-destructive'}`}>
-                                        ${totalAsignado.toFixed(2)} / ${expense.total.toFixed(2)}
-                                    </span>
-                                </div>
-                            </div>
+                            <ExactAmountAllocator
+                                participants={participants}
+                                expense={expense}
+                                totalAsignado={totalAsignado}
+                                onAmountChange={handleExactAmountChange}
+                            />
                         )}
 
                         <FieldWrapper label="Descripción" instruction="¿En qué se gastó?">
@@ -338,24 +226,13 @@ export default function CreateExpense() {
 
                         <CreateExpenseItem items={expense.items} onChange={handleItemsChange} />
 
-                        <FieldWrapper label="Categoría" instruction="Elegí un tipo de gasto">
-                            <div className="grid grid-cols-3 gap-2">
-                                {CATEGORIES.map((category) => (
-                                    <button
-                                        key={category.id}
-                                        type="button"
-                                        onClick={() => actualizarExpense({ category: category.id })}
-                                        className={`flex flex-col items-center gap-2 rounded-xl border p-3 transition-all ${expense.category === category.id
-                                            ? 'border-primary bg-primary/10 text-primary'
-                                            : 'border-border bg-background/70 text-muted-foreground hover:bg-muted'
-                                            }`}
-                                    >
-                                        <span className="text-lg">{category.icon}</span>
-                                        <span className="text-[10px] font-medium mt-1">{category.label}</span>
-                                    </button>
-                                ))}
-                            </div>
-                        </FieldWrapper>
+                        <CategorySelector
+                            label="Categoría"
+                            instruction="Elegí un tipo de gasto"
+                            categories={CATEGORIES}
+                            selectedCategory={expense.category}
+                            onSelect={(categoryId) => actualizarExpense({ category: categoryId })}
+                        />
 
                         <FieldWrapper label="Fecha del gasto">
                             <div className="flex items-center gap-3 rounded-xl border border-border bg-background/70 px-3 py-2.5">
