@@ -19,7 +19,7 @@ export interface GrupoDTO {
 export interface GrupoCreacionDTO {
   nombre: string
   descripcion: string
-  imagen: string
+  imagenUrl: string
   integrantesIds: number[]
 }
 

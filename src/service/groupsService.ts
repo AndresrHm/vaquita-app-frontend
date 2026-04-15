@@ -63,10 +63,18 @@ export async function obtenerGrupoSettings(id: number): Promise<GrupoSettingsDTO
   return data
 }
 
-export async function obtenerGrupoUsuarioContexto(id: number): Promise<GrupoContextoUsuarioDTO> {
+export async function obtenerGrupoUsuarioContexto(
+  id: number,
+  usuarioId?: number,
+): Promise<GrupoContextoUsuarioDTO> {
+  const currentUserId = usuarioId ?? Number(localStorage.getItem('id'))
+  if (!currentUserId) {
+    throw new Error('Usuario no autenticado')
+  }
+
   const { data } = await api.get<GrupoContextoUsuarioDTO>(`/grupo/${id}/contexto`, {
     params: {
-      usuarioId: 1, // TODO: Reemplazar con ID del usuario logueado
+      usuarioId: currentUserId,
     }
   })
   return data
@@ -102,8 +110,16 @@ export async function eliminarMiembro(
 export async function agregarMiembros(
   grupoId: number,
   usuarioIds: number[],
+  usuarioId?: number,
 ): Promise<void> {
-  await api.post(`/grupo/${grupoId}/miembros`, { usuarioIds })
+  const currentUserId = usuarioId ?? Number(localStorage.getItem('id'))
+  if (!currentUserId) {
+    throw new Error('Usuario no autenticado')
+  }
+
+  await api.post(`/grupo/${grupoId}/miembros`, { usuarioIds }, {
+    params: { usuarioId: currentUserId }
+  })
 }
 
 // Usado en createExpense para grupo específico
