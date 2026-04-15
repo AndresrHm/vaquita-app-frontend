@@ -64,3 +64,9 @@ export interface UsuarioNombreIdDTO {
     id: number,
     nombre: string,
 }
+
+export interface SolicitudAmistadFront {
+    id: number,
+    nombre: string,
+    imagenUrl: string,
+}

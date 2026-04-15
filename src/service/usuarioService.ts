@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { Usuario, type UsuarioLoginDTO, type UsuarioLogueadoDTO, type UsuarioNombreIdDTO } from '../domain/usuario'
+import { Usuario, type UsuarioLoginDTO, type UsuarioLogueadoDTO, type UsuarioNombreIdDTO, type SolicitudAmistadFront } from '../domain/usuario'
 import type { Miembro } from '@/domain/Grupo'
 
 const API_URL = 'http://localhost:8080/auth'
@@ -57,5 +57,24 @@ export const usuarioService = {
     async obtenerAmigos(usuarioId: number): Promise<Usuario[]> {
         const { data } = await axios.get<UsuarioNombreIdDTO[]>(`${API_URL}/amigos/${usuarioId}`)
         return data.map(userJson => Usuario.fromNombreIdJSON(userJson))
+    },
+
+    async obtenerSolicitudesPendientes(idUsuario: number): Promise<SolicitudAmistadFront[]> {
+        const { data } = await axios.get<SolicitudAmistadFront[]>(`${API_URL}/${idUsuario}/solicitudAmistad`)
+        return data
+    },
+
+    async enviarSolicitudAmistad(idEmisor: number, idReceptor: number): Promise<number> {
+        const { data } = await axios.post<number>(`${API_URL}/${idEmisor}/solicitudAmistad/${idReceptor}`)
+        return data
+    },
+
+    async responderSolicitudAmistad(idUsuario: number, idSolicitud: number, aceptar: boolean): Promise<number> {
+        const { data } = await axios.patch<number>(
+            `${API_URL}/${idUsuario}/solicitudAmistad/${idSolicitud}`,
+            null,
+            { params: { aceptar } }
+        )
+        return data
     },
 }
