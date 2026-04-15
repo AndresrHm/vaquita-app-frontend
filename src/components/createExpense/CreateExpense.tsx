@@ -17,7 +17,7 @@ import type { Grupo } from '@/domain/Grupo'
 import { obtenerGrupoPorId, obtenerGruposDeUsuario } from '@/service/groupsService'
 import { useOnInit } from '@/customHooks/hooks'
 import { useNavigate, useParams } from 'react-router-dom'
-import { TipoDivision } from '@/domain/enums/TipoDivision'
+import { TipoDivision } from '@/domain/enums/tipoDivision'
 import { ExpenseAllocation } from '@/domain/expenseAllocation'
 
 
@@ -26,6 +26,7 @@ export default function CreateExpense() {
     const [participants, setParticipants] = useState<Usuario[]>([])
     const [groups, setGroups] = useState<Grupo[]>([])
     const [isParticipantsOpen, setIsParticipantsOpen] = useState(false)
+    const [isGroupsOpen, setIsGroupsOpen] = useState(false)
     const [isLoadingParticipants, setIsLoadingParticipants] = useState(false)
     const { groupId } = useParams()
     const [selectedGroupId, setSelectedGroupId] = useState<number | undefined>(
@@ -164,35 +165,51 @@ export default function CreateExpense() {
 
                     <div className="rounded-2xl border border-border bg-card/70 p-4 shadow-sm backdrop-blur-xl space-y-4">
                         <FieldWrapper label="Grupo">
-                            {!groupId ? (
-                                <div className="relative flex items-center gap-3 rounded-xl border border-border bg-background/70 px-3 py-2.5">
+                            <div className="relative">
+                                {/* Trigger: El botón que abre el dropdown */}
+                                <div
+                                    className={`relative flex items-center gap-3 rounded-xl border border-border bg-background/70 px-3 py-2.5 cursor-pointer 
+            ${groupId ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    onClick={() => !groupId && setIsGroupsOpen(!isGroupsOpen)}
+                                >
                                     <Users className="h-4 w-4 text-muted-foreground shrink-0" />
-                                    <select
-                                        value={expense.groupId || ''}
-                                        onChange={(e) => {
-                                            const val = Number(e.target.value) || undefined
-                                            cambiarGrupo(val)
-                                        }}
-                                        className="w-full bg-transparent text-sm text-foreground outline-none appearance-none cursor-pointer">
-                                        <option value="" disabled className="bg-card text-muted-foreground">
-                                            Seleccioná un grupo
-                                        </option>
-                                        {groups.map((group) => (
-                                            <option key={group.id} value={String(group.id)} className="bg-card text-foreground">
-                                                {group.nombre}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    <div className="absolute right-3 pointer-events-none text-muted-foreground text-[10px]">▼</div>
-                                </div>
-                            ) : (
-                                <div className="flex items-center gap-3 rounded-xl border border-border bg-background/70 px-3 py-2.5">
-                                    <Users className="h-4 w-4 text-muted-foreground shrink-0" />
-                                    <span className="text-sm text-foreground">
-                                        {groupNameState || 'Grupo'}
+                                    <span className="w-full text-sm text-foreground">
+                                        {groups.find(g => g.id === expense.groupId)?.nombre || (groupId ? groupNameState : 'Seleccioná un grupo')}
                                     </span>
+                                    <div className="absolute right-3 pointer-events-none text-muted-foreground text-[10px]">
+                                        {groupId ? '' : (isGroupsOpen ? '▲' : '▼')}
+                                    </div>
                                 </div>
-                            )}
+
+                                {/* Dropdown: Aparece solo si no venís de un grupo específico */}
+                                {isGroupsOpen && !groupId && (
+                                    <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-xl shadow-lg z-50 max-h-40 overflow-y-auto">
+                                        {groups.map((group) => {
+                                            const isSelected = expense.groupId === group.id
+
+                                            return (
+                                                <label
+                                                    key={group.id}
+                                                    className="flex items-center gap-2 px-3 py-2 hover:bg-muted cursor-pointer"
+                                                >
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={isSelected}
+                                                        onChange={() => {
+                                                            cambiarGrupo(Number(group.id))
+                                                            setIsGroupsOpen(false)
+                                                        }}
+                                                        className="rounded border-border accent-primary focus:ring-primary"
+                                                    />
+                                                    <span className="text-sm">
+                                                        {group.nombre}
+                                                    </span>
+                                                </label>
+                                            )
+                                        })}
+                                    </div>
+                                )}
+                            </div>
                         </FieldWrapper>
 
                         <FieldWrapper label="¿Quiénes participan del gasto?">
@@ -235,7 +252,7 @@ export default function CreateExpense() {
                                                                 handleToggleParticipant(participant.id!)
                                                             }
                                                         }}
-                                                        className="rounded border-primary text-primary focus:ring-primary disabled:opacity-50"
+                                                        className="rounded border-border accent-primary focus:ring-primary"
                                                     />
                                                     <span className="text-sm">
                                                         {participant.nombre} {isCurrentUser && '(Vos)'}
