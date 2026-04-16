@@ -67,7 +67,7 @@ export async function obtenerGrupoUsuarioContexto(
   id: number,
   usuarioId?: number,
 ): Promise<GrupoContextoUsuarioDTO> {
-  const currentUserId = usuarioId ?? Number(localStorage.getItem('id'))
+  const currentUserId = usuarioId ?? Number(globalThis.localStorage?.getItem('id'))
   if (!currentUserId) {
     throw new Error('Usuario no autenticado')
   }
@@ -112,7 +112,7 @@ export async function agregarMiembros(
   usuarioIds: number[],
   usuarioId?: number,
 ): Promise<void> {
-  const currentUserId = usuarioId ?? Number(localStorage.getItem('id'))
+  const currentUserId = usuarioId ?? Number(globalThis.localStorage?.getItem('id'))
   if (!currentUserId) {
     throw new Error('Usuario no autenticado')
   }
@@ -127,3 +127,18 @@ export async function obtenerGrupoPorId(id: number): Promise<GrupoNombreIdDTO> {
   const { data } = await api.get<GrupoNombreIdDTO>(`/grupo/${id}`)
   return data
 }
+
+export async function eliminarGrupo(
+  grupoId: number,
+  usuarioId?: number,
+): Promise<void> {
+  const currentUserId = usuarioId ?? Number(globalThis.localStorage?.getItem('id'))
+  if (!currentUserId) {
+    throw new Error('Usuario no autenticado')
+  }
+
+  await api.delete<number>(`/grupo/${grupoId}`, {
+    params: { usuarioId: currentUserId }
+  })
+}
+  
