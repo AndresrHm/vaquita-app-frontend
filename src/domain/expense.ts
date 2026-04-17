@@ -15,6 +15,25 @@ export type ExpenseJSON = {
     tipoGasto: string //Temporal
 }
 
+export type ExpenseParticipantJSON = {
+    id: number
+    nombre: string
+    email: string
+    contrasena: string
+    imagenUrl: string
+}
+
+export type ExpenseFilteredJSON = {
+    id: number
+    descripcion: string
+    categoria: string
+    monto: number
+    fecha: string
+    pagador: string
+    participantes: ExpenseParticipantJSON[]
+    tipoGasto: string
+}
+
 const DEFAULT_CATEGORY = 'OTROS'
 const MAX_CHARACTERS_DESCRIPTION = 50
 const MAX_CHARACTERS_PRODUCT_NAME = 20
