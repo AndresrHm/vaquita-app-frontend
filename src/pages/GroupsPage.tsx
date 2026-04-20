@@ -57,7 +57,6 @@ export default function GroupsPage() {
   useOnInit(() => {
     fetchGroups(0)
     getDebt(Number(localStorage.id))
-    console.log(debt)
   })
 
   const handleLoadMore = () => {

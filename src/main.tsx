@@ -16,6 +16,7 @@ import LoginPage from '@/pages/LoginPage.tsx'
 import RegisterPage from '@/pages/RegisterPage'
 import CreateManualExpensePage from './pages/CreateManualExpensePage'
 import UserExpensesPage from '@/pages/UserExpensesPage'
+import GroupBalancesPage from './pages/GroupBalancesPage'
 
 const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -29,6 +30,7 @@ const router = createBrowserRouter([
       { path: 'groups/new', element: <CreateGroupPage /> },
       { path: 'groups/:groupId', element: <GroupDetailPage /> },
       { path: 'groups/:groupId/settings', element: <GroupSettingsPage /> },
+      { path: 'groups/:groupId/balances', element: <GroupBalancesPage /> },
       { path: 'groups/:groupId/expense/create', element: <CreateManualExpensePage /> },
       { path: 'groups/expense/create', element: <CreateManualExpensePage /> },
       { path: 'groups/scan', element: <GroupsScanPage /> },
