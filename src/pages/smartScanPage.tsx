@@ -10,6 +10,8 @@ import ColumnContainer from '@/components/common/columnContainer'
 import { useNavigate } from 'react-router-dom'
 import { scanMock, type LineItem, type ScanResult } from '@/service/smartScanService'
 import axios from 'axios'
+import EditableLineItems from '@/components/smartScan/editableLineItems'
+import Card from '@/components/common/card'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 type ScanState = 'idle' | 'preview' | 'loading' | 'result' | 'error'
@@ -234,99 +236,55 @@ export default function GroupsScanPage() {
                 </Button>
               </div>
 
-              <div className="space-y-3">
-                {editableResult.items.map((it, idx) => (
-                  <div key={idx} className="group relative bg-background border border-border rounded-xl p-3 shadow-sm transition-all hover:border-primary/50">
-                    <div className="flex justify-between items-start gap-2 mb-2">
-                      <input
-                        className="flex-1 bg-transparent border-none font-medium text-sm p-0 focus:ring-0"
-                        value={it.name}
-                        onChange={(e) => updateItem(idx, 'name', e.target.value)}
-                      />
-                      <button onClick={() => removeItem(idx)} className="text-muted-foreground hover:text-destructive transition-colors">
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
+              {/* <EditableLineItems key={idx} items={editableResult.items} idx={editableResult.idx} /> */}
+            </div>
 
-                    <div className="flex items-center gap-4">
-                      <div className="flex flex-col gap-1">
-                        <span className="text-[10px] text-muted-foreground uppercase font-bold">Cant.</span>
-                        <input
-                          type="number"
-                          className="w-12 bg-muted/50 border-none rounded-md px-1 py-0.5 text-xs text-center focus:ring-1 focus:ring-primary"
-                          value={it.quantity}
-                          onChange={(e) => updateItem(idx, 'quantity', Number(e.target.value))}
-                        />
-                      </div>
-                      <div className="flex flex-col gap-1 flex-1">
-                        <span className="text-[10px] text-muted-foreground uppercase font-bold">Precio Unitario</span>
-                        <div className="relative">
-                          <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground">$</span>
-                          <input
-                            type="number"
-                            className="w-full bg-muted/50 border-none rounded-md pl-4 pr-1 py-0.5 text-xs focus:ring-1 focus:ring-primary"
-                            value={it.price}
-                            onChange={(e) => updateItem(idx, 'price', Number(e.target.value))}
-                          />
-                        </div>
-                      </div>
-                      <div className="flex flex-col gap-1 items-end shrink-0">
-                        <span className="text-[10px] text-muted-foreground uppercase font-bold">Subtotal</span>
-                        <span className="text-sm font-bold text-primary">
-                          ${(it.price * it.quantity).toLocaleString('es-AR')}
-                        </span>
-                      </div>
-                    </div>
+
+            <Card interactive={false} >
+              <div className="mt-2 relative overflow-hidden bg-blue-400 rounded-[2rem] p-6 shadow-[0_20px_50px_rgba(0,0,0,0.2)] border border-white/10">
+                {/* Decoración de fondo */}
+                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 blur-[50px] -mr-16 -mt-16" />
+
+                <div className="relative flex justify-between items-center mb-2">
+                  <div className="space-y-1">
+                    <span className="text-l font-black text-primary-foreground/90">
+                      Monto Total Extraído
+                    </span>
+                    <p className="text-xs font-medium text-primary-foreground/80">
+                      Suma automática de {editableResult.items.length} ítems
+                    </p>
                   </div>
-                ))}
-              </div>
-            </div>
+                  <div className="bg-white/10 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
+                    <span className="text-[10px] font-bold text-white uppercase tracking-tighter">ARS</span>
+                  </div>
+                </div>
 
-
-            {/* Card del Total: Refinada con degradado sutil y sombra profunda */}
-            <div className="mt-8 relative overflow-hidden bg-blue-400 rounded-[2rem] p-6 shadow-[0_20px_50px_rgba(0,0,0,0.2)] border border-white/10">
-              {/* Decoración de fondo */}
-              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 blur-[50px] -mr-16 -mt-16" />
-
-              <div className="relative flex justify-between items-center mb-2">
-                <div className="space-y-1">
-                  <span className="text-l font-black text-primary-foreground/90">
-                    Monto Total Extraído
+                <div className="relative flex items-baseline justify-end gap-1">
+                  <span className="text-4xl font-black text-white">$</span>
+                  <span className="text-4xl font-black text-white tracking-tight">
+                    {total.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
                   </span>
-                  <p className="text-xs font-medium text-primary-foreground/80">
-                    Suma automática de {editableResult.items.length} ítems
-                  </p>
-                </div>
-                <div className="bg-white/10 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
-                  <span className="text-[10px] font-bold text-white uppercase tracking-tighter">ARS</span>
                 </div>
               </div>
 
-              <div className="relative flex items-baseline justify-end gap-1">
-                <span className="text-4xl font-black text-white">$</span>
-                <span className="text-4xl font-black text-white tracking-tight">
-                  {total.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
-                </span>
+              {/* Acciones Finales: Botones con más "punch" y bordes definidos */}
+              <div className="mt-8 space-y-4">
+                <Button
+                  className="w-full h-16 rounded-[1.25rem] bg-blue-400 text-primary-foreground text-lg font-black shadow-[0_10px_20px_rgba(var(--primary-rgb),0.3)] hover:shadow-[0_15px_30px_rgba(var(--primary-rgb),0.4)] hover:-translate-y-0.5 transition-all active:scale-[0.97] border-2 border-primary-foreground/10"
+                  onClick={() => navigate('/groups/expense/create', { state: { scanResult: editableResult } })}
+                >
+                  Confirmar y Repartir                </Button>
+
+                <Button
+                  variant="outline"
+                  className="w-full mb-2 h-14 rounded-[1.25rem] border-2 border-dashed bg-background shadow-sm text-foreground font-bold hover:bg-muted transition-all flex items-center justify-center gap-2"
+                  onClick={handleReset}
+                >
+                  <RotateCcw size={16} className="text-muted-foreground" />
+                  <span className="text-sm">Escanear otro ticket</span>
+                </Button>
               </div>
-            </div>
-
-            {/* Acciones Finales: Botones con más "punch" y bordes definidos */}
-            <div className="mt-8 space-y-4">
-              <Button
-                className="w-full h-16 rounded-[1.25rem] bg-blue-400 text-primary-foreground text-lg font-black shadow-[0_10px_20px_rgba(var(--primary-rgb),0.3)] hover:shadow-[0_15px_30px_rgba(var(--primary-rgb),0.4)] hover:-translate-y-0.5 transition-all active:scale-[0.97] border-2 border-primary-foreground/10"
-                onClick={() => navigate('/groups/expense/create', { state: { scanResult: editableResult } })}
-              >
-                Confirmar y Repartir                </Button>
-
-              <Button
-                variant="outline"
-                className="w-full h-14 rounded-[1.25rem] border-2 border-dashed bg-background shadow-sm text-foreground font-bold hover:bg-muted transition-all flex items-center justify-center gap-2"
-                onClick={handleReset}
-              >
-                <RotateCcw size={16} className="text-muted-foreground" />
-                <span className="text-sm">Escanear otro ticket</span>
-              </Button>
-            </div>
+            </Card>
 
           </ColumnContainer>
         </div>
