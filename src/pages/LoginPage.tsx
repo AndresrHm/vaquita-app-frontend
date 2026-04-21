@@ -2,10 +2,12 @@ import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { usuarioService } from '@/service/usuarioService'
- // Verificá que la ruta sea correcta
+import { useToast } from '@/customHooks/useToast'
+import { getMensajeError } from '@/utils/getMensajeError'
 
 export default function LoginPage() {
   const navigate = useNavigate()
+  const { showToast } = useToast()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [status, setStatus] = useState<string | null>(null)
@@ -33,10 +35,11 @@ export default function LoginPage() {
       // Si todo sale bien, esperamos un momento y navegamos
       setTimeout(() => navigate('/groups'), 1000) 
 
-    } catch (err: any) {
-      // Si el backend devuelve "Email o contraseña incorrectos", cae acá
+    } catch (error: unknown) {
+      const mensaje = getMensajeError(error)
+      showToast(mensaje, 'error')
       setIsError(true)
-      setStatus(err.message)
+      setStatus(mensaje)
     }
   }
 

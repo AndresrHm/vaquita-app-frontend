@@ -16,6 +16,8 @@ import { ExpensesFilterTabs, type ExpenseFiltersDTO, type OrderMethodExpenses } 
 import { CategoriaGasto } from '@/domain/enums/categoriaGasto'
 import axios from 'axios'
 import { expenseService } from '@/service/expenseService'
+import { useToast } from '@/customHooks/useToast'
+import { getMensajeError } from '@/utils/getMensajeError'
 
 const PAGE_SIZE = 10
 const SEARCH_DEBOUNCE_MS = 500
@@ -106,6 +108,7 @@ function buildRequestFilters(filters: FilterState, search: string, page: number)
 
 export default function UserExpensesPage() {
   const userId = 1
+  const { showToast } = useToast()
   const currentUserName = (localStorage.user_name ?? '').trim().toLowerCase()
 
   const [expenses, setExpenses] = useState<ExpenseFilteredJSON[]>([])
@@ -187,15 +190,17 @@ export default function UserExpensesPage() {
         setExpenses(response.content)
         setTotalPages(response.totalPages)
         setTotalElements(response.totalElements)
-      } catch (fetchError) {
-        if (axios.isAxiosError(fetchError)) {
+      } catch (error: unknown) {
+        const mensaje = getMensajeError(error)
+        showToast(mensaje, 'error')
+        if (axios.isAxiosError(error)) {
           console.error('Error fetching user expenses', {
-            status: fetchError.response?.status,
-            data: fetchError.response?.data,
-            params: fetchError.config?.params,
+            status: error.response?.status,
+            data: error.response?.data,
+            params: error.config?.params,
           })
         } else {
-          console.error('Error fetching user expenses', fetchError)
+          console.error('Error fetching user expenses', error)
         }
         setError('No se pudieron cargar los gastos. Intentá nuevamente.')
         setExpenses([])

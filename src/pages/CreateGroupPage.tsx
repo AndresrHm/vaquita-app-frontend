@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button'
 import { crearGrupo } from '@/service/groupsService'
 import { usuarioService } from '@/service/usuarioService'
 import type { Usuario } from '@/domain/usuario'
+import { useToast } from '@/customHooks/useToast'
+import { getMensajeError } from '@/utils/getMensajeError'
 
 function getInitials(name: string) {
   return name
@@ -17,6 +19,7 @@ function getInitials(name: string) {
 
 export default function CreateGroupPage() {
   const navigate = useNavigate()
+  const { showToast } = useToast()
   const [groupName, setGroupName] = useState('')
   const [description, setDescription] = useState('')
   const [imageUrl, setImageUrl] = useState('')
@@ -67,8 +70,9 @@ export default function CreateGroupPage() {
       })
       setStatus('Grupo creado. Redirigiendo...')
       setTimeout(() => navigate('/groups'), 700)
-    } catch {
-      setError('No se pudo crear el grupo. Intentá de nuevo.')
+    } catch (error: unknown) {
+      const mensaje = getMensajeError(error)
+      showToast(mensaje, 'error')
     } finally {
       setLoading(false)
     }
