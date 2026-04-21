@@ -282,32 +282,52 @@ export default function GroupsScanPage() {
               </div>
             </div>
 
-            {/* Total Final */}
-            <div className="mt-6 bg-primary text-primary-foreground rounded-2xl p-4 shadow-lg shadow-primary/20">
-              <div className="flex justify-between items-center text-sm opacity-90 mb-1">
-                <span>Monto Total Extraído</span>
-                <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded-full uppercase font-bold">ARS</span>
+
+            {/* Card del Total: Refinada con degradado sutil y sombra profunda */}
+            <div className="mt-8 relative overflow-hidden bg-blue-400 rounded-[2rem] p-6 shadow-[0_20px_50px_rgba(0,0,0,0.2)] border border-white/10">
+              {/* Decoración de fondo */}
+              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 blur-[50px] -mr-16 -mt-16" />
+
+              <div className="relative flex justify-between items-center mb-2">
+                <div className="space-y-1">
+                  <span className="text-l font-black text-primary-foreground/90">
+                    Monto Total Extraído
+                  </span>
+                  <p className="text-xs font-medium text-primary-foreground/80">
+                    Suma automática de {editableResult.items.length} ítems
+                  </p>
+                </div>
+                <div className="bg-white/10 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
+                  <span className="text-[10px] font-bold text-white uppercase tracking-tighter">ARS</span>
+                </div>
               </div>
-              <div className="flex justify-between items-end">
-                <span className="text-xs italic opacity-70">Suma de los ítems</span>
-                <span className="text-3xl font-black">
-                  $ {total.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+
+              <div className="relative flex items-baseline justify-end gap-1">
+                <span className="text-4xl font-black text-white">$</span>
+                <span className="text-4xl font-black text-white tracking-tight">
+                  {total.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
                 </span>
               </div>
             </div>
 
-            {/* Botones de acción finales */}
-            <div className="mt-6 space-y-3">
+            {/* Acciones Finales: Botones con más "punch" y bordes definidos */}
+            <div className="mt-8 space-y-4">
               <Button
-                className="w-full h-14 rounded-2xl bg-primary text-md font-bold shadow-xl active:scale-[0.98] transition-transform"
+                className="w-full h-16 rounded-[1.25rem] bg-blue-400 text-primary-foreground text-lg font-black shadow-[0_10px_20px_rgba(var(--primary-rgb),0.3)] hover:shadow-[0_15px_30px_rgba(var(--primary-rgb),0.4)] hover:-translate-y-0.5 transition-all active:scale-[0.97] border-2 border-primary-foreground/10"
                 onClick={() => navigate('/groups/expense/create', { state: { scanResult: editableResult } })}
               >
-                Confirmar y Repartir Gasto
-              </Button>
-              <Button variant="outline" className="w-full h-12 rounded-xl border-dashed" onClick={handleReset}>
-                <RotateCcw size={14} className="mr-2" /> Escanear otro ticket
+                Confirmar y Repartir                </Button>
+
+              <Button
+                variant="outline"
+                className="w-full h-14 rounded-[1.25rem] border-2 border-dashed bg-background shadow-sm text-foreground font-bold hover:bg-muted transition-all flex items-center justify-center gap-2"
+                onClick={handleReset}
+              >
+                <RotateCcw size={16} className="text-muted-foreground" />
+                <span className="text-sm">Escanear otro ticket</span>
               </Button>
             </div>
+
           </ColumnContainer>
         </div>
       )}
