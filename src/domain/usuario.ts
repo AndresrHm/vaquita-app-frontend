@@ -70,3 +70,10 @@ export interface SolicitudAmistadFront {
     nombre: string,
     imagenUrl: string,
 }
+
+export interface UsuarioInfoDTO {
+    nombre: string,
+    imagenUrl: string,
+    esAmigo: boolean,
+    gruposCompartidos: { id: number; nombre: string }[],
+}
