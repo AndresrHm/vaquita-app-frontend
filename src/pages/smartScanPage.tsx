@@ -3,7 +3,7 @@ import { useMemo, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Edit3, Sparkles, Upload, Camera, X, RotateCcw,
-  CheckCircle2, Loader2, AlertCircle, Trash2, Plus, ReceiptText
+  CheckCircle2, Loader2, AlertCircle, Plus, ReceiptText
 } from 'lucide-react'
 import PageTitle from '@/components/common/pageTitle'
 import ColumnContainer from '@/components/common/columnContainer'
@@ -227,6 +227,17 @@ export default function GroupsScanPage() {
 
             {/* Listado de ítems */}
             <div className="mt-6">
+              {/* Inyectamos el componente con las props de estado que ya definiste arriba */}
+              <EditableLineItems
+                items={editableResult.items}
+                onUpdate={updateItem}
+                onRemove={removeItem}
+                onAdd={addItem}
+              />
+            </div>
+
+            {/* Listado de ítems */}
+            <div className="mt-6">
               <div className="flex items-center justify-between mb-3 px-1">
                 <h3 className="text-xs font-bold text-muted-foreground uppercase flex items-center gap-2">
                   <ReceiptText size={14} /> Detalle de ítems
@@ -235,8 +246,6 @@ export default function GroupsScanPage() {
                   <Plus size={14} className="mr-1" /> Añadir
                 </Button>
               </div>
-
-              {/* <EditableLineItems key={idx} items={editableResult.items} idx={editableResult.idx} /> */}
             </div>
 
 

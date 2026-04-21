@@ -30,10 +30,10 @@ export default function EditableLineItems({ items, onUpdate, onRemove, onAdd }: 
 
             <div className="space-y-3">
                 {items.map((it, idx) => (
-                    <div key={idx} className="group bg-card border border-border/60 rounded-2xl p-3 shadow-sm transition-all hover:shadow-md hover:border-primary/30">
+                    <div key={idx} className="group bg-background/70 border border-border/60 rounded-2xl p-3 shadow-sm transition-all hover:shadow-md hover:border-primary/30">
                         <div className="flex justify-between items-start gap-2 mb-3">
                             <input
-                                className="flex-1 bg-transparent border-none font-semibold text-sm p-0 focus:ring-0 placeholder:text-muted-foreground/40"
+                                className="flex-1 pl-2 bg-transparent border-none font-semibold text-sm p-0 focus:ring-0 placeholder:text-muted-foreground/40"
                                 value={it.name}
                                 placeholder="Nombre del producto..."
                                 onChange={(e) => onUpdate(idx, 'name', e.target.value)}
@@ -55,14 +55,14 @@ export default function EditableLineItems({ items, onUpdate, onRemove, onAdd }: 
                                         onClick={() => onUpdate(idx, 'quantity', Math.max(1, it.quantity - 1))}
                                         className="p-1 hover:bg-background rounded-lg text-primary transition-colors"
                                     >
-                                        <Minus size={14} />
+                                        <Minus size={16} className='text-blue-400' />
                                     </button>
                                     <span className="w-8 text-center text-xs font-bold">{it.quantity}</span>
                                     <button
                                         onClick={() => onUpdate(idx, 'quantity', it.quantity + 1)}
                                         className="p-1 hover:bg-background rounded-lg text-primary transition-colors"
                                     >
-                                        <Plus size={14} />
+                                        <Plus size={16} className='text-blue-400' />
                                     </button>
                                 </div>
                             </div>
@@ -82,9 +82,9 @@ export default function EditableLineItems({ items, onUpdate, onRemove, onAdd }: 
                             </div>
 
                             {/* Subtotal */}
-                            <div className="flex flex-col gap-1.5 items-end shrink-0">
+                            <div className="flex flex-col gap-1.5 items-center shrink-0">
                                 <span className="text-[10px] text-muted-foreground uppercase font-bold mr-1">Subtotal</span>
-                                <span className="text-[15px] font-black text-foreground">
+                                <span className="text-l font-bold text-primary">
                                     ${(it.price * it.quantity).toLocaleString('es-AR')}
                                 </span>
                             </div>
