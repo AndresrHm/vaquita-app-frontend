@@ -99,9 +99,12 @@ import { Button } from '@/components/ui/button'
 // 1. Importamos tus archivos de lógica
 import { Usuario } from '@/domain/usuario' 
 import { usuarioService } from '@/service/usuarioService'
+import { useToast } from '@/customHooks/useToast'
+import { getMensajeError } from '@/utils/getMensajeError'
 
 export default function RegisterPage() {
   const navigate = useNavigate()
+  const { showToast } = useToast()
   
   // 2. Cambiamos los 3 estados sueltos por uno solo que sea nuestra Clase
   const [usuario, setUsuario] = useState<Usuario>(new Usuario())
@@ -150,11 +153,11 @@ export default function RegisterPage() {
       
       setStatus('¡Usuario registrado con éxito! Redirigiendo...')
       setTimeout(() => navigate('/login'), 1500)
-    } catch (err: any) {
-      // --- 3. VALIDACIÓN DEL BACKEND (El Candado Final) ---
-      // Si a React se le escapó algo o el mail ya existía en la BD, cae acá
+    } catch (error: unknown) {
+      const mensaje = getMensajeError(error)
+      showToast(mensaje, 'error')
       setIsError(true)
-      setStatus(err.message) 
+      setStatus(mensaje)
     }
   }
 
