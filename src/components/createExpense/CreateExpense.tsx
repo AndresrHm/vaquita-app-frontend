@@ -20,7 +20,6 @@ import { useNavigate, useParams } from 'react-router-dom'
 
 
 export default function CreateExpense() {
-    // eslint-disable-next-line no-undef
     const [expense, setExpense] = useState(new Expense(undefined, Number(localStorage.id)))
     const [participants, setParticipants] = useState<Usuario[]>([])
     const [groups, setGroups] = useState<Grupo[]>([])
