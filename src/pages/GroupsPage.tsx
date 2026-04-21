@@ -9,11 +9,14 @@ import { useOnInit } from '@/customHooks/hooks'
 import { obtenerGrupos } from '@/service/groupsService'
 import { expenseService } from '@/service/expenseService'
 import { formatCurrency } from '@/utils/formatCurrency'
+import { useToast } from '@/customHooks/useToast'
+import { getMensajeError } from '@/utils/getMensajeError'
 
 const PAGE_SIZE = 6
 
 export default function GroupsPage() {
   const usuarioId = Number(localStorage.id)
+  const { showToast } = useToast()
 
   const [groups, setGroups] = useState<GrupoCardDTO[]>([])
   const [page, setPage] = useState(0)
@@ -37,8 +40,9 @@ export default function GroupsPage() {
 
       setHasNext(res.hasNext)
       setPage(pageToFetch)
-    } catch (err) {
-      console.error('Error fetching groups', err)
+    } catch (error: unknown) {
+      const mensaje = getMensajeError(error)
+      showToast(mensaje, 'error')
     } finally {
       setLoading(false)
     }
@@ -49,8 +53,9 @@ export default function GroupsPage() {
       const debtFetch = await expenseService.getUserDebt(userId)
 
       setDebt(debtFetch)
-    } catch (err) {
-      console.error('Error fetching current debt', err)
+    } catch (error: unknown) {
+      const mensaje = getMensajeError(error)
+      showToast(mensaje, 'error')
     }
   }
 

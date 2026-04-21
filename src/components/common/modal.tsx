@@ -1,0 +1,37 @@
+import type { ReactNode } from 'react'
+import { X } from 'lucide-react'
+
+import { Button } from '@/components/ui/button'
+
+type ModalProps = {
+  isOpen: boolean
+  title: string
+  description?: string
+  onClose: () => void
+  children: ReactNode
+  footer?: ReactNode
+}
+
+export default function Modal({ isOpen, title, description, onClose, children, footer }: ModalProps) {
+  if (!isOpen) return null
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end bg-black/35 px-3 pb-3 pt-16 sm:items-center sm:justify-center sm:p-6">
+      <div className="w-full max-w-md rounded-2xl border border-border bg-background p-4 shadow-xl">
+        <div className="mb-4 flex items-start justify-between gap-3">
+          <div>
+            <h3 className="text-base font-semibold text-foreground">{title}</h3>
+            {description ? <p className="mt-1 text-xs text-muted-foreground">{description}</p> : null}
+          </div>
+          <Button variant="ghost" size="icon" onClick={onClose} aria-label="Cerrar modal">
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+
+        <div className="space-y-4">{children}</div>
+
+        {footer ? <div className="mt-5 flex items-center justify-end gap-2">{footer}</div> : null}
+      </div>
+    </div>
+  )
+}

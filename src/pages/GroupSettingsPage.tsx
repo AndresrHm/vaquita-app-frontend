@@ -1,4 +1,4 @@
-import { ChevronLeft, UserPlus, Trash2, LogOut, AlertTriangle, Camera, Crown, Check, X } from 'lucide-react'
+import { ChevronLeft, UserPlus, Trash2, LogOut, AlertTriangle, Crown, Check, X } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Button } from '@/components/ui/button'
 import ColumnContainer from '@/components/common/columnContainer'
@@ -10,10 +10,12 @@ import Select from '@/components/ui/select'
 import { useState } from 'react'
 import type { GrupoContextoUsuarioDTO, GrupoSettingsDTO, Miembro } from '@/domain/Grupo'
 import { useOnInit } from '@/customHooks/hooks'
-import { obtenerGrupoUsuarioContexto, obtenerGrupoSettings, obtenerMiembrosDeGrupoSettings, actualizarGrupoSettings, eliminarMiembro, agregarMiembros } from '@/service/groupsService'
+import { obtenerGrupoUsuarioContexto, obtenerGrupoSettings, obtenerMiembrosDeGrupoSettings, actualizarGrupoSettings, eliminarMiembro, agregarMiembros, eliminarGrupo } from '@/service/groupsService'
 import { usuarioService } from '@/service/usuarioService'
 import type { Usuario } from '@/domain/usuario'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
+import { useToast } from '@/customHooks/useToast'
+import { getMensajeError } from '@/utils/getMensajeError'
 
 function Avatar({ src, alt, size = 10 }: { src?: string; alt?: string; size?: number }) {
     const px = size * 4
@@ -68,6 +70,7 @@ function Modal({ open, title, children, onClose, onConfirm }: { open: boolean; t
 }
 
 export default function GroupSettingsPage() {
+    const { showToast } = useToast()
     const [initialData, setInitialData] = useState<GrupoSettingsDTO | null>(null)
     const [formularioGrupo, setFormularioGrupo] = useState<GrupoSettingsDTO>({} as GrupoSettingsDTO)
     const [miembros, setMiembros] = useState<Miembro[]>([])
@@ -78,10 +81,13 @@ export default function GroupSettingsPage() {
     const [friends, setFriends] = useState<Usuario[]>([])
     const [selectedFriendIds, setSelectedFriendIds] = useState<Set<number>>(new Set())
     const [addingMembers, setAddingMembers] = useState(false)
+    const [deletingGroup, setDeletingGroup] = useState(false)
+    const [deleteGroupOpen, setDeleteGroupOpen] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [imageError, setImageError] = useState(false)
     const imageUrl = formularioGrupo?.imagenUrl || ''
     const fallbackImage = 'https://t4.ftcdn.net/jpg/06/57/37/01/360_F_657370150_pdNeG5pjI976ZasVbKN9VqH1rfoykdYU.jpg'
+    const navigate = useNavigate()
     const { groupId } = useParams()
     const parsedGroupId = Number(groupId)
 
@@ -118,9 +124,9 @@ export default function GroupSettingsPage() {
             setFormularioGrupo(updated)
             setInitialData(updated)
 
-        } catch (e) {
-            console.error(e)
-            setError('No se pudo guardar el grupo')
+        } catch (error: unknown) {
+            const mensaje = getMensajeError(error)
+            showToast(mensaje, 'error')
         } finally {
             setLoading(false)
         }
@@ -140,9 +146,9 @@ export default function GroupSettingsPage() {
 
             setMiembros(prev => prev.filter(m => m.id !== memberId))
 
-        } catch (e) {
-            console.error(e)
-            setError('No se pudo eliminar el miembro')
+        } catch (error: unknown) {
+            const mensaje = getMensajeError(error)
+            showToast(mensaje, 'error')
         } finally {
             setLoading(false)
         }
@@ -155,9 +161,9 @@ export default function GroupSettingsPage() {
             setFriends(amigos.filter(a => a.id !== undefined && !memberIds.has(a.id!)))
             setSelectedFriendIds(new Set())
             setAddFriendsOpen(true)
-        } catch (e) {
-            console.error(e)
-            setError('No se pudieron cargar los amigos')
+        } catch (error: unknown) {
+            const mensaje = getMensajeError(error)
+            showToast(mensaje, 'error')
         }
     }
 
@@ -177,11 +183,25 @@ export default function GroupSettingsPage() {
             const updatedMembers = await obtenerMiembrosDeGrupoSettings(parsedGroupId)
             setMiembros(updatedMembers)
             setAddFriendsOpen(false)
-        } catch (e) {
-            console.error(e)
-            setError('No se pudieron agregar los miembros')
+        } catch (error: unknown) {
+            const mensaje = getMensajeError(error)
+            showToast(mensaje, 'error')
         } finally {
             setAddingMembers(false)
+        }
+    }
+
+    const handleDeleteGroup = async () => {
+        try {
+            setDeletingGroup(true)
+            await eliminarGrupo(parsedGroupId, contextoUsuario.usuarioId)
+            setDeleteGroupOpen(false)
+            navigate('/groups')
+        } catch (error: unknown) {
+            const mensaje = getMensajeError(error)
+            showToast(mensaje, 'error')
+        } finally {
+            setDeletingGroup(false)
         }
     }
 
@@ -201,9 +221,9 @@ export default function GroupSettingsPage() {
                 setMiembros(miembros)
                 setContextoUsuario(contexto)
 
-            } catch (e) {
-                console.error(e)
-                setError('Error al cargar el grupo. Intentá recargar la página.')
+            } catch (error: unknown) {
+                const mensaje = getMensajeError(error)
+                showToast(mensaje, 'error')
             } finally {
                 setLoading(false)
             }
@@ -368,9 +388,10 @@ export default function GroupSettingsPage() {
                                 <Button
                                     variant="outline"
                                     className="w-full justify-start bg-red-50 border-red-200 text-red-500 hover:bg-red-100 py-2.5 text-base"
-                                    disabled={!contextoUsuario?.esAdmin || contextoUsuario?.tieneDeudas}
+                                    disabled={!contextoUsuario?.esAdmin || contextoUsuario?.tieneDeudas || deletingGroup}
+                                    onClick={() => setDeleteGroupOpen(true)}
                                 >
-                                    <AlertTriangle className="w-6 h-6 mr-3" /> Eliminar grupo
+                                    <AlertTriangle className="w-6 h-6 mr-3" /> {deletingGroup ? 'Eliminando grupo...' : 'Eliminar grupo'}
                                 </Button>
                             </div>
                             {/* todo mejorar esto, que aparezca al clickear el button desactivado */}
@@ -410,7 +431,12 @@ export default function GroupSettingsPage() {
                 ¿Estás seguro que quieres salir del grupo? Perderás acceso a los gastos.
             </Modal>
 
-            <Modal open={false} title="Eliminar grupo">
+            <Modal
+                open={deleteGroupOpen}
+                title="Eliminar grupo"
+                onClose={() => setDeleteGroupOpen(false)}
+                onConfirm={handleDeleteGroup}
+            >
                 Esta acción eliminará el grupo y no se puede deshacer. Asegúrate de tener respaldo.
             </Modal>
 
