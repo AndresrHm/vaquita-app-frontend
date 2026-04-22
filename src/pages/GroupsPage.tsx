@@ -70,7 +70,7 @@ export default function GroupsPage() {
   }
 
   return (
-    <div className="flex flex-col space-y-4 min-h-[calc(100vh-5rem)]">
+    <div className="flex flex-col space-y-4 max-h-[calc(100vh-115px)] overflow-hidden">
       <PageTitle>
         <div className="pl-2.5 pt-2">
           <h2 className="text-xl font-semibold text-foreground">
