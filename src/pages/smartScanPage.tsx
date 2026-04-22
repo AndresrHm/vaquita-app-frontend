@@ -8,7 +8,7 @@ import {
 import PageTitle from '@/components/common/pageTitle'
 import ColumnContainer from '@/components/common/columnContainer'
 import { useNavigate } from 'react-router-dom'
-import { scanMock, type LineItem, type ScanResult } from '@/service/smartScanService'
+import { scan, scanMock, type LineItem, type ScanResult } from '@/service/smartScanService'
 import axios from 'axios'
 import EditableLineItems from '@/components/smartScan/editableLineItems'
 import Card from '@/components/common/card'
@@ -65,7 +65,7 @@ export default function GroupsScanPage() {
     setErrorMsg(null)
 
     try {
-      const data = await scanMock(imageFile)
+      const data = await scan(imageFile)
       // Inicializamos el estado editable con lo que viene de la IA
       setEditableResult({
         ...data,
