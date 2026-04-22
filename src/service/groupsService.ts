@@ -1,82 +1,68 @@
-import axios from 'axios'
-import { type GrupoDTO, type GrupoCreacionDTO, type GroupDetailPageResponse, Grupo, type GrupoNombreIdDTO, type GrupoDetalleDTO, type GrupoGastosPorAnioDTO, type GrupoCardDTO, type GrupoSettingsDTO, type GrupoContextoUsuarioDTO, type Miembro } from '@/domain/Grupo'
+import api from './apiToken' 
+import { 
+  type GrupoDTO, 
+  type GrupoCreacionDTO, 
+  type GroupDetailPageResponse, 
+  Grupo, 
+  type GrupoNombreIdDTO, 
+  type GrupoDetalleDTO, 
+  type GrupoGastosPorAnioDTO, 
+  type GrupoCardDTO, 
+  type GrupoSettingsDTO, 
+  type GrupoContextoUsuarioDTO, 
+  type Miembro 
+} from '@/domain/Grupo'
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080'
-
-const api = axios.create({ baseURL: BASE_URL })
-
-// ── Endpoints ─────────────────────────────────────────────────────────────────
+// ── Endpoints Refactorizados y Protegidos ─────────────────────────────────────
 
 export async function obtenerGrupos(
-  usuarioId: number,
-  page: number,
-  size: number,
+  page: number = 0,
+  size: number = 8,
 ): Promise<GroupDetailPageResponse<GrupoCardDTO>> {
+  const finalSize = size > 0 ? size : 8
+  
   const { data } = await api.get<GroupDetailPageResponse<GrupoCardDTO>>('/grupo', {
-    params: { usuarioId, page, size },
+    params: { page, size: finalSize },
   })
   return data
 }
 
-export async function crearGrupo(
-  usuarioId: number,
-  dto: GrupoCreacionDTO,
-): Promise<GrupoDTO> {
-  const { data } = await api.post<GrupoDTO>('/grupo', dto, {
-    params: { usuarioId },
-  })
+export async function crearGrupo(dto: GrupoCreacionDTO): Promise<GrupoDTO> {
+  const { data } = await api.post<GrupoDTO>('/grupo', dto)
   return data
 }
 
-export async function obtenerGruposDeUsuario(usuarioId: number): Promise<Grupo[]> {
-  const { data } = await axios.get<GrupoNombreIdDTO[]>(BASE_URL + `/grupo/usuario/${usuarioId}`)
-  return data.map(userJson => Grupo.fromNombreIdJSON(userJson))
+export async function obtenerGruposDeUsuario(): Promise<Grupo[]> {
+  const { data } = await api.get<GrupoNombreIdDTO[]>('/grupo/me')
+  return data.map(json => Grupo.fromNombreIdJSON(json))
 }
-
 
 export async function obtenerGastosGrupo(
   grupoId: number,
-  page: number,
-  size: number
+  page: number = 0,
+  size: number = 10
 ): Promise<GroupDetailPageResponse<GrupoGastosPorAnioDTO>> {
+  const finalSize = size > 0 ? size : 10
+
   const { data } = await api.get<GroupDetailPageResponse<GrupoGastosPorAnioDTO>>(
     `/grupo/${grupoId}/gastos`,
-    {
-      params: { page, size },
-    }
+    { params: { page, size: finalSize } }
   )
-
   return data
 }
 
-// Usado en groupDetail
-export async function obtenerDetalleGrupo(
-  grupoId: number
-): Promise<GrupoDetalleDTO> {
+export async function obtenerDetalleGrupo(grupoId: number): Promise<GrupoDetalleDTO> {
   const { data } = await api.get<GrupoDetalleDTO>(`/grupo/${grupoId}/detalle`)
   return data
 }
 
-// Usado en groupSettings
 export async function obtenerGrupoSettings(id: number): Promise<GrupoSettingsDTO> {
   const { data } = await api.get<GrupoSettingsDTO>(`/grupo/${id}/settings`)
   return data
 }
 
-export async function obtenerGrupoUsuarioContexto(
-  id: number,
-  usuarioId?: number,
-): Promise<GrupoContextoUsuarioDTO> {
-  const currentUserId = usuarioId ?? Number(globalThis.localStorage?.getItem('id'))
-  if (!currentUserId) {
-    throw new Error('Usuario no autenticado')
-  }
-
-  const { data } = await api.get<GrupoContextoUsuarioDTO>(`/grupo/${id}/contexto`, {
-    params: {
-      usuarioId: currentUserId,
-    }
-  })
+export async function obtenerGrupoUsuarioContexto(id: number): Promise<GrupoContextoUsuarioDTO> {
+  const { data } = await api.get<GrupoContextoUsuarioDTO>(`/grupo/${id}/contexto`)
   return data
 }
 
@@ -95,50 +81,26 @@ export async function actualizarGrupoSettings(
 
 export async function eliminarMiembro(
   grupoId: number,
-  usuarioId: number,
   usuarioAEliminarId: number,
 ): Promise<number> {
   const { data } = await api.delete<number>(`/grupo/${grupoId}/miembros`, {
-    params: {
-      usuarioId,
-      usuarioAEliminarId,
-    }
+    params: { usuarioAEliminarId }
   })
   return data
 }
 
 export async function agregarMiembros(
   grupoId: number,
-  usuarioIds: number[],
-  usuarioId?: number,
+  usuarioIds: number[]
 ): Promise<void> {
-  const currentUserId = usuarioId ?? Number(globalThis.localStorage?.getItem('id'))
-  if (!currentUserId) {
-    throw new Error('Usuario no autenticado')
-  }
-
-  await api.post(`/grupo/${grupoId}/miembros`, { usuarioIds }, {
-    params: { usuarioId: currentUserId }
-  })
+  await api.post(`/grupo/${grupoId}/miembros`, { usuarioIds })
 }
 
-// Usado en createExpense para grupo específico
 export async function obtenerGrupoPorId(id: number): Promise<GrupoNombreIdDTO> {
   const { data } = await api.get<GrupoNombreIdDTO>(`/grupo/${id}`)
   return data
 }
 
-export async function eliminarGrupo(
-  grupoId: number,
-  usuarioId?: number,
-): Promise<void> {
-  const currentUserId = usuarioId ?? Number(globalThis.localStorage?.getItem('id'))
-  if (!currentUserId) {
-    throw new Error('Usuario no autenticado')
-  }
-
-  await api.delete<number>(`/grupo/${grupoId}`, {
-    params: { usuarioId: currentUserId }
-  })
+export async function eliminarGrupo(grupoId: number): Promise<void> {
+  await api.delete(`/grupo/${grupoId}`)
 }
-  

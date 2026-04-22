@@ -33,7 +33,7 @@ export default function CreateGroupPage() {
   useEffect(() => {
     const userId = Number(localStorage.getItem('id'))
     if (!userId) return
-    usuarioService.obtenerAmigos(userId).then(setFriends).catch(() => {})
+    usuarioService.obtenerAmigos().then(setFriends).catch(() => {})
   }, [])
 
   const filteredFriends = useMemo(() => {
@@ -61,8 +61,7 @@ export default function CreateGroupPage() {
     setError(null)
 
     try {
-      const userId = Number(localStorage.getItem('id'))
-      await crearGrupo(userId, {
+      await crearGrupo({
         nombre: groupName.trim(),
         descripcion: description.trim(),
         imagenUrl: imageUrl.trim(),
