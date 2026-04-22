@@ -47,8 +47,7 @@ export default function AccountPage() {
   )
 }
  */
-
-
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import PageTitle from '@/components/common/pageTitle'
@@ -56,21 +55,31 @@ import Card from '@/components/common/card'
 import ColumnContainer from '@/components/common/columnContainer'
 export default function AccountPage() {
   const navigate = useNavigate()
+  const [isDarkMode, setIsDarkMode] = useState(() => document.documentElement.classList.contains('dark'))
 
   // Intentamos obtener los datos reales del localStorage si los guardaste en el login
   // Si no, usamos valores por defecto
-  const userName = localStorage.getItem('user_name') || 'Usuario'
-  const userEmail = localStorage.getItem('user_email') || 'email@ejemplo.com'
+  const userName = window.localStorage.getItem('user_name') || 'Usuario'
+  const userEmail = window.localStorage.getItem('user_email') || 'email@ejemplo.com'
 
   const handleLogout = () => {
     // 1. Borramos el token y cualquier dato del usuario (VAQUITA-25)
-    localStorage.removeItem('token')
-    localStorage.removeItem('user_name')
-    localStorage.removeItem('user_email')
+    window.localStorage.removeItem('token')
+    window.localStorage.removeItem('user_name')
+    window.localStorage.removeItem('user_email')
 
     // 2. Redirigimos al login inmediatamente
     navigate('/login')
   }
+
+  const handleToggleTheme = () => {
+    setIsDarkMode((prev) => !prev)
+  }
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', isDarkMode)
+    window.localStorage.setItem('theme', isDarkMode ? 'dark' : 'light')
+  }, [isDarkMode])
 
   return (
     <div className="space-y-4">
@@ -89,9 +98,21 @@ export default function AccountPage() {
       <ColumnContainer>
         <h2 className="text-sm font-semibold text-foreground">Preferencias</h2>
         <div className="mt-3 space-y-2">
-          <Card className="rounded-xl border border-border px-3 py-2">
+          <Card
+            className="rounded-xl border border-border px-3 py-2"
+            role="button"
+            tabIndex={0}
+            aria-label="Cambiar tema"
+            onClick={handleToggleTheme}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                handleToggleTheme()
+              }
+            }}
+          >
             <div className="text-xs font-medium text-foreground">Tema</div>
-            <div className="mt-1 text-xs text-muted-foreground">Sistema</div>
+            <div className="mt-1 text-xs text-muted-foreground">{isDarkMode ? 'Oscuro' : 'Claro'}</div>
           </Card>
           <Card className="rounded-xl border border-border px-3 py-2">
             <div className="text-xs font-medium text-foreground">Notificaciones</div>
