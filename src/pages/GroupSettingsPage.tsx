@@ -142,7 +142,7 @@ export default function GroupSettingsPage() {
         try {
             setLoading(true)
 
-            await eliminarMiembro(parsedGroupId, contextoUsuario.usuarioId, memberId)
+            await eliminarMiembro(parsedGroupId, memberId)
 
             setMiembros(prev => prev.filter(m => m.id !== memberId))
 
@@ -156,7 +156,7 @@ export default function GroupSettingsPage() {
 
     const handleOpenAddFriends = async () => {
         try {
-            const amigos = await usuarioService.obtenerAmigos(contextoUsuario.usuarioId)
+            const amigos = await usuarioService.obtenerAmigos()
             const memberIds = new Set(miembros.map(m => m.id))
             setFriends(amigos.filter(a => a.id !== undefined && !memberIds.has(a.id!)))
             setSelectedFriendIds(new Set())
@@ -194,7 +194,7 @@ export default function GroupSettingsPage() {
     const handleDeleteGroup = async () => {
         try {
             setDeletingGroup(true)
-            await eliminarGrupo(parsedGroupId, contextoUsuario.usuarioId)
+            await eliminarGrupo(parsedGroupId)
             setDeleteGroupOpen(false)
             navigate('/groups')
         } catch (error: unknown) {
