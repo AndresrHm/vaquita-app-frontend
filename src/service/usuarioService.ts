@@ -1,5 +1,7 @@
-import api from './apiToken' 
-import { Usuario, type UsuarioLoginDTO, type UsuarioLogueadoDTO, type UsuarioNombreIdDTO, type SolicitudAmistadFront } from '../domain/usuario'
+import axios from 'axios'
+import { Usuario, type UsuarioLoginDTO, type UsuarioLogueadoDTO, type UsuarioNombreIdDTO, type SolicitudAmistadFront, type UsuarioInfoDTO } from '../domain/usuario'
+import type { Miembro } from '@/domain/Grupo'
+import api from './apiToken'
 
 const API_URL = '/usuarios' 
 
@@ -76,5 +78,14 @@ export const usuarioService = {
             { params: { aceptar } }
         )
         return data
+    },
+
+    async obtenerUsuarioInfo(id: number, idBuscado: number): Promise<UsuarioInfoDTO> {
+        const { data } = await axios.get<UsuarioInfoDTO>(`${API_URL}/${id}/info/${idBuscado}`)
+        return data
+    },
+
+    async eliminarAmigo(idUsuario: number, idAmigo: number): Promise<void> {
+        await axios.delete(`${API_URL}/${idUsuario}/amigos/${idAmigo}`)
     },
 }

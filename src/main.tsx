@@ -16,6 +16,7 @@ import LoginPage from '@/pages/LoginPage.tsx'
 import RegisterPage from '@/pages/RegisterPage'
 import CreateManualExpensePage from './pages/CreateManualExpensePage'
 import UserExpensesPage from '@/pages/UserExpensesPage'
+import UserProfilePage from '@/pages/UserProfilePage'
 import ToastProvider from '@/customHooks/ToastProvider'
 
 const router = createBrowserRouter([
@@ -34,6 +35,7 @@ const router = createBrowserRouter([
       { path: 'groups/expense/create', element: <CreateManualExpensePage /> },
       { path: 'groups/scan', element: <GroupsScanPage /> },
       { path: 'friends', element: <FriendsPage /> },
+      { path: 'friends/:userId', element: <UserProfilePage /> },
       { path: 'activity', element: <ActivityPage /> },
       { path: 'account', element: <AccountPage /> },
       { path: 'account/expenses', element: <UserExpensesPage /> },
