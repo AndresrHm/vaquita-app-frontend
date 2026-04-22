@@ -15,7 +15,6 @@ import { getMensajeError } from '@/utils/getMensajeError'
 const PAGE_SIZE = 6
 
 export default function GroupsPage() {
-  const usuarioId = Number(localStorage.id)
   const { showToast } = useToast()
 
   const [groups, setGroups] = useState<GrupoCardDTO[]>([])
@@ -30,7 +29,7 @@ export default function GroupsPage() {
     setLoading(true)
 
     try {
-      const res = await obtenerGrupos(usuarioId, pageToFetch, PAGE_SIZE)
+      const res = await obtenerGrupos(pageToFetch, PAGE_SIZE)
 
       setGroups(prev =>
         pageToFetch === 0
@@ -48,9 +47,9 @@ export default function GroupsPage() {
     }
   }
 
-  const getDebt = async (userId: number) => {
+  const getDebt = async () => {
     try {
-      const debtFetch = await expenseService.getUserDebt(userId)
+      const debtFetch = await expenseService.getUserDebt()
 
       setDebt(debtFetch)
     } catch (error: unknown) {
@@ -61,7 +60,7 @@ export default function GroupsPage() {
 
   useOnInit(() => {
     fetchGroups(0)
-    getDebt(Number(localStorage.id))
+    getDebt()
     console.log(debt)
   })
 
