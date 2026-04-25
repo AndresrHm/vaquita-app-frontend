@@ -3,7 +3,7 @@ import { useMemo, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Edit3, Sparkles, Upload, Camera, X, RotateCcw,
-  CheckCircle2, Loader2, AlertCircle, Plus, ReceiptText
+  CheckCircle2, Loader2, AlertCircle
 } from 'lucide-react'
 import PageTitle from '@/components/common/pageTitle'
 import ColumnContainer from '@/components/common/columnContainer'
@@ -11,7 +11,7 @@ import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import EditableLineItems from '@/components/smartScan/editableLineItems'
 import Card from '@/components/common/card'
-import { CATEGORY_LABELS, type LineItem, type ScanResult, type ScanState } from '@/domain/smartScanDTO'
+import { CATEGORY_LABELS, CURRENCY_SYMBOLS, type LineItem, type ScanResult, type ScanState } from '@/domain/smartScanDTO'
 import { scan } from '@/service/smartScanService'
 
 export default function GroupsScanPage() {
@@ -28,9 +28,10 @@ export default function GroupsScanPage() {
   const [editableResult, setEditableResult] = useState<ScanResult | null>(null)
 
   // El total se calcula siempre en base a lo que el usuario ve/edita
+  // ✨ CAMBIO: Ahora items es opcional y quantity también es opcional
   const total = useMemo(() => {
-    return editableResult?.items.reduce((acc: number, it: { price: number; quantity: number }) => acc + (it.price * it.quantity), 0) ?? 0
-  }, [editableResult])
+    return editableResult?.items?.reduce((acc: number, it: LineItem) => acc + (it.price * (it.quantity || 1)), 0) ?? 0
+  }, [editableResult?.items])
 
   // ── Handlers ───────────────────────────────────────────────────────────────
 
@@ -60,7 +61,7 @@ export default function GroupsScanPage() {
       // Inicializamos el estado editable con lo que viene de la IA
       setEditableResult({
         ...data,
-        // description: data.description || '', // Por si el backend no lo trae
+        items: data.items || []
       })
       setState('result')
     } catch (e) {
@@ -77,14 +78,14 @@ export default function GroupsScanPage() {
   // ── Handlers de Edición ─────────────────────────────────────────────────────
 
   const updateItem = (index: number, field: keyof LineItem, value: string | number) => {
-    if (!editableResult) return
+    if (!editableResult?.items) return
     const newItems = [...editableResult.items]
     newItems[index] = { ...newItems[index], [field]: value }
     setEditableResult({ ...editableResult, items: newItems })
   }
 
   const removeItem = (index: number) => {
-    if (!editableResult) return
+    if (!editableResult?.items) return
     setEditableResult({
       ...editableResult,
       items: editableResult.items.filter((_, i) => i !== index)
@@ -92,7 +93,7 @@ export default function GroupsScanPage() {
   }
 
   const addItem = () => {
-    if (!editableResult) return
+    if (!editableResult?.items) return
     const newItem: LineItem = { name: 'Nuevo ítem', quantity: 1, price: 0 }
     setEditableResult({ ...editableResult, items: [...editableResult.items, newItem] })
   }
@@ -204,42 +205,39 @@ export default function GroupsScanPage() {
                   onChange={(e) => setEditableResult({ ...editableResult, title: e.target.value })}
                 />
               </div>
+
+              {/* ✨ NUEVO: Campo de descripción ahora soportado */}
               <div className="space-y-1 border-t border-border/50 pt-2">
                 <label className="text-[10px] font-bold text-muted-foreground uppercase ml-1">Descripción / Nota</label>
                 <textarea
                   className="w-full bg-transparent border-none text-sm text-muted-foreground focus:ring-0 p-0 resize-none h-12"
-                  // value={editableResult.description || ''}
-                  value="Ej: ¡La pasamos genial!"
+                  value={editableResult.description || ''}
                   placeholder="Agregá un comentario..."
-                // onChange={(e) => setEditableResult({ ...editableResult, description: e.target.value })} TODO
+                  onChange={(e) => setEditableResult({ ...editableResult, description: e.target.value })}
                 />
               </div>
+
+              {/* ✨ NUEVO: Mostrar moneda si está disponible */}
+              {editableResult.currency && (
+                <div className="space-y-1 border-t border-border/50 pt-2">
+                  <label className="text-[10px] font-bold text-muted-foreground uppercase ml-1">Moneda</label>
+                  <p className="text-sm font-medium">{editableResult.currency} ({CURRENCY_SYMBOLS[editableResult.currency]})</p>
+                </div>
+              )}
             </div>
 
             {/* Listado de ítems */}
             <div className="mt-6">
               {/* Inyectamos el componente con las props de estado que ya definiste arriba */}
               <EditableLineItems
-                items={editableResult.items}
+                items={editableResult.items || []}
                 onUpdate={updateItem}
                 onRemove={removeItem}
                 onAdd={addItem}
               />
             </div>
 
-            {/* Listado de ítems */}
-            <div className="mt-6">
-              <div className="flex items-center justify-between mb-3 px-1">
-                <h3 className="text-xs font-bold text-muted-foreground uppercase flex items-center gap-2">
-                  <ReceiptText size={14} /> Detalle de ítems
-                </h3>
-                <Button variant="ghost" size="sm" className="h-7 text-[11px] text-primary" onClick={addItem}>
-                  <Plus size={14} className="mr-1" /> Añadir
-                </Button>
-              </div>
-            </div>
-
-
+            {/* Card final con total */}
             <Card interactive={false} >
               <div className="mt-2 relative overflow-hidden bg-blue-400 rounded-[2rem] p-6 shadow-[0_20px_50px_rgba(0,0,0,0.2)] border border-white/10">
                 {/* Decoración de fondo */}
@@ -251,16 +249,21 @@ export default function GroupsScanPage() {
                       Monto Total Extraído
                     </span>
                     <p className="text-xs font-medium text-primary-foreground/80">
-                      Suma automática de {editableResult.items.length} ítems
+                      Suma automática de {editableResult.items?.length || 0} ítems
                     </p>
                   </div>
+                  {/* ✨ NUEVO: Mostrar símbolo de moneda en el total */}
                   <div className="bg-white/10 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
-                    <span className="text-[10px] font-bold text-white uppercase tracking-tighter">ARS</span>
+                    <span className="text-[10px] font-bold text-white uppercase tracking-tighter">
+                      {editableResult.currency || 'ARS'}
+                    </span>
                   </div>
                 </div>
 
                 <div className="relative flex items-baseline justify-end gap-1">
-                  <span className="text-4xl font-black text-white">$</span>
+                  <span className="text-4xl font-black text-white">
+                    {CURRENCY_SYMBOLS[editableResult.currency || 'ARS']}
+                  </span>
                   <span className="text-4xl font-black text-white tracking-tight">
                     {total.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
                   </span>
@@ -273,7 +276,8 @@ export default function GroupsScanPage() {
                   className="w-full h-16 rounded-[1.25rem] bg-blue-400 text-primary-foreground text-lg font-black shadow-[0_10px_20px_rgba(var(--primary-rgb),0.3)] hover:shadow-[0_15px_30px_rgba(var(--primary-rgb),0.4)] hover:-translate-y-0.5 transition-all active:scale-[0.97] border-2 border-primary-foreground/10"
                   onClick={() => navigate('/groups/expense/create', { state: { scanResult: editableResult } })}
                 >
-                  Confirmar y Repartir                </Button>
+                  Confirmar y Repartir
+                </Button>
 
                 <Button
                   variant="outline"

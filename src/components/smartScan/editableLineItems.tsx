@@ -1,4 +1,4 @@
-// components/scan/EditableLineItems.tsx
+// components/scan/EditableLineItems.tsx (FIXED)
 import { Plus, Minus, Trash2, ReceiptText } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { LineItem } from '@/domain/smartScanDTO'
@@ -52,14 +52,17 @@ export default function EditableLineItems({ items, onUpdate, onRemove, onAdd }: 
                                 <span className="text-[10px] text-muted-foreground uppercase font-bold ml-1">Cantidad</span>
                                 <div className="flex items-center bg-muted/50 rounded-xl p-1 border border-border/40">
                                     <button
-                                        onClick={() => onUpdate(idx, 'quantity', Math.max(1, it.quantity - 1))}
+                                        // ✨ FIX: Usar (it.quantity || 1) para evitar undefined
+                                        onClick={() => onUpdate(idx, 'quantity', Math.max(1, (it.quantity || 1) - 1))}
                                         className="p-1 hover:bg-background rounded-lg text-primary transition-colors"
                                     >
                                         <Minus size={16} className='text-blue-400' />
                                     </button>
-                                    <span className="w-8 text-center text-xs font-bold">{it.quantity}</span>
+                                    {/* ✨ FIX: Display quantity con fallback a 1 */}
+                                    <span className="w-8 text-center text-xs font-bold">{it.quantity || 1}</span>
                                     <button
-                                        onClick={() => onUpdate(idx, 'quantity', it.quantity + 1)}
+                                        // ✨ FIX: Usar (it.quantity || 1) para evitar undefined
+                                        onClick={() => onUpdate(idx, 'quantity', (it.quantity || 1) + 1)}
                                         className="p-1 hover:bg-background rounded-lg text-primary transition-colors"
                                     >
                                         <Plus size={16} className='text-blue-400' />
@@ -84,8 +87,9 @@ export default function EditableLineItems({ items, onUpdate, onRemove, onAdd }: 
                             {/* Subtotal */}
                             <div className="flex flex-col gap-1.5 items-center shrink-0">
                                 <span className="text-[10px] text-muted-foreground uppercase font-bold mr-1">Subtotal</span>
+                                {/* ✨ FIX: Usar (it.quantity || 1) para el cálculo */}
                                 <span className="text-l font-bold text-primary">
-                                    ${(it.price * it.quantity).toLocaleString('es-AR')}
+                                    ${(it.price * (it.quantity || 1)).toLocaleString('es-AR')}
                                 </span>
                             </div>
                         </div>
