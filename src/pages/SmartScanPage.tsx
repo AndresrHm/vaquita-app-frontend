@@ -122,15 +122,17 @@ export default function GroupsScanPage() {
 
             {imagePreview && (
               <>
-                <div
-                  className="mt-4 rounded-2xl overflow-hidden border border-border cursor-pointer group"
-                  onClick={() => setIsPreviewOpen(true)}
-                >
-                  <img
-                    src={imagePreview}
-                    alt="preview"
-                    className="w-full h-auto object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-                  />
+                <div className="mt-4 flex justify-center">
+                  <div
+                    className="w-full max-w-sm max-h-[300px] rounded-2xl overflow-hidden border border-border cursor-pointer group"
+                    onClick={() => setIsPreviewOpen(true)}
+                  >
+                    <img
+                      src={imagePreview}
+                      alt="preview"
+                      className="w-full h-full object-contain bg-muted/20 transition-transform duration-300 group-hover:scale-[1.02]"
+                    />
+                  </div>
                 </div>
 
                 {/* Modal */}
@@ -154,26 +156,30 @@ export default function GroupsScanPage() {
             )}
 
             <div className="mt-5 flex flex-col gap-3">
-              {state === 'preview' || state === 'error' ? (
+              {state === 'preview' || state === 'error' || state === 'loading' ? (
                 <>
-                  {/* Confirmar y Escanerar | Reintentar */}
+                  {/* Confirmar y Escanear | Reintentar */}
                   <Button
                     className="w-full h-16 rounded-[1.25rem] bg-blue-400 text-primary-foreground text-lg font-black shadow-[0_5px_20px_rgba(0,0,0,0.25)] hover:shadow-[0_5px_20px_rgba(0,0,0,0.35)] hover:-translate-y-0.5 transition-all active:scale-[0.97] border-0 flex items-center justify-center gap-2"
                     onClick={handleScan}
                     disabled={state === 'loading'}
                   >
-                    {state === 'loading' && (
+                    {state === 'loading' ? (
+                      <>
+                        <RotateCcw size={18} className="animate-spin" />
+                        Procesando imagen...
+                      </>
+                    ) : state === 'error' ? (
                       <>
                         <RotateCcw size={18} />
-                        <Sparkles size={18} />
-                        <p className="text-center text-sm text-muted-foreground mt-2 animate-pulse">
-                          Procesando imagen...
-                        </p>
+                        Reintentar
                       </>
-                    )
-
-                    }
-                    {state === 'error' ? 'Reintentar' : 'Confirmar y Escanear'}
+                    ) : (
+                      <>
+                        <Sparkles size={18} />
+                        Confirmar y Escanear
+                      </>
+                    )}
                   </Button>
                   {/* Cambiar imagen */}
                   <Button
