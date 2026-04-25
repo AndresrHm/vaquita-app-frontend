@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, UserMinus, UserPlus } from 'lucide-react'
+import { ArrowLeft, UserMinus, UserPlus, Settings } from 'lucide-react'
 import { useOnInit } from '@/customHooks/hooks'
 import { usuarioService } from '@/service/usuarioService'
 import type { UsuarioInfoDTO } from '@/domain/usuario'
@@ -43,7 +43,7 @@ export default function UserProfilePage() {
         .catch(() => {})
         .finally(() => setLoading(false))
     } else {
-      usuarioService.enviarSolicitudAmistad(currentUserId, targetId)
+      usuarioService.enviarSolicitudAmistad(targetId)
         .then(() => {
           setInfo({ ...info, esAmigo: true })
         })

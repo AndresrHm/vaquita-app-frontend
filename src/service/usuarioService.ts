@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { Usuario, type UsuarioLoginDTO, type UsuarioLogueadoDTO, type UsuarioNombreIdDTO, type SolicitudAmistadFront, type UsuarioInfoDTO } from '../domain/usuario'
+import { Usuario, type UsuarioLoginDTO, type UsuarioLogueadoDTO, type UsuarioNombreIdDTO, type SolicitudAmistadFront, type UsuarioInfoDTO, type UsuarioEditarDTO, type CambioContrasenaDTO } from '../domain/usuario'
 import type { Miembro } from '@/domain/Grupo'
 import api from './apiToken'
 
@@ -31,6 +31,7 @@ export const usuarioService = {
                 localStorage.setItem('user_name', data.nombre)
                 localStorage.setItem('user_email', data.email)
                 localStorage.setItem('id', data.id.toString())
+                localStorage.setItem('user_image', data.imagenUrl || '')
             }
 
             return data
@@ -51,6 +52,28 @@ export const usuarioService = {
     async obtenerUsuariosDeGrupo(grupoId: number): Promise<Usuario[]> {
         const { data } = await api.get<UsuarioNombreIdDTO[]>(`${API_URL}/grupo/${grupoId}`)
         return data.map(userJson => Usuario.fromNombreIdJSON(userJson))
+    },
+
+    async actualizarPerfil(datos: UsuarioEditarDTO): Promise<any> {
+        try {
+            const { data } = await api.put(`/usuarios/me`, datos)
+            
+            localStorage.setItem('token', data.token) 
+            
+            return data
+        } catch (error: any) {
+            const mensaje = error.response?.data?.message || 'No se pudo actualizar el perfil'
+            throw new Error(mensaje)
+        }
+    },
+
+    async cambiarContrasena(datos: CambioContrasenaDTO): Promise<void> {
+        try {
+            await api.patch(`/usuarios/me/contrasena`, datos)
+        } catch (error: any) {
+            const mensaje = error.response?.data?.message || 'No se pudo cambiar la contraseña'
+            throw new Error(mensaje)
+        }
     },
 
     // --- MÓDULO AMIGOS ---
