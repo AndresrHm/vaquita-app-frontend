@@ -1,11 +1,10 @@
 /* eslint-disable no-undef */
 import { useState } from 'react'
-import { Receipt, Calendar, Users } from 'lucide-react'
+import { Receipt, Calendar } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { CATEGORIES } from '@/components/createExpense/categories'
 import CreateExpenseItem from '@/components/createExpense/CreateExpenseItem'
 import FieldWrapper from '@/components/createExpense/FieldWrapper'
-import ParticipantDisplay from '@/components/createExpense/ParticipantDisplay'
 import { Expense } from '@/domain/expense'
 import { ExpenseItem } from '@/domain/expenseItem'
 import { expenseService } from '@/service/expenseService'
@@ -16,11 +15,8 @@ import type { Usuario } from '@/domain/usuario'
 import type { Grupo } from '@/domain/Grupo'
 import { obtenerGrupoPorId, obtenerGruposDeUsuario } from '@/service/groupsService'
 import { useOnInit } from '@/customHooks/hooks'
-<<<<<<< HEAD
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import type { LineItem, ScanResult } from '@/domain/smartScanDTO'
-=======
-import { useNavigate, useParams } from 'react-router-dom'
 import { TipoDivision } from '@/domain/enums/tipoDivision'
 import { ExpenseAllocation } from '@/domain/expenseAllocation'
 import DivisionTypeSelector from './DivisionTypeSelector'
@@ -28,14 +24,12 @@ import ExactAmountAllocator from './ExactAmountAllocator'
 import CategorySelector from './CategorySelector'
 import ParticipantSelector from './ParticipantSelector'
 import GroupSelector from './GroupSelector'
->>>>>>> development
 
 type LocationState = {
     scanResult?: ScanResult & { totalAmount: number }
 }
 
 export default function CreateExpense() {
-<<<<<<< HEAD
 
     const location = useLocation()
 
@@ -57,9 +51,6 @@ export default function CreateExpense() {
     })
 
 
-=======
-    const [expense, setExpense] = useState(new Expense(undefined, Number(localStorage.id)))
->>>>>>> development
     const [participants, setParticipants] = useState<Usuario[]>([])
     const [groups, setGroups] = useState<Grupo[]>([])
     const [isParticipantsOpen, setIsParticipantsOpen] = useState(false)
@@ -101,7 +92,7 @@ export default function CreateExpense() {
 
     const obtenerGrupos = async () => {
         try {
-            const gruposBack = await obtenerGruposDeUsuario(Number(localStorage.id))
+            const gruposBack = await obtenerGruposDeUsuario()
             setGroups(gruposBack)
         } catch (error: unknown) {
             console.log(error)
