@@ -21,6 +21,7 @@ export default function CreateExpenseItem({ items, onChange }: CreateExpenseItem
     const [isOpen, setIsOpen] = useState(false)
     const [editingIndex, setEditingIndex] = useState<number | null>(null)
     const [item, setItem] = useState<ExpenseItem>(INITIAL_ITEM)
+    const [confirmDelete, setConfirmDelete] = useState(false)
 
     // ─────────────────────────────────────────────────────────
     // HANDLERS
@@ -30,6 +31,7 @@ export default function CreateExpenseItem({ items, onChange }: CreateExpenseItem
         setItem(new ExpenseItem('', 1, 0))
         setEditingIndex(null)
         setIsOpen(true)
+        setConfirmDelete(false)
     }
 
     const openEdit = (index: number) => {
@@ -41,6 +43,7 @@ export default function CreateExpenseItem({ items, onChange }: CreateExpenseItem
         ))
         setEditingIndex(index)
         setIsOpen(true)
+        setConfirmDelete(false)
     }
 
     const handleSave = () => {
@@ -63,6 +66,14 @@ export default function CreateExpenseItem({ items, onChange }: CreateExpenseItem
         onChange(items.filter((_, i) => i !== index))
     }
 
+    const handleDelete = () => {
+        if (editingIndex === null) return
+
+        onChange(items.filter((_, i) => i !== editingIndex))
+        setIsOpen(false)
+        setConfirmDelete(false)
+    }
+
     // ─────────────────────────────────────────────────────────
     // RENDER
     // ─────────────────────────────────────────────────────────
@@ -82,20 +93,9 @@ export default function CreateExpenseItem({ items, onChange }: CreateExpenseItem
                                 <div className="text-sm font-medium text-foreground">
                                     {currentItem.nombre}
                                 </div>
-
-                                <button
-                                    type="button"
-                                    onClick={(e) => {
-                                        e.stopPropagation()
-                                        handleRemoveItem(index)
-                                    }}
-                                    className="rounded-lg border border-border bg-muted/70 px-2 py-1 text-[11px] text-foreground transition hover:bg-muted"
-                                >
-                                    Eliminar
-                                </button>
                             </div>
 
-                            <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                            <div className="flex flex-wrap justify-between gap-2 text-xs text-muted-foreground">
                                 <span>Cantidad: {currentItem.cantidad}</span>
                                 <span>Precio u.: ${currentItem.precioUnitario.toFixed(2)}</span>
                                 <span className="font-medium text-primary">
@@ -188,14 +188,48 @@ export default function CreateExpenseItem({ items, onChange }: CreateExpenseItem
                             </div>
                         </div>
 
-                        {/* ACCIÓN */}
-                        <Button onClick={handleSave} className="w-full h-11 rounded-xl text-sm font-bold">
-                            Guardar
-                        </Button>
+                        <div className="flex gap-3 w-full">
+                            {/* GUARDAR */}
+                            <Button
+                                onClick={handleSave}
+                                className="flex-1 h-11 rounded-xl text-sm font-bold"
+                            >
+                                Guardar
+                            </Button>
+
+                            {/* ELIMINAR */}
+                            {editingIndex !== null && (
+                                !confirmDelete ? (
+                                    <Button
+                                        onClick={() => setConfirmDelete(true)}
+                                        className="flex-1 h-11 rounded-xl text-sm font-bold border-red-200 text-red-400 bg-red-100 hover:bg-red-200"
+                                    >
+                                        Eliminar
+                                    </Button>
+                                ) : (
+                                    <div className="flex flex-1 gap-2">
+                                        <Button
+                                            onClick={handleDelete}
+                                            className="flex-1 h-11 rounded-xl text-sm font-bold border-red-200 text-red-400 bg-red-100 hover:bg-red-200"
+                                        >
+                                            Confirmar
+                                        </Button>
+
+                                        <Button
+                                            variant="outline"
+                                            onClick={() => setConfirmDelete(false)}
+                                            className="flex-1 h-11 rounded-xl text-sm font-bold"
+                                        >
+                                            Cancelar
+                                        </Button>
+                                    </div>
+                                )
+                            )}
+                        </div>
                     </div>
                 </DialogContent>
             </Dialog>
 
-        </FieldWrapper>
+        </FieldWrapper >
     )
 }

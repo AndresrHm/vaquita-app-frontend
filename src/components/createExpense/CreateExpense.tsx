@@ -74,7 +74,12 @@ export default function CreateExpense() {
     }
 
     const handleItemsChange = (items: ExpenseItem[]) => {
-        actualizarExpense({ items })
+        const total = items.reduce((acc, item) => acc + item.total(), 0)
+
+        actualizarExpense({
+            items,
+            total
+        })
     }
 
     const obtenerGrupos = async () => {
@@ -164,7 +169,8 @@ export default function CreateExpense() {
                                 step="0.01"
                                 placeholder="0"
                                 inputMode="decimal"
-                                value={expense.total || ''}
+                                value={expense.total.toFixed(2) || ''}
+                                disabled={expense.items.length > 0} // lo desactivamos si hay ítems
                                 onChange={(event) => actualizarExpense({ total: Number(event.target.value) || 0 })}
                                 className="w-full bg-transparent text-4xl font-bold text-foreground outline-none placeholder:text-muted-foreground/30 text-center"
                             />
@@ -361,3 +367,7 @@ function convertirItems(scanItems?: LineItem[]): ExpenseItem[] {
         )
     })
 }
+
+// TODO:
+// 1. que quede seleccionada la categoría correspondiente
+// 2. que quede seleccionada la fecha correspondiente
