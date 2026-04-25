@@ -22,16 +22,16 @@ class ExpenseService {
         filtros: ExpenseFiltersDTO,
         page: number,
         size: number,
+        userId: number,
         orden: OrderMethodExpenses = 'NOMBRE_ASC',
-        flagDiff: ExpensesFilterTabs = ExpensesFilterTabs.GENERAL
+        flagDiff: ExpensesFilterTabs = ExpensesFilterTabs.TODOS
     ): Promise<PageResponse<ExpenseFilteredJSON>> {
         const params = {
+            userId,
             page: filtros.page ?? page,
             size: filtros.size ?? size,
             orden,
-            vista: filtros.vista && filtros.vista !== ExpensesFilterTabs.GENERAL
-                ? filtros.vista
-                : (flagDiff !== ExpensesFilterTabs.GENERAL ? flagDiff : undefined),
+            vista: filtros.vista ?? flagDiff,
             categoria: filtros.categoria ?? undefined,
             fechaInicio: filtros.fechaIni ?? undefined,
             fechaFin: filtros.fechaFin ?? undefined,
@@ -40,6 +40,7 @@ class ExpenseService {
             rangoIni: filtros.rangoIni ?? undefined,
             rangoFin: filtros.rangoFin ?? undefined,
         }
+        console.log('Fetching expenses with params:', params)
 
         const obtenerGastosFiltradosQuery = () => api.get<PageResponse<ExpenseFilteredJSON>>('/gasto/filtrar', {
             params,

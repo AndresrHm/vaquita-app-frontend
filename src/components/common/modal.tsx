@@ -16,9 +16,9 @@ export default function Modal({ isOpen, title, description, onClose, children, f
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end bg-black/35 px-3 pb-3 pt-16 sm:items-center sm:justify-center sm:p-6">
-      <div className="w-full max-w-md rounded-2xl border border-border bg-background p-4 shadow-xl">
-        <div className="mb-4 flex items-start justify-between gap-3">
+    <div className="fixed inset-0 z-70 flex items-center justify-center overflow-y-auto bg-black/35 p-3 sm:p-6">
+      <div className="flex max-h-[calc(100dvh-1.5rem)] w-full max-w-md flex-col rounded-2xl border border-border bg-background p-4 shadow-xl sm:max-h-[calc(100dvh-3rem)]">
+        <div className="mb-4 flex shrink-0 items-start justify-between gap-3">
           <div>
             <h3 className="text-base font-semibold text-foreground">{title}</h3>
             {description ? <p className="mt-1 text-xs text-muted-foreground">{description}</p> : null}
@@ -28,9 +28,9 @@ export default function Modal({ isOpen, title, description, onClose, children, f
           </Button>
         </div>
 
-        <div className="space-y-4">{children}</div>
+        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto pr-1">{children}</div>
 
-        {footer ? <div className="mt-5 flex items-center justify-end gap-2">{footer}</div> : null}
+        {footer ? <div className="mt-5 flex shrink-0 items-center justify-end gap-2">{footer}</div> : null}
       </div>
     </div>
   )

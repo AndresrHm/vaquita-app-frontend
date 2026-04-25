@@ -19,6 +19,11 @@ import UserExpensesPage from '@/pages/UserExpensesPage'
 import UserProfilePage from '@/pages/UserProfilePage'
 import ToastProvider from '@/customHooks/ToastProvider'
 
+const storedTheme = localStorage.getItem('theme')
+const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+const shouldUseDarkTheme = storedTheme ? storedTheme === 'dark' : systemPrefersDark
+document.documentElement.classList.toggle('dark', shouldUseDarkTheme)
+
 const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
   { path: '/register', element: <RegisterPage /> },
