@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom'
 import MoneyBadge from '@/components/moneyBadge/moneyBadge'
 
 type Friend = {
@@ -18,8 +19,13 @@ function getInitials(name: string) {
 }
 
 export default function FriendCard({ friend }: { friend: Friend }) {
+    const navigate = useNavigate()
+
     return (
-        <div className="rounded-2xl border border-border bg-background/70 p-4 shadow-sm">
+        <div
+            className="rounded-2xl border border-border bg-background/70 p-4 shadow-sm cursor-pointer hover:bg-muted/30 transition-colors"
+            onClick={() => navigate(`/friends/${friend.id}`)}
+        >
             <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
                     {friend.imageUrl ? (

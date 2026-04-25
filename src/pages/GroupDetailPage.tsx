@@ -9,11 +9,14 @@ import GroupHeader from '@/components/groupsPage/GroupHeader'
 import ExpensesList, { type ExpensesByMonth } from '@/components/groupsPage/ExpensesList'
 import { type Expense } from '@/components/groupsPage/ExpenseItem'
 import CreateExpenseButton from '@/components/groupsPage/CreateExpenseButton'
+import { useToast } from '@/customHooks/useToast'
+import { getMensajeError } from '@/utils/getMensajeError'
 
 export default function GroupDetailPage() {
     const { groupId } = useParams()
     const grupoId = Number(groupId)
     const navigate = useNavigate()
+    const { showToast } = useToast()
 
 
     // Detalle del grupo (info básica)
@@ -36,8 +39,9 @@ export default function GroupDetailPage() {
             setGastos(prev => mergeGastos(prev, data.content))
             setHasNext(data.hasNext)
             setPage(data.page + 1)
-        } catch (error) {
-            console.log(error)
+        } catch (error: unknown) {
+            const mensaje = getMensajeError(error)
+            showToast(mensaje, 'error')
         } finally {
             setLoadingGastos(false)
         }
@@ -52,8 +56,9 @@ export default function GroupDetailPage() {
                 setGroupDetail(data)
 
                 await fetchGastos(0)
-            } catch (error) {
-                console.log(error)
+            } catch (error: unknown) {
+                const mensaje = getMensajeError(error)
+                showToast(mensaje, 'error')
             }
         }
 

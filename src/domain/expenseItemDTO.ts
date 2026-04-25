@@ -16,18 +16,22 @@ export interface ExpenseFiltersDTO{
     page: number
     size: number
     categoria: CategoriaGasto[] | null
-    vista: string | null
+    vista: ExpensesFilterTabs | null
 }
 
 export type OrderMethodExpenses =
   | 'NOMBRE_ASC'
   | 'NOMBRE_DESC'
-  | 'AUTOR_ASC'
-  | 'AUTOR_DESC';
+  | 'CREADOR_ASC'
+  | 'CREADOR_DESC'
+  | 'FECHA_ASC'
+  | 'FECHA_DESC'
+  ;
 
 export enum ExpensesFilterTabs {
+    TODOS = 'TODOS',
     AMIGOS = 'AMIGOS',
-    GENERAL = 'GENERAL'
+    DEUDA = 'DEUDA'
 }
 
 /*

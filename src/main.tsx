@@ -16,6 +16,13 @@ import LoginPage from '@/pages/LoginPage.tsx'
 import RegisterPage from '@/pages/RegisterPage'
 import CreateManualExpensePage from './pages/CreateManualExpensePage'
 import UserExpensesPage from '@/pages/UserExpensesPage'
+import UserProfilePage from '@/pages/UserProfilePage'
+import ToastProvider from '@/customHooks/ToastProvider'
+
+const storedTheme = localStorage.getItem('theme')
+const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+const shouldUseDarkTheme = storedTheme ? storedTheme === 'dark' : systemPrefersDark
+document.documentElement.classList.toggle('dark', shouldUseDarkTheme)
 
 const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -33,6 +40,7 @@ const router = createBrowserRouter([
       { path: 'groups/expense/create', element: <CreateManualExpensePage /> },
       { path: 'groups/scan', element: <GroupsScanPage /> },
       { path: 'friends', element: <FriendsPage /> },
+      { path: 'friends/:userId', element: <UserProfilePage /> },
       { path: 'activity', element: <ActivityPage /> },
       { path: 'account', element: <AccountPage /> },
       { path: 'account/expenses', element: <UserExpensesPage /> },
@@ -43,6 +51,8 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <ToastProvider>
+      <RouterProvider router={router} />
+    </ToastProvider>
   </React.StrictMode>,
 )
