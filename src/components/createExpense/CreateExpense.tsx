@@ -43,9 +43,15 @@ export default function CreateExpense() {
             newExpense.total = scanResult.totalAmount
             newExpense.date = scanResult.date || new Date().toISOString().split('T')[0]
             newExpense.category = mapearCategoria(scanResult.category)
-            newExpense.total = scanResult.totalAmount
-            newExpense.items = convertirItems(scanResult.items)
+
+            const items = convertirItems(scanResult.items)
+
+            newExpense.items = items
+            newExpense.total = items.length
+                ? items.reduce((acc, i) => acc + i.total(), 0)
+                : scanResult.totalAmount
         }
+
 
         return newExpense
     })
@@ -55,6 +61,7 @@ export default function CreateExpense() {
     const [groups, setGroups] = useState<Grupo[]>([])
     const [isParticipantsOpen, setIsParticipantsOpen] = useState(false)
     const [isGroupsOpen, setIsGroupsOpen] = useState(false)
+    const [isCategoryOpen, setIsCategoryOpen] = useState(false)
     const [isLoadingParticipants, setIsLoadingParticipants] = useState(false)
     const { groupId } = useParams()
     const [selectedGroupId, setSelectedGroupId] = useState<number | undefined>(
@@ -260,6 +267,8 @@ export default function CreateExpense() {
                             instruction="Elegí un tipo de gasto"
                             categories={CATEGORIES}
                             selectedCategory={expense.category}
+                            isOpen={isCategoryOpen}
+                            onToggleOpen={() => setIsCategoryOpen(!isCategoryOpen)}
                             onSelect={(categoryId) => actualizarExpense({ category: categoryId })}
                         />
 
@@ -302,16 +311,42 @@ export default function CreateExpense() {
  * Mapea la categoría del escaneo (food, transport, etc) a las categorías de tu app
  */
 function mapearCategoria(scanCategory?: string): string {
-    if (!scanCategory) return 'food'
+    if (!scanCategory) return 'OTROS'
+
+    const normalized = scanCategory.toLowerCase()
 
     const mapping: Record<string, string> = {
-        'food': 'food',
-        'transport': 'transport',
-        'entertainment': 'entertainment',
-        'other': 'other'
+        // comida
+        'food': 'COMIDA',
+        'comida': 'COMIDA',
+
+        // bebida
+        'drink': 'BEBIDA',
+        'bebida': 'BEBIDA',
+
+        // transporte
+        'transport': 'TRANSPORTE',
+        'transporte': 'TRANSPORTE',
+
+        // supermercado
+        'grocery': 'SUPERMERCADO',
+        'supermarket': 'SUPERMERCADO',
+        'supermercado': 'SUPERMERCADO',
+
+        // entretenimiento
+        'entertainment': 'ENTRETENIMIENTO',
+        'ocio': 'ENTRETENIMIENTO',
+
+        // hogar
+        'home': 'HOGAR',
+        'hogar': 'HOGAR',
+
+        // otros
+        'other': 'OTROS',
+        'otros': 'OTROS',
     }
 
-    return mapping[scanCategory] || 'food'
+    return mapping[normalized] || 'OTROS'
 }
 
 /**

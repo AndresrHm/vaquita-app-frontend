@@ -12,7 +12,7 @@ import axios from 'axios'
 import EditableLineItems from '@/components/smartScan/editableLineItems'
 import Card from '@/components/common/card'
 import { CATEGORY_LABELS, CURRENCY_SYMBOLS, type LineItem, type ScanResult, type ScanState } from '@/domain/smartScanDTO'
-import { scan } from '@/service/smartScanService'
+import { scan, scanMock } from '@/service/smartScanService'
 
 export default function GroupsScanPage() {
   const navigate = useNavigate()
