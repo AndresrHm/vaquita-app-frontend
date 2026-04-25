@@ -30,7 +30,7 @@ export default function EditableLineItems({ items, onUpdate, onRemove, onAdd }: 
 
             <div className="space-y-3">
                 {items.map((it, idx) => (
-                    <div key={idx} className="group bg-background/70 border border-border/60 rounded-2xl p-3 shadow-sm transition-all hover:shadow-md hover:border-primary/30">
+                    <div key={idx} className="group bg-card/70 border border-border/60 rounded-2xl p-3 shadow-sm transition-all hover:shadow-md hover:border-primary/30">
                         <div className="flex justify-between items-start gap-2 mb-3">
                             <input
                                 className="flex-1 pl-2 bg-transparent border-none font-semibold text-sm p-0 focus:ring-0 placeholder:text-muted-foreground/40"

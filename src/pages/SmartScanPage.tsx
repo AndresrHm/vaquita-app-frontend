@@ -14,6 +14,7 @@ import Card from '@/components/common/card'
 import { CATEGORY_LABELS, CURRENCY_SYMBOLS, type LineItem, type ScanResult, type ScanState } from '@/domain/smartScanDTO'
 import { scan, scanMock } from '@/service/smartScanService'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
+import CollapsibleCard from '@/components/common/collapsibleCard'
 
 export default function GroupsScanPage() {
   const navigate = useNavigate()
@@ -276,47 +277,56 @@ export default function GroupsScanPage() {
             )}
 
             {/* Datos Generales (Título y Descripción) */}
-            <div className="mt-4 space-y-3 p-4 bg-muted/30 rounded-2xl border border-border/50">
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-muted-foreground uppercase ml-1">Título del Gasto</label>
-                <input
-                  className="w-full pl-1 bg-transparent border-none text-lg font-semibold focus:ring-0 p-0 placeholder:text-muted-foreground/50"
-                  value={editableResult.title}
-                  placeholder="Ej: Cena en el Club"
-                  onChange={(e) => setEditableResult({ ...editableResult, title: e.target.value })}
-                />
-              </div>
+            <CollapsibleCard
+              title="Información del gasto"
+              subtitle="Editá los datos generales"
+            >
+              <div className="space-y-3">
+                <div className="mt-4 space-y-3 p-4 bg-card/70 rounded-2xl border border-border/50">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-muted-foreground uppercase ml-1">Título del Gasto</label>
+                    <input
+                      className="w-full pl-1 bg-transparent border-none text-lg font-semibold focus:ring-0 p-0 placeholder:text-muted-foreground/50"
+                      value={editableResult.title}
+                      placeholder="Ej: Cena en el Club"
+                      onChange={(e) => setEditableResult({ ...editableResult, title: e.target.value })}
+                    />
+                  </div>
 
-              {/* ✨ NUEVO: Campo de descripción ahora soportado */}
-              <div className="space-y-1 border-t border-border/50 pt-2">
-                <label className="text-[10px] font-bold text-muted-foreground uppercase ml-1">Descripción / Nota</label>
-                <textarea
-                  className="w-full pl-1 bg-transparent border-none text-sm text-muted-foreground focus:ring-0 p-0 resize-none h-12"
-                  value={editableResult.description || ''}
-                  placeholder="Agregá un comentario..."
-                  onChange={(e) => setEditableResult({ ...editableResult, description: e.target.value })}
-                />
-              </div>
+                  {/* ✨ NUEVO: Campo de descripción ahora soportado */}
+                  <div className="space-y-1 border-t border-border/50 pt-2">
+                    <label className="text-[10px] font-bold text-muted-foreground uppercase ml-1">Descripción / Nota</label>
+                    <textarea
+                      className="w-full pl-1 bg-transparent border-none text-sm text-muted-foreground focus:ring-0 p-0 resize-none h-12"
+                      value={editableResult.description || ''}
+                      placeholder="Agregá un comentario..."
+                      onChange={(e) => setEditableResult({ ...editableResult, description: e.target.value })}
+                    />
+                  </div>
 
-              {/* ✨ NUEVO: Mostrar moneda si está disponible */}
-              {editableResult.currency && (
-                <div className="space-y-1 border-t border-border/50 pt-2">
-                  <label className="text-[10px] font-bold text-muted-foreground uppercase ml-1">Moneda</label>
-                  <p className="pl-1 text-sm font-medium">{editableResult.currency} ({CURRENCY_SYMBOLS[editableResult.currency]})</p>
+                  {/* ✨ NUEVO: Mostrar moneda si está disponible */}
+                  {editableResult.currency && (
+                    <div className="space-y-1 border-t border-border/50 pt-2">
+                      <label className="text-[10px] font-bold text-muted-foreground uppercase ml-1">Moneda</label>
+                      <p className="pl-1 text-sm font-medium">{editableResult.currency} ({CURRENCY_SYMBOLS[editableResult.currency]})</p>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
+              </div>
+            </CollapsibleCard>
 
             {/* Listado de ítems */}
-            <div className="mt-6">
-              {/* Inyectamos el componente con las props de estado que ya definiste arriba */}
+            <CollapsibleCard
+              title="Detalle de ítems"
+              subtitle={`${editableResult.items?.length || 0} ítems detectados`}
+            >
               <EditableLineItems
                 items={editableResult.items || []}
                 onUpdate={updateItem}
                 onRemove={removeItem}
                 onAdd={addItem}
               />
-            </div>
+            </CollapsibleCard>
 
             {/* Card final con total */}
             <Card interactive={false} >
