@@ -1,7 +1,7 @@
 // components/scan/EditableLineItems.tsx
 import { Plus, Minus, Trash2, ReceiptText } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { type LineItem } from '@/service/smartScanService'
+import type { LineItem } from '@/domain/smartScanDTO'
 
 interface Props {
     items: LineItem[]

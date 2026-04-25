@@ -8,20 +8,11 @@ import {
 import PageTitle from '@/components/common/pageTitle'
 import ColumnContainer from '@/components/common/columnContainer'
 import { useNavigate } from 'react-router-dom'
-import { scan, scanMock, type LineItem, type ScanResult } from '@/service/smartScanService'
 import axios from 'axios'
 import EditableLineItems from '@/components/smartScan/editableLineItems'
 import Card from '@/components/common/card'
-
-// ── Types ────────────────────────────────────────────────────────────────────
-type ScanState = 'idle' | 'preview' | 'loading' | 'result' | 'error'
-
-const CATEGORY_LABELS: Record<string, string> = {
-  food: '🍴 Comida',
-  transport: '🚗 Transporte',
-  entertainment: '🎉 Entretenimiento',
-  other: '📦 Otro',
-}
+import { CATEGORY_LABELS, type LineItem, type ScanResult, type ScanState } from '@/domain/smartScanDTO'
+import { scan } from '@/service/smartScanService'
 
 export default function GroupsScanPage() {
   const navigate = useNavigate()
@@ -38,7 +29,7 @@ export default function GroupsScanPage() {
 
   // El total se calcula siempre en base a lo que el usuario ve/edita
   const total = useMemo(() => {
-    return editableResult?.items.reduce((acc, it) => acc + (it.price * it.quantity), 0) ?? 0
+    return editableResult?.items.reduce((acc: number, it: { price: number; quantity: number }) => acc + (it.price * it.quantity), 0) ?? 0
   }, [editableResult])
 
   // ── Handlers ───────────────────────────────────────────────────────────────
@@ -218,7 +209,7 @@ export default function GroupsScanPage() {
                 <textarea
                   className="w-full bg-transparent border-none text-sm text-muted-foreground focus:ring-0 p-0 resize-none h-12"
                   // value={editableResult.description || ''}
-                  value="Descripción que por el momento está hardcodeada. . . "
+                  value="Ej: ¡La pasamos genial!"
                   placeholder="Agregá un comentario..."
                 // onChange={(e) => setEditableResult({ ...editableResult, description: e.target.value })} TODO
                 />
