@@ -221,12 +221,12 @@ export default function GroupsScanPage() {
                   <CheckCircle2 size={24} className="text-green-600" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold">¡Lectura exitosa!</h2>
-                  <p className="text-sm text-muted-foreground">Revisá y corregí si es necesario.</p>
+                  <h2 className="text-l font-bold">¡Lectura exitosa!</h2>
+                  <p className="text-xs text-muted-foreground">Revisá y corregí si es necesario.</p>
                 </div>
               </div>
               {editableResult.category && (
-                <span className="text-sm font-bold uppercase tracking-wider bg-primary/10 text-primary px-2 py-1 rounded-lg">
+                <span className="text-xs font-bold uppercase tracking-wider bg-primary/10 text-primary px-2 py-1 rounded-lg">
                   {CATEGORY_LABELS[editableResult.category] || editableResult.category}
                 </span>
               )}
@@ -246,9 +246,10 @@ export default function GroupsScanPage() {
                       </p>
                     </div>
                   </div>
+
                   <div className="mt-4 flex justify-center">
                     <div
-                      className="w-full max-w-xs rounded-2xl overflow-hidden border border-border cursor-pointer group"
+                      className="w-full max-w-xs rounded-2xl overflow-hidden border border-border cursor-pointer grouphover:shadow-md"
                       onClick={() => setIsPreviewOpen(true)}
                     >
                       <img
@@ -279,7 +280,7 @@ export default function GroupsScanPage() {
               <div className="space-y-1">
                 <label className="text-[10px] font-bold text-muted-foreground uppercase ml-1">Título del Gasto</label>
                 <input
-                  className="w-full bg-transparent border-none text-lg font-semibold focus:ring-0 p-0 placeholder:text-muted-foreground/50"
+                  className="w-full pl-1 bg-transparent border-none text-lg font-semibold focus:ring-0 p-0 placeholder:text-muted-foreground/50"
                   value={editableResult.title}
                   placeholder="Ej: Cena en el Club"
                   onChange={(e) => setEditableResult({ ...editableResult, title: e.target.value })}
@@ -290,7 +291,7 @@ export default function GroupsScanPage() {
               <div className="space-y-1 border-t border-border/50 pt-2">
                 <label className="text-[10px] font-bold text-muted-foreground uppercase ml-1">Descripción / Nota</label>
                 <textarea
-                  className="w-full bg-transparent border-none text-sm text-muted-foreground focus:ring-0 p-0 resize-none h-12"
+                  className="w-full pl-1 bg-transparent border-none text-sm text-muted-foreground focus:ring-0 p-0 resize-none h-12"
                   value={editableResult.description || ''}
                   placeholder="Agregá un comentario..."
                   onChange={(e) => setEditableResult({ ...editableResult, description: e.target.value })}
@@ -301,7 +302,7 @@ export default function GroupsScanPage() {
               {editableResult.currency && (
                 <div className="space-y-1 border-t border-border/50 pt-2">
                   <label className="text-[10px] font-bold text-muted-foreground uppercase ml-1">Moneda</label>
-                  <p className="text-sm font-medium">{editableResult.currency} ({CURRENCY_SYMBOLS[editableResult.currency]})</p>
+                  <p className="pl-1 text-sm font-medium">{editableResult.currency} ({CURRENCY_SYMBOLS[editableResult.currency]})</p>
                 </div>
               )}
             </div>
