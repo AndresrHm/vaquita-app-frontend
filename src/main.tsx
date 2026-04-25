@@ -18,7 +18,9 @@ import RegisterPage from '@/pages/RegisterPage'
 import CreateManualExpensePage from './pages/CreateManualExpensePage'
 import UserExpensesPage from '@/pages/UserExpensesPage'
 import UserProfilePage from '@/pages/UserProfilePage'
+import SettingsAccountPage from '@/pages/SettingsAccountPage'
 import ToastProvider from '@/customHooks/ToastProvider'
+import ChangePasswordPage from './pages/ChangePasswordPage'
 
 const storedTheme = localStorage.getItem('theme')
 const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -45,6 +47,8 @@ const router = createBrowserRouter([
       { path: 'activity', element: <ActivityPage /> },
       { path: 'account', element: <AccountPage /> },
       { path: 'account/expenses', element: <UserExpensesPage /> },
+      { path: 'account/settings', element: <SettingsAccountPage />},
+      { path: 'account/password', element: <ChangePasswordPage /> }
     ]
   },
   { path: '*', element: <Navigate to="/" replace /> }
