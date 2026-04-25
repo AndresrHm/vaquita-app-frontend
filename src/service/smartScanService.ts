@@ -1,9 +1,7 @@
 /* eslint-disable no-undef */
 import type { ScanResult } from '@/domain/smartScanDTO'
-import axios from 'axios'
+import api from './apiToken'
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080'
-const api = axios.create({ baseURL: BASE_URL })
 
 // ── Endpoints ─────────────────────────────────────────────────────────────────
 
