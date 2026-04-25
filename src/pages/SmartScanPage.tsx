@@ -60,7 +60,7 @@ export default function GroupsScanPage() {
     setErrorMsg(null)
 
     try {
-      const data = await scanMock(imageFile)
+      const data = await scan(imageFile)
       // Inicializamos el estado editable con lo que viene de la IA
       setEditableResult({
         ...data,
