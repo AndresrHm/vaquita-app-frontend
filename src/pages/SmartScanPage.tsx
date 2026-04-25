@@ -56,16 +56,23 @@ export default function GroupsScanPage() {
 
   async function handleScan() {
     if (!imageFile) return
+
     setState('loading')
     setErrorMsg(null)
 
     try {
-      const data = await scan(imageFile)
-      // Inicializamos el estado editable con lo que viene de la IA
+      const compressedImage = await compressImage(imageFile)
+
+      const data = await scan(compressedImage)
+
+      console.log('Original:', imageFile.size / 1024, 'KB')
+      console.log('Compressed:', compressedImage.size / 1024, 'KB')
+
       setEditableResult({
         ...data,
         items: data.items || []
       })
+
       setState('result')
     } catch (e) {
       if (axios.isAxiosError(e)) {
@@ -399,4 +406,43 @@ export default function GroupsScanPage() {
       )}
     </div>
   )
+}
+
+async function compressImage(file: File): Promise<File> {
+  return new Promise((resolve) => {
+    const img = new Image()
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')!
+
+    img.onload = () => {
+      const MAX_WIDTH = 1200
+
+      const scale = Math.min(1, MAX_WIDTH / img.width)
+      const width = img.width * scale
+      const height = img.height * scale
+
+      canvas.width = width
+      canvas.height = height
+
+      ctx.drawImage(img, 0, 0, width, height)
+
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) return resolve(file)
+
+          const compressedFile = new File(
+            [blob],
+            file.name.replace(/\.\w+$/, '.jpg'),
+            { type: 'image/jpeg' }
+          )
+
+          resolve(compressedFile)
+        },
+        'image/jpeg',
+        0.7 // calidad (0.6–0.8 ideal)
+      )
+    }
+
+    img.src = URL.createObjectURL(file)
+  })
 }
