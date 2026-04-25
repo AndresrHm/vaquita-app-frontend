@@ -7,7 +7,7 @@ import CreateExpenseItem from '@/components/createExpense/CreateExpenseItem'
 import FieldWrapper from '@/components/createExpense/FieldWrapper'
 import ParticipantDisplay from '@/components/createExpense/ParticipantDisplay'
 import { Expense } from '@/domain/expense'
-import type { ExpenseItem } from '@/domain/expenseItem'
+import { ExpenseItem } from '@/domain/expenseItem'
 import { expenseService } from '@/service/expenseService'
 import ColumnContainer from '@/components/common/columnContainer'
 import PageTitle from '@/components/common/pageTitle'
@@ -16,11 +16,35 @@ import type { Usuario } from '@/domain/usuario'
 import type { Grupo } from '@/domain/Grupo'
 import { obtenerGrupoPorId, obtenerGruposDeUsuario } from '@/service/groupsService'
 import { useOnInit } from '@/customHooks/hooks'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useLocation } from 'react-router-dom'
+import type { LineItem, ScanResult } from '@/domain/smartScanDTO'
 
+type LocationState = {
+    scanResult?: ScanResult & { totalAmount: number }
+}
 
 export default function CreateExpense() {
-    const [expense, setExpense] = useState(new Expense(undefined, Number(localStorage.id)))
+
+    const location = useLocation()
+
+    const [expense, setExpense] = useState<Expense>(() => {
+        const scanResult = (location.state as LocationState)?.scanResult
+
+        const newExpense = new Expense(undefined, Number(localStorage.id))
+
+        if (scanResult) {
+            newExpense.description = scanResult.description || ''
+            newExpense.total = scanResult.totalAmount
+            newExpense.date = scanResult.date || new Date().toISOString().split('T')[0]
+            newExpense.category = mapearCategoria(scanResult.category)
+            newExpense.total = scanResult.totalAmount
+            newExpense.items = convertirItems(scanResult.items)
+        }
+
+        return newExpense
+    })
+
+
     const [participants, setParticipants] = useState<Usuario[]>([])
     const [groups, setGroups] = useState<Grupo[]>([])
     const [isParticipantsOpen, setIsParticipantsOpen] = useState(false)
@@ -296,4 +320,44 @@ export default function CreateExpense() {
             </ColumnContainer>
         </div>
     )
+}
+
+// ═════════════════════════════════════════════════════════════════════════════════
+// HELPER FUNCTIONS
+// ═════════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Mapea la categoría del escaneo (food, transport, etc) a las categorías de tu app
+ */
+function mapearCategoria(scanCategory?: string): string {
+    if (!scanCategory) return 'food'
+
+    const mapping: Record<string, string> = {
+        'food': 'food',
+        'transport': 'transport',
+        'entertainment': 'entertainment',
+        'other': 'other'
+    }
+
+    return mapping[scanCategory] || 'food'
+}
+
+/**
+ * Convierte items del escaneo a ExpenseItem si lo necesitas
+ */
+function convertirItems(scanItems?: LineItem[]): ExpenseItem[] {
+    if (!scanItems?.length) return []
+
+    return scanItems.map(item => {
+        const cantidad = item.quantity ?? 1
+
+        const precioUnitario =
+            cantidad > 0 ? item.price / cantidad : item.price
+
+        return new ExpenseItem(
+            item.name,
+            cantidad,
+            precioUnitario
+        )
+    })
 }

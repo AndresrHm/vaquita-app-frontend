@@ -274,7 +274,14 @@ export default function GroupsScanPage() {
               <div className="mt-8 space-y-4">
                 <Button
                   className="w-full h-16 rounded-[1.25rem] bg-blue-400 text-primary-foreground text-lg font-black shadow-[0_10px_20px_rgba(var(--primary-rgb),0.3)] hover:shadow-[0_15px_30px_rgba(var(--primary-rgb),0.4)] hover:-translate-y-0.5 transition-all active:scale-[0.97] border-2 border-primary-foreground/10"
-                  onClick={() => navigate('/groups/expense/create', { state: { scanResult: editableResult } })}
+                  onClick={() => navigate('/groups/expense/create', {
+                    state: {
+                      scanResult: {
+                        ...editableResult,
+                        totalAmount: total
+                      }
+                    }
+                  })}
                 >
                   Confirmar y Repartir
                 </Button>
