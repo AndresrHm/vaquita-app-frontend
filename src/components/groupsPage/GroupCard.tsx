@@ -20,6 +20,9 @@ export default function GroupCard({ group }: { group: Group }) {
               src={group.imagenUrl}
               alt={group.nombre}
               className="h-12 w-14 shrink-0 rounded-md border border-border object-cover"
+              onError={(e) => {
+                e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(group.nombre)}&background=random&color=fff`
+              }}
             />
           ) : (
             <div className="flex h-12 w-14 shrink-0 items-center justify-center rounded-md border border-border bg-muted/80 text-sm font-semibold text-muted-foreground">
