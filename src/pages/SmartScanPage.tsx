@@ -250,7 +250,7 @@ export default function GroupsScanPage() {
 
                   <div className="mt-4 flex justify-center">
                     <div
-                      className="w-full max-w-xs rounded-2xl overflow-hidden border border-border cursor-pointer grouphover:shadow-md"
+                      className="w-full max-w-xs rounded-2xl overflow-hidden border border-border cursor-pointer group hover:shadow-md"
                       onClick={() => setIsPreviewOpen(true)}
                     >
                       <img
