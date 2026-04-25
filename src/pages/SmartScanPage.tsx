@@ -2,8 +2,8 @@
 import { useMemo, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
-  Edit3, Sparkles, Upload, Camera, X, RotateCcw,
-  CheckCircle2, Loader2, AlertCircle
+  Edit3, Sparkles, Upload, Camera, RotateCcw,
+  CheckCircle2, AlertCircle
 } from 'lucide-react'
 import PageTitle from '@/components/common/pageTitle'
 import ColumnContainer from '@/components/common/columnContainer'
@@ -13,6 +13,7 @@ import EditableLineItems from '@/components/smartScan/editableLineItems'
 import Card from '@/components/common/card'
 import { CATEGORY_LABELS, CURRENCY_SYMBOLS, type LineItem, type ScanResult, type ScanState } from '@/domain/smartScanDTO'
 import { scan, scanMock } from '@/service/smartScanService'
+import { Dialog, DialogContent } from '@/components/ui/dialog'
 
 export default function GroupsScanPage() {
   const navigate = useNavigate()
@@ -22,6 +23,7 @@ export default function GroupsScanPage() {
   const [state, setState] = useState<ScanState>('idle')
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
   // -- Estado editable del resultado --
@@ -57,7 +59,7 @@ export default function GroupsScanPage() {
     setErrorMsg(null)
 
     try {
-      const data = await scan(imageFile)
+      const data = await scanMock(imageFile)
       // Inicializamos el estado editable con lo que viene de la IA
       setEditableResult({
         ...data,
@@ -115,84 +117,162 @@ export default function GroupsScanPage() {
             <p className="text-xs text-muted-foreground">Optimizá tu tiempo escaneando el ticket.</p>
           </div>
 
-          {imagePreview && (
-            <div className="mt-4 relative rounded-2xl overflow-hidden border border-border aspect-4/3 bg-muted">
-              <img src={imagePreview} alt="Preview" className="w-full h-full object-contain" />
-              {state === 'loading' && (
-                <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex flex-col items-center justify-center gap-3">
-                  <div className="relative">
-                    <Loader2 className="animate-spin text-primary" size={32} />
-                    <Sparkles className="absolute -top-1 -right-1 text-yellow-500 animate-pulse" size={14} />
-                  </div>
-                  <p className="text-sm font-medium animate-pulse text-primary">Leyendo ticket...</p>
-                </div>
-              )}
-              {state !== 'loading' && (
-                <button onClick={handleReset} className="absolute top-3 right-3 bg-background/90 p-1.5 rounded-full border shadow-sm">
-                  <X size={16} />
-                </button>
-              )}
-            </div>
-          )}
+          <Card interactive={false}>
 
-          {state === 'error' && errorMsg && (
-            <div className="mt-3 flex gap-2 rounded-xl bg-destructive/10 border border-destructive/20 p-3">
-              <AlertCircle size={16} className="text-destructive shrink-0" />
-              <p className="text-xs text-destructive">{errorMsg}</p>
-            </div>
-          )}
-
-          <div className="mt-5 flex flex-col gap-3">
-            {state === 'preview' || state === 'error' ? (
+            {imagePreview && (
               <>
-                <Button className="w-full h-12 rounded-xl text-md font-bold" onClick={handleScan} disabled={state === 'loading'}>
-                  {state === 'error' ? <RotateCcw size={18} className="mr-2" /> : <Sparkles size={18} className="mr-2" />}
-                  {state === 'error' ? 'Reintentar' : 'Confirmar y Escanear'}
-                </Button>
-                <Button variant="ghost" className="text-xs h-10" onClick={handleReset}>Cambiar imagen</Button>
-              </>
-            ) : state !== 'loading' && (
-              <>
-                <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => e.target.files?.[0] && handleFileSelected(e.target.files[0])} />
-                <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && handleFileSelected(e.target.files[0])} />
-
-                <Button className="w-full h-14 rounded-2xl shadow-lg gap-2 text-md" onClick={() => cameraInputRef.current?.click()}>
-                  <Camera size={20} /> Sacar foto
-                </Button>
-                <div className="flex gap-2">
-                  <Button variant="outline" className="flex-1 rounded-xl h-11 text-xs" onClick={() => fileInputRef.current?.click()}>
-                    <Upload size={14} className="mr-2" /> Galería
-                  </Button>
-                  <Button variant="outline" className="flex-1 rounded-xl h-11 text-xs" onClick={() => navigate('/groups/expense/create')}>
-                    <Edit3 size={14} className="mr-2" /> Manual
-                  </Button>
+                <div
+                  className="mt-4 rounded-2xl overflow-hidden border border-border cursor-pointer group"
+                  onClick={() => setIsPreviewOpen(true)}
+                >
+                  <img
+                    src={imagePreview}
+                    alt="preview"
+                    className="w-full h-auto object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                  />
                 </div>
+
+                {/* Modal */}
+                <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+                  <DialogContent className="max-w-3xl p-0 bg-black/90 border-none">
+                    <img
+                      src={imagePreview}
+                      alt="preview zoom"
+                      className="w-full h-auto object-contain"
+                    />
+                  </DialogContent>
+                </Dialog>
               </>
             )}
-          </div>
+
+            {state === 'error' && errorMsg && (
+              <div className="mt-3 flex gap-2 rounded-xl bg-destructive/10 border border-destructive/20 p-3">
+                <AlertCircle size={16} className="text-destructive shrink-0" />
+                <p className="text-xs text-destructive">{errorMsg}</p>
+              </div>
+            )}
+
+            <div className="mt-5 flex flex-col gap-3">
+              {state === 'preview' || state === 'error' ? (
+                <>
+                  {/* Confirmar y Escanerar | Reintentar */}
+                  <Button
+                    className="w-full h-16 rounded-[1.25rem] bg-blue-400 text-primary-foreground text-lg font-black shadow-[0_5px_20px_rgba(0,0,0,0.25)] hover:shadow-[0_5px_20px_rgba(0,0,0,0.35)] hover:-translate-y-0.5 transition-all active:scale-[0.97] border-0 flex items-center justify-center gap-2"
+                    onClick={handleScan}
+                    disabled={state === 'loading'}
+                  >
+                    {state === 'loading' && (
+                      <>
+                        <RotateCcw size={18} />
+                        <Sparkles size={18} />
+                        <p className="text-center text-sm text-muted-foreground mt-2 animate-pulse">
+                          Procesando imagen...
+                        </p>
+                      </>
+                    )
+
+                    }
+                    {state === 'error' ? 'Reintentar' : 'Confirmar y Escanear'}
+                  </Button>
+                  {/* Cambiar imagen */}
+                  <Button
+                    variant="outline"
+                    className="rounded-xl h-10 text-sm"
+                    onClick={handleReset}
+                  >
+                    Cambiar imagen
+                  </Button>
+                </>
+              ) : state !== 'loading' && (
+                <>
+                  <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => e.target.files?.[0] && handleFileSelected(e.target.files[0])} />
+                  <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && handleFileSelected(e.target.files[0])} />
+
+                  <Button
+                    className="w-full h-16 rounded-[1.25rem] bg-blue-400 text-primary-foreground text-lg font-black shadow-[0_5px_20px_rgba(0,0,0,0.25)] hover:shadow-[0_5px_20px_rgba(0,0,0,0.35)] hover:-translate-y-0.5 transition-all active:scale-[0.97] border-0 flex items-center justify-center gap-2"
+                    onClick={() => cameraInputRef.current?.click()}
+                  >
+                    <Camera size={20} /> Sacar foto
+                  </Button>
+                  <div className="flex gap-2">
+                    <Button variant="outline" className="flex-1 rounded-xl h-11 text-xs" onClick={() => fileInputRef.current?.click()}>
+                      <Upload size={14} className="mr-2" /> Galería
+                    </Button>
+                    <Button variant="outline" className="flex-1 rounded-xl h-11 text-xs" onClick={() => navigate('/groups/expense/create')}>
+                      <Edit3 size={14} className="mr-2" /> Manual
+                    </Button>
+                  </div>
+                </>
+              )}
+            </div>
+          </Card>
         </ColumnContainer>
       )}
 
       {/* ── RESULTADO EDITABLE ── */}
       {state === 'result' && editableResult && (
         <div className="space-y-4">
+
           <ColumnContainer>
             <div className="flex items-center justify-between px-1">
+
               <div className="flex items-center gap-2">
                 <div className="bg-green-500/10 p-1.5 rounded-full">
-                  <CheckCircle2 size={18} className="text-green-600" />
+                  <CheckCircle2 size={24} className="text-green-600" />
                 </div>
                 <div>
-                  <h2 className="text-sm font-bold">¡Lectura exitosa!</h2>
-                  <p className="text-[11px] text-muted-foreground">Revisá y corregí si es necesario.</p>
+                  <h2 className="text-xl font-bold">¡Lectura exitosa!</h2>
+                  <p className="text-sm text-muted-foreground">Revisá y corregí si es necesario.</p>
                 </div>
               </div>
               {editableResult.category && (
-                <span className="text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary px-2 py-1 rounded-lg">
+                <span className="text-sm font-bold uppercase tracking-wider bg-primary/10 text-primary px-2 py-1 rounded-lg">
                   {CATEGORY_LABELS[editableResult.category] || editableResult.category}
                 </span>
               )}
             </div>
+
+            {/* Imagen */}
+            {imagePreview && (
+              <>
+                <Card>
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <span className="text-sm font-semibold text-foreground">
+                        Ticket escaneado
+                      </span>
+                      <p className="text-xs text-muted-foreground">
+                        Tocá la imagen para verla en detalle
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-4 flex justify-center">
+                    <div
+                      className="w-full max-w-xs rounded-2xl overflow-hidden border border-border cursor-pointer group"
+                      onClick={() => setIsPreviewOpen(true)}
+                    >
+                      <img
+                        src={imagePreview}
+                        alt="preview"
+                        className="w-full h-40 object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Modal */}
+                  <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+                    <DialogContent className="max-w-3xl p-0 bg-black/90 border-none">
+                      <img
+                        src={imagePreview}
+                        alt="preview zoom"
+                        className="w-full h-auto object-contain"
+                      />
+                    </DialogContent>
+                  </Dialog>
+
+                </Card>
+              </>
+            )}
 
             {/* Datos Generales (Título y Descripción) */}
             <div className="mt-4 space-y-3 p-4 bg-muted/30 rounded-2xl border border-border/50">
