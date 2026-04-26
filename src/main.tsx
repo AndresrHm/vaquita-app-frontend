@@ -20,6 +20,8 @@ import UserProfilePage from '@/pages/UserProfilePage'
 import SettingsAccountPage from '@/pages/SettingsAccountPage'
 import ToastProvider from '@/customHooks/ToastProvider'
 import ChangePasswordPage from './pages/ChangePasswordPage'
+import ProtectedRoute from '@/components/common/ProtectedRoute'
+import NotFoundPage from '@/pages/NotFoundPage.tsx'
 
 const storedTheme = localStorage.getItem('theme')
 const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -31,7 +33,11 @@ const router = createBrowserRouter([
   { path: '/register', element: <RegisterPage /> },
   {
     path: '/',
-    element: <MainLayout />,
+    element: (
+      <ProtectedRoute>
+        <MainLayout />
+      </ProtectedRoute>
+    ),
     children: [
       { index: true, element: <Navigate to="/groups" replace /> },
       { path: 'groups', element: <GroupsPage /> },
@@ -50,7 +56,7 @@ const router = createBrowserRouter([
       { path: 'account/password', element: <ChangePasswordPage /> }
     ]
   },
-  { path: '*', element: <Navigate to="/" replace /> }
+  { path: '*', element: <NotFoundPage /> }
 ])
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
