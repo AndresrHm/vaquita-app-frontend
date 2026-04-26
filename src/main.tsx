@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { Navigate, createBrowserRouter, RouterProvider } from 'react-router-dom'
@@ -8,7 +9,7 @@ import AccountPage from '@/pages/AccountPage.tsx'
 import ActivityPage from '@/pages/ActivityPage.tsx'
 import FriendsPage from '@/pages/FriendsPage.tsx'
 import GroupsPage from '@/pages/GroupsPage.tsx'
-import GroupsScanPage from '@/pages/GroupsScanPage.tsx'
+import GroupsScanPage from '@/pages/SmartScanPage'
 import GroupDetailPage from '@/pages/GroupDetailPage.tsx'
 import GroupSettingsPage from '@/pages/GroupSettingsPage.tsx'
 import CreateGroupPage from '@/pages/CreateGroupPage.tsx'

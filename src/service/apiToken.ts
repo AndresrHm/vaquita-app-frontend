@@ -1,22 +1,23 @@
-import axios from 'axios';
+/* eslint-disable no-undef */
+import axios from 'axios'
 
 const api = axios.create({
   baseURL: 'http://localhost:8080',
-});
+})
 
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('token')
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      config.headers.Authorization = `Bearer ${token}`
     }
 
-    return config;
+    return config
   },
   (error) => {
-    return Promise.reject(error);
+    return Promise.reject(error)
   }
-);
+)
 
 // Interceptor de respuesta
 api.interceptors.response.use(
@@ -30,8 +31,8 @@ api.interceptors.response.use(
       localStorage.removeItem('user_image');
       window.location.href = '/login';
     }
-    return Promise.reject(error);
+    return Promise.reject(error)
   }
-);
+)
 
-export default api;
+export default api
