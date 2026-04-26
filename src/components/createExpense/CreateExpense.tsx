@@ -1,13 +1,12 @@
 /* eslint-disable no-undef */
 import { useState } from 'react'
-import { Receipt, Calendar, Users } from 'lucide-react'
+import { Receipt, Calendar } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { CATEGORIES } from '@/components/createExpense/categories'
 import CreateExpenseItem from '@/components/createExpense/CreateExpenseItem'
 import FieldWrapper from '@/components/createExpense/FieldWrapper'
-import ParticipantDisplay from '@/components/createExpense/ParticipantDisplay'
 import { Expense } from '@/domain/expense'
-import type { ExpenseItem } from '@/domain/expenseItem'
+import { ExpenseItem } from '@/domain/expenseItem'
 import { expenseService } from '@/service/expenseService'
 import ColumnContainer from '@/components/common/columnContainer'
 import PageTitle from '@/components/common/pageTitle'
@@ -16,7 +15,8 @@ import type { Usuario } from '@/domain/usuario'
 import type { Grupo } from '@/domain/Grupo'
 import { obtenerGrupoPorId, obtenerGruposDeUsuario } from '@/service/groupsService'
 import { useOnInit } from '@/customHooks/hooks'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useLocation } from 'react-router-dom'
+import type { LineItem, ScanResult } from '@/domain/smartScanDTO'
 import { TipoDivision } from '@/domain/enums/tipoDivision'
 import { ExpenseAllocation } from '@/domain/expenseAllocation'
 import DivisionTypeSelector from './DivisionTypeSelector'
@@ -25,13 +25,43 @@ import CategorySelector from './CategorySelector'
 import ParticipantSelector from './ParticipantSelector'
 import GroupSelector from './GroupSelector'
 
+type LocationState = {
+    scanResult?: ScanResult & { totalAmount: number }
+}
 
 export default function CreateExpense() {
-    const [expense, setExpense] = useState(new Expense(undefined, Number(localStorage.id)))
+
+    const location = useLocation()
+
+    const [expense, setExpense] = useState<Expense>(() => {
+        const scanResult = (location.state as LocationState)?.scanResult
+
+        const newExpense = new Expense(undefined, Number(localStorage.id))
+
+        if (scanResult) {
+            newExpense.description = scanResult.description || ''
+            newExpense.total = scanResult.totalAmount
+            newExpense.date = scanResult.date || new Date().toISOString().split('T')[0]
+            newExpense.category = mapearCategoria(scanResult.category)
+
+            const items = convertirItems(scanResult.items)
+
+            newExpense.items = items
+            newExpense.total = items.length
+                ? items.reduce((acc, i) => acc + i.total(), 0)
+                : scanResult.totalAmount
+        }
+
+
+        return newExpense
+    })
+
+
     const [participants, setParticipants] = useState<Usuario[]>([])
     const [groups, setGroups] = useState<Grupo[]>([])
     const [isParticipantsOpen, setIsParticipantsOpen] = useState(false)
     const [isGroupsOpen, setIsGroupsOpen] = useState(false)
+    const [isCategoryOpen, setIsCategoryOpen] = useState(false)
     const [isLoadingParticipants, setIsLoadingParticipants] = useState(false)
     const { groupId } = useParams()
     const [selectedGroupId, setSelectedGroupId] = useState<number | undefined>(
@@ -59,12 +89,17 @@ export default function CreateExpense() {
     }
 
     const handleItemsChange = (items: ExpenseItem[]) => {
-        actualizarExpense({ items })
+        const total = items.reduce((acc, item) => acc + item.total(), 0)
+
+        actualizarExpense({
+            items,
+            total
+        })
     }
 
     const obtenerGrupos = async () => {
         try {
-            const gruposBack = await obtenerGruposDeUsuario(Number(localStorage.id))
+            const gruposBack = await obtenerGruposDeUsuario()
             setGroups(gruposBack)
         } catch (error: unknown) {
             console.log(error)
@@ -161,7 +196,8 @@ export default function CreateExpense() {
                                 step="1000"
                                 placeholder="0"
                                 inputMode="decimal"
-                                value={expense.total || ''}
+                                value={expense.total.toFixed(2) || ''}
+                                disabled={expense.items.length > 0} // lo desactivamos si hay ítems
                                 onChange={(event) => actualizarExpense({ total: Number(event.target.value) || 0 })}
                                 className="w-full bg-transparent text-4xl font-bold text-foreground outline-none placeholder:text-muted-foreground/30 text-center"
                             />
@@ -231,6 +267,8 @@ export default function CreateExpense() {
                             instruction="Elegí un tipo de gasto"
                             categories={CATEGORIES}
                             selectedCategory={expense.category}
+                            isOpen={isCategoryOpen}
+                            onToggleOpen={() => setIsCategoryOpen(!isCategoryOpen)}
                             onSelect={(categoryId) => actualizarExpense({ category: categoryId })}
                         />
 
@@ -264,3 +302,73 @@ export default function CreateExpense() {
         </div>
     )
 }
+
+// ═════════════════════════════════════════════════════════════════════════════════
+// HELPER FUNCTIONS
+// ═════════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Mapea la categoría del escaneo (food, transport, etc) a las categorías de tu app
+ */
+function mapearCategoria(scanCategory?: string): string {
+    if (!scanCategory) return 'OTROS'
+
+    const normalized = scanCategory.toLowerCase()
+
+    const mapping: Record<string, string> = {
+        // comida
+        'food': 'COMIDA',
+        'comida': 'COMIDA',
+
+        // bebida
+        'drink': 'BEBIDA',
+        'bebida': 'BEBIDA',
+
+        // transporte
+        'transport': 'TRANSPORTE',
+        'transporte': 'TRANSPORTE',
+
+        // supermercado
+        'grocery': 'SUPERMERCADO',
+        'supermarket': 'SUPERMERCADO',
+        'supermercado': 'SUPERMERCADO',
+
+        // entretenimiento
+        'entertainment': 'ENTRETENIMIENTO',
+        'ocio': 'ENTRETENIMIENTO',
+
+        // hogar
+        'home': 'HOGAR',
+        'hogar': 'HOGAR',
+
+        // otros
+        'other': 'OTROS',
+        'otros': 'OTROS',
+    }
+
+    return mapping[normalized] || 'OTROS'
+}
+
+/**
+ * Convierte items del escaneo a ExpenseItem si lo necesitas
+ */
+function convertirItems(scanItems?: LineItem[]): ExpenseItem[] {
+    if (!scanItems?.length) return []
+
+    return scanItems.map(item => {
+        const cantidad = item.quantity ?? 1
+
+        const precioUnitario =
+            cantidad > 0 ? item.price / cantidad : item.price
+
+        return new ExpenseItem(
+            item.name,
+            cantidad,
+            precioUnitario
+        )
+    })
+}
+
+// TODO:
+// 1. que quede seleccionada la categoría correspondiente
+// 2. que quede seleccionada la fecha correspondiente
