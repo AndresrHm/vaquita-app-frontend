@@ -24,9 +24,12 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && (error.response.status === 401 || error.response.status === 403)) {
-      console.error('Sesión expirada, rajando al login...')
-      localStorage.removeItem('token')
-      window.location.href = '/login' // Mandamos al usuario al login
+      console.error("Sesión expirada, rajando al login...");
+      localStorage.removeItem('token');
+      localStorage.removeItem('user_name');
+      localStorage.removeItem('user_email');
+      localStorage.removeItem('user_image');
+      window.location.href = '/login';
     }
     return Promise.reject(error)
   }
