@@ -1,13 +1,12 @@
 /* eslint-disable no-undef */
 import { useState } from 'react'
-import { Receipt, Calendar, Users } from 'lucide-react'
+import { Receipt, Calendar } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { CATEGORIES } from '@/components/createExpense/categories'
 import CreateExpenseItem from '@/components/createExpense/CreateExpenseItem'
 import FieldWrapper from '@/components/createExpense/FieldWrapper'
-import ParticipantDisplay from '@/components/createExpense/ParticipantDisplay'
 import { Expense } from '@/domain/expense'
-import type { ExpenseItem } from '@/domain/expenseItem'
+import { ExpenseItem } from '@/domain/expenseItem'
 import { expenseService } from '@/service/expenseService'
 import ColumnContainer from '@/components/common/columnContainer'
 import PageTitle from '@/components/common/pageTitle'
@@ -16,15 +15,53 @@ import type { Usuario } from '@/domain/usuario'
 import type { Grupo } from '@/domain/Grupo'
 import { obtenerGrupoPorId, obtenerGruposDeUsuario } from '@/service/groupsService'
 import { useOnInit } from '@/customHooks/hooks'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useLocation } from 'react-router-dom'
+import type { LineItem, ScanResult } from '@/domain/smartScanDTO'
+import { TipoDivision } from '@/domain/enums/tipoDivision'
+import { ExpenseAllocation } from '@/domain/expenseAllocation'
+import DivisionTypeSelector from './DivisionTypeSelector'
+import ExactAmountAllocator from './ExactAmountAllocator'
+import CategorySelector from './CategorySelector'
+import ParticipantSelector from './ParticipantSelector'
+import GroupSelector from './GroupSelector'
 
+type LocationState = {
+    scanResult?: ScanResult & { totalAmount: number }
+}
 
 export default function CreateExpense() {
-    // eslint-disable-next-line no-undef
-    const [expense, setExpense] = useState(new Expense(undefined, Number(localStorage.id)))
+
+    const location = useLocation()
+
+    const [expense, setExpense] = useState<Expense>(() => {
+        const scanResult = (location.state as LocationState)?.scanResult
+
+        const newExpense = new Expense(undefined, Number(localStorage.id))
+
+        if (scanResult) {
+            newExpense.description = scanResult.description || ''
+            newExpense.total = scanResult.totalAmount
+            newExpense.date = scanResult.date || new Date().toISOString().split('T')[0]
+            newExpense.category = mapearCategoria(scanResult.category)
+
+            const items = convertirItems(scanResult.items)
+
+            newExpense.items = items
+            newExpense.total = items.length
+                ? items.reduce((acc, i) => acc + i.total(), 0)
+                : scanResult.totalAmount
+        }
+
+
+        return newExpense
+    })
+
+
     const [participants, setParticipants] = useState<Usuario[]>([])
     const [groups, setGroups] = useState<Grupo[]>([])
     const [isParticipantsOpen, setIsParticipantsOpen] = useState(false)
+    const [isGroupsOpen, setIsGroupsOpen] = useState(false)
+    const [isCategoryOpen, setIsCategoryOpen] = useState(false)
     const [isLoadingParticipants, setIsLoadingParticipants] = useState(false)
     const { groupId } = useParams()
     const [selectedGroupId, setSelectedGroupId] = useState<number | undefined>(
@@ -32,6 +69,7 @@ export default function CreateExpense() {
     )
     const effectiveGroupId = (groupId ?? selectedGroupId) as number | undefined
     const [groupNameState, setGroupNameState] = useState<string | undefined>()
+    const [divisionType, setDivisionType] = useState<TipoDivision>(TipoDivision.PARTES_IGUALES)
 
     const navigate = useNavigate()
 
@@ -51,12 +89,17 @@ export default function CreateExpense() {
     }
 
     const handleItemsChange = (items: ExpenseItem[]) => {
-        actualizarExpense({ items })
+        const total = items.reduce((acc, item) => acc + item.total(), 0)
+
+        actualizarExpense({
+            items,
+            total
+        })
     }
 
     const obtenerGrupos = async () => {
         try {
-            const gruposBack = await obtenerGruposDeUsuario(Number(localStorage.id))
+            const gruposBack = await obtenerGruposDeUsuario()
             setGroups(gruposBack)
         } catch (error: unknown) {
             console.log(error)
@@ -103,6 +146,18 @@ export default function CreateExpense() {
         }
     }
 
+    const handleExactAmountChange = (participantId: number, amount: number) => {
+        const otrasAsignaciones = expense.allocations.filter(a => a.participantId !== participantId)
+        const nuevasAsignaciones = [...otrasAsignaciones, new ExpenseAllocation(participantId, amount)]
+
+        actualizarExpense({
+            tipoDivision: TipoDivision.PARTES_EXACTAS,
+            allocations: nuevasAsignaciones
+        })
+    }
+
+    const totalAsignado = expense.allocations.reduce((acc, curr) => acc + curr.total, 0)
+
     const crearExpense = async () => {
         const expenseParaValidar = Expense.clone(expense)
         expenseParaValidar.validar()
@@ -113,7 +168,7 @@ export default function CreateExpense() {
                 await expenseService.createExpense(expense)
                 navigate('/')
             } catch (error: unknown) {
-                console.error('Error creando gasto:', error)
+                console.error('Error creando gasto:', error.message)
             }
         }
     }
@@ -138,10 +193,11 @@ export default function CreateExpense() {
                             <span className="text-3xl font-bold text-primary">$</span>
                             <input
                                 type="number"
-                                step="0.01"
+                                step="1000"
                                 placeholder="0"
                                 inputMode="decimal"
-                                value={expense.total || ''}
+                                value={expense.total.toFixed(2) || ''}
+                                disabled={expense.items.length > 0} // lo desactivamos si hay ítems
                                 onChange={(event) => actualizarExpense({ total: Number(event.target.value) || 0 })}
                                 className="w-full bg-transparent text-4xl font-bold text-foreground outline-none placeholder:text-muted-foreground/30 text-center"
                             />
@@ -149,90 +205,47 @@ export default function CreateExpense() {
                     </div>
 
                     <div className="rounded-2xl border border-border bg-card/70 p-4 shadow-sm backdrop-blur-xl space-y-4">
-                        <FieldWrapper label="Grupo">
-                            {!groupId ? (
-                                <div className="relative flex items-center gap-3 rounded-xl border border-border bg-background/70 px-3 py-2.5">
-                                    <Users className="h-4 w-4 text-muted-foreground shrink-0" />
-                                    <select
-                                        value={expense.groupId || ''}
-                                        onChange={(e) => {
-                                            const val = Number(e.target.value) || undefined
-                                            cambiarGrupo(val)
-                                        }}
-                                        className="w-full bg-transparent text-sm text-foreground outline-none appearance-none cursor-pointer">
-                                        <option value="" disabled className="bg-card text-muted-foreground">
-                                            Seleccioná un grupo
-                                        </option>
-                                        {groups.map((group) => (
-                                            <option key={group.id} value={String(group.id)} className="bg-card text-foreground">
-                                                {group.nombre}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    <div className="absolute right-3 pointer-events-none text-muted-foreground text-[10px]">▼</div>
-                                </div>
-                            ) : (
-                                <div className="flex items-center gap-3 rounded-xl border border-border bg-background/70 px-3 py-2.5">
-                                    <Users className="h-4 w-4 text-muted-foreground shrink-0" />
-                                    <span className="text-sm text-foreground">
-                                        {groupNameState || 'Grupo'}
-                                    </span>
-                                </div>
-                            )}
+                        <GroupSelector
+                            groups={groups}
+                            selectedGroupId={expense.groupId}
+                            currentGroupName={groupNameState}
+                            isOpen={isGroupsOpen}
+                            onToggleOpen={() => setIsGroupsOpen(!isGroupsOpen)}
+                            onSelect={(id) => cambiarGrupo(id)}
+                            disabled={!!groupId} // Si viene por URL, está deshabilitado
+                        />
+
+                        <ParticipantSelector
+                            participants={participants}
+                            selectedIds={expense.participantIds}
+                            currentUser={{ id: Number(localStorage.id) } as Usuario} // O el objeto usuario que tengas
+                            isLoading={isLoadingParticipants}
+                            isOpen={isParticipantsOpen}
+                            enabled={!!effectiveGroupId}
+                            onToggleOpen={() => setIsParticipantsOpen(!isParticipantsOpen)}
+                            onToggleParticipant={handleToggleParticipant}
+                        />
+
+                        {/* Selector de Tipo de División */}
+                        <FieldWrapper label="Método de división">
+                            <DivisionTypeSelector
+                                value={divisionType}
+                                onChange={(type) => {
+                                    setDivisionType(type)
+                                    actualizarExpense({ tipoDivision: type })
+                                }}
+                            />
                         </FieldWrapper>
 
-                        <FieldWrapper label="¿Quiénes participan del gasto?">
-                            <div className="relative">
-                                <div
-                                    className={`relative flex items-center gap-3 rounded-xl border border-border bg-background/70 px-3 py-2.5 cursor-pointer 
-        ${(!effectiveGroupId || isLoadingParticipants) ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                    onClick={() => effectiveGroupId && !isLoadingParticipants && setIsParticipantsOpen(!isParticipantsOpen)}
-                                >
-                                    <Users className={`h-4 w-4 text-muted-foreground shrink-0 ${isLoadingParticipants ? 'animate-pulse' : ''}`} />
-                                    <span className="w-full text-sm text-foreground">
-                                        {isLoadingParticipants ? (
-                                            'Cargando integrantes...'
-                                        ) : (
-                                            <ParticipantDisplay participants={participants} selectedIds={expense.participantIds} />
-                                        )}
-                                    </span>
-                                    <div className="absolute right-3 pointer-events-none text-muted-foreground text-[10px]">
-                                        {isLoadingParticipants ? '...' : '▼'}
-                                    </div>
-                                </div>
-
-                                {isParticipantsOpen && effectiveGroupId && !isLoadingParticipants && (
-                                    <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-xl shadow-lg z-10 max-h-40 overflow-y-auto">
-                                        {participants.map((participant) => {
-                                            const isCurrentUser = participant.id === Number(localStorage.id)
-
-                                            return (
-                                                <label
-                                                    key={participant.id}
-                                                    className={`flex items-center gap-2 px-3 py-2 hover:bg-muted cursor-pointer ${isCurrentUser ? 'opacity-70 cursor-not-allowed' : ''}`}
-                                                >
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={expense.participantIds.includes(participant.id!)}
-                                                        // Deshabilitamos si es el usuario actual
-                                                        disabled={isCurrentUser}
-                                                        onChange={() => {
-                                                            if (!isCurrentUser) {
-                                                                handleToggleParticipant(participant.id!)
-                                                            }
-                                                        }}
-                                                        className="rounded border-primary text-primary focus:ring-primary disabled:opacity-50"
-                                                    />
-                                                    <span className="text-sm">
-                                                        {participant.nombre} {isCurrentUser && '(Vos)'}
-                                                    </span>
-                                                </label>
-                                            )
-                                        })}
-                                    </div>
-                                )}
-                            </div>
-                        </FieldWrapper>
+                        {/* Sección Dinámica para Partes Exactas */}
+                        {divisionType === TipoDivision.PARTES_EXACTAS && (
+                            <ExactAmountAllocator
+                                participants={participants}
+                                expense={expense}
+                                totalAsignado={totalAsignado}
+                                onAmountChange={handleExactAmountChange}
+                            />
+                        )}
 
                         <FieldWrapper label="Descripción" instruction="¿En qué se gastó?">
                             <div className="flex items-center gap-3 rounded-xl border border-border bg-background/70 px-3 py-2.5">
@@ -249,24 +262,15 @@ export default function CreateExpense() {
 
                         <CreateExpenseItem items={expense.items} onChange={handleItemsChange} />
 
-                        <FieldWrapper label="Categoría" instruction="Elegí un tipo de gasto">
-                            <div className="grid grid-cols-3 gap-2">
-                                {CATEGORIES.map((category) => (
-                                    <button
-                                        key={category.id}
-                                        type="button"
-                                        onClick={() => actualizarExpense({ category: category.id })}
-                                        className={`flex flex-col items-center gap-2 rounded-xl border p-3 transition-all ${expense.category === category.id
-                                            ? 'border-primary bg-primary/10 text-primary'
-                                            : 'border-border bg-background/70 text-muted-foreground hover:bg-muted'
-                                            }`}
-                                    >
-                                        <span className="text-lg">{category.icon}</span>
-                                        <span className="text-[10px] font-medium mt-1">{category.label}</span>
-                                    </button>
-                                ))}
-                            </div>
-                        </FieldWrapper>
+                        <CategorySelector
+                            label="Categoría"
+                            instruction="Elegí un tipo de gasto"
+                            categories={CATEGORIES}
+                            selectedCategory={expense.category}
+                            isOpen={isCategoryOpen}
+                            onToggleOpen={() => setIsCategoryOpen(!isCategoryOpen)}
+                            onSelect={(categoryId) => actualizarExpense({ category: categoryId })}
+                        />
 
                         <FieldWrapper label="Fecha del gasto">
                             <div className="flex items-center gap-3 rounded-xl border border-border bg-background/70 px-3 py-2.5">
@@ -298,3 +302,73 @@ export default function CreateExpense() {
         </div>
     )
 }
+
+// ═════════════════════════════════════════════════════════════════════════════════
+// HELPER FUNCTIONS
+// ═════════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Mapea la categoría del escaneo (food, transport, etc) a las categorías de tu app
+ */
+function mapearCategoria(scanCategory?: string): string {
+    if (!scanCategory) return 'OTROS'
+
+    const normalized = scanCategory.toLowerCase()
+
+    const mapping: Record<string, string> = {
+        // comida
+        'food': 'COMIDA',
+        'comida': 'COMIDA',
+
+        // bebida
+        'drink': 'BEBIDA',
+        'bebida': 'BEBIDA',
+
+        // transporte
+        'transport': 'TRANSPORTE',
+        'transporte': 'TRANSPORTE',
+
+        // supermercado
+        'grocery': 'SUPERMERCADO',
+        'supermarket': 'SUPERMERCADO',
+        'supermercado': 'SUPERMERCADO',
+
+        // entretenimiento
+        'entertainment': 'ENTRETENIMIENTO',
+        'ocio': 'ENTRETENIMIENTO',
+
+        // hogar
+        'home': 'HOGAR',
+        'hogar': 'HOGAR',
+
+        // otros
+        'other': 'OTROS',
+        'otros': 'OTROS',
+    }
+
+    return mapping[normalized] || 'OTROS'
+}
+
+/**
+ * Convierte items del escaneo a ExpenseItem si lo necesitas
+ */
+function convertirItems(scanItems?: LineItem[]): ExpenseItem[] {
+    if (!scanItems?.length) return []
+
+    return scanItems.map(item => {
+        const cantidad = item.quantity ?? 1
+
+        const precioUnitario =
+            cantidad > 0 ? item.price / cantidad : item.price
+
+        return new ExpenseItem(
+            item.name,
+            cantidad,
+            precioUnitario
+        )
+    })
+}
+
+// TODO:
+// 1. que quede seleccionada la categoría correspondiente
+// 2. que quede seleccionada la fecha correspondiente

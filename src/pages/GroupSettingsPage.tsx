@@ -14,6 +14,8 @@ import { obtenerGrupoUsuarioContexto, obtenerGrupoSettings, obtenerMiembrosDeGru
 import { usuarioService } from '@/service/usuarioService'
 import type { Usuario } from '@/domain/usuario'
 import { useNavigate, useParams } from 'react-router-dom'
+import { useToast } from '@/customHooks/useToast'
+import { getMensajeError } from '@/utils/getMensajeError'
 
 function Avatar({ src, alt, size = 10 }: { src?: string; alt?: string; size?: number }) {
     const px = size * 4
@@ -68,6 +70,7 @@ function Modal({ open, title, children, onClose, onConfirm }: { open: boolean; t
 }
 
 export default function GroupSettingsPage() {
+    const { showToast } = useToast()
     const [initialData, setInitialData] = useState<GrupoSettingsDTO | null>(null)
     const [formularioGrupo, setFormularioGrupo] = useState<GrupoSettingsDTO>({} as GrupoSettingsDTO)
     const [miembros, setMiembros] = useState<Miembro[]>([])
@@ -121,9 +124,9 @@ export default function GroupSettingsPage() {
             setFormularioGrupo(updated)
             setInitialData(updated)
 
-        } catch (e) {
-            console.error(e)
-            setError('No se pudo guardar el grupo')
+        } catch (error: unknown) {
+            const mensaje = getMensajeError(error)
+            showToast(mensaje, 'error')
         } finally {
             setLoading(false)
         }
@@ -139,13 +142,13 @@ export default function GroupSettingsPage() {
         try {
             setLoading(true)
 
-            await eliminarMiembro(parsedGroupId, contextoUsuario.usuarioId, memberId)
+            await eliminarMiembro(parsedGroupId, memberId)
 
             setMiembros(prev => prev.filter(m => m.id !== memberId))
 
-        } catch (e) {
-            console.error(e)
-            setError('No se pudo eliminar el miembro')
+        } catch (error: unknown) {
+            const mensaje = getMensajeError(error)
+            showToast(mensaje, 'error')
         } finally {
             setLoading(false)
         }
@@ -153,14 +156,14 @@ export default function GroupSettingsPage() {
 
     const handleOpenAddFriends = async () => {
         try {
-            const amigos = await usuarioService.obtenerAmigos(contextoUsuario.usuarioId)
+            const amigos = await usuarioService.obtenerAmigos()
             const memberIds = new Set(miembros.map(m => m.id))
             setFriends(amigos.filter(a => a.id !== undefined && !memberIds.has(a.id!)))
             setSelectedFriendIds(new Set())
             setAddFriendsOpen(true)
-        } catch (e) {
-            console.error(e)
-            setError('No se pudieron cargar los amigos')
+        } catch (error: unknown) {
+            const mensaje = getMensajeError(error)
+            showToast(mensaje, 'error')
         }
     }
 
@@ -180,9 +183,9 @@ export default function GroupSettingsPage() {
             const updatedMembers = await obtenerMiembrosDeGrupoSettings(parsedGroupId)
             setMiembros(updatedMembers)
             setAddFriendsOpen(false)
-        } catch (e) {
-            console.error(e)
-            setError('No se pudieron agregar los miembros')
+        } catch (error: unknown) {
+            const mensaje = getMensajeError(error)
+            showToast(mensaje, 'error')
         } finally {
             setAddingMembers(false)
         }
@@ -191,12 +194,12 @@ export default function GroupSettingsPage() {
     const handleDeleteGroup = async () => {
         try {
             setDeletingGroup(true)
-            await eliminarGrupo(parsedGroupId, contextoUsuario.usuarioId)
+            await eliminarGrupo(parsedGroupId)
             setDeleteGroupOpen(false)
             navigate('/groups')
-        } catch (e) {
-            console.error(e)
-            setError('No se pudo eliminar el grupo')
+        } catch (error: unknown) {
+            const mensaje = getMensajeError(error)
+            showToast(mensaje, 'error')
         } finally {
             setDeletingGroup(false)
         }
@@ -218,9 +221,9 @@ export default function GroupSettingsPage() {
                 setMiembros(miembros)
                 setContextoUsuario(contexto)
 
-            } catch (e) {
-                console.error(e)
-                setError('Error al cargar el grupo. Intentá recargar la página.')
+            } catch (error: unknown) {
+                const mensaje = getMensajeError(error)
+                showToast(mensaje, 'error')
             } finally {
                 setLoading(false)
             }

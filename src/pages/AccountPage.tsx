@@ -1,78 +1,35 @@
-/* import { Button } from '@/components/ui/button'
-import PageTitle from '@/components/common/pageTitle'
-import Card from '@/components/common/card'
-import ColumnContainer from '@/components/common/columnContainer'
-import UserExpensesButton from '@/components/accountPage/UserExpensesButton'
-
-const mockUser = {
-  name: 'Juan',
-  email: 'juan@unsam.edu.ar',
-}
-
-export default function AccountPage() {
-  return (
-    <div className="space-y-4">
-      <PageTitle title="Cuenta" subtitle="Tu perfil (mock).">
-        <div className="mt-4 flex items-start justify-between gap-4">
-          <div>
-            <div className="text-sm font-semibold text-foreground">{mockUser.name}</div>
-            <div className="mt-1 text-xs text-muted-foreground">{mockUser.email}</div>
-          </div>
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-sm">
-            {mockUser.name.slice(0, 1)}
-          </div>
-        </div>
-      </PageTitle>
-
-      <ColumnContainer>
-        <h2 className="text-sm font-semibold text-foreground">Preferencias</h2>
-        <div className="mt-3 space-y-2">
-          <Card className="rounded-xl border border-border px-3 py-2">
-            <div className="text-xs font-medium text-foreground">Tema</div>
-            <div className="mt-1 text-xs text-muted-foreground">Sistema (mock)</div>
-          </Card>
-          <Card className="rounded-xl border border-border px-3 py-2">
-            <div className="text-xs font-medium text-foreground">Notificaciones</div>
-            <div className="mt-1 text-xs text-muted-foreground">On (mock)</div>
-          </Card>
-        </div>
-
-        <UserExpensesButton />
-
-        <Button className="mt-4 w-full rounded-xl" variant="secondary" type="button">
-          Cerrar sesión (mock)
-        </Button>
-      </ColumnContainer>
-    </div>
-  )
-}
- */
-
-
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import PageTitle from '@/components/common/pageTitle'
 import Card from '@/components/common/card'
 import ColumnContainer from '@/components/common/columnContainer'
-import UserExpensesButton from '@/components/accountPage/UserExpensesButton'
 
 export default function AccountPage() {
   const navigate = useNavigate()
+  const [isDarkMode, setIsDarkMode] = useState(() => document.documentElement.classList.contains('dark'))
 
-  // Intentamos obtener los datos reales del localStorage si los guardaste en el login
-  // Si no, usamos valores por defecto
-  const userName = localStorage.getItem('user_name') || 'Usuario'
-  const userEmail = localStorage.getItem('user_email') || 'email@ejemplo.com'
+  const userName = window.localStorage.getItem('user_name') || 'Usuario'
+  const userEmail = window.localStorage.getItem('user_email') || 'email@ejemplo.com'
+  // 👇 Traemos la imagen que guardamos en el login o al editar el perfil
+  const userImage = window.localStorage.getItem('user_image') || ''
 
   const handleLogout = () => {
-    // 1. Borramos el token y cualquier dato del usuario (VAQUITA-25)
-    localStorage.removeItem('token')
-    localStorage.removeItem('user_name')
-    localStorage.removeItem('user_email')
-
-    // 2. Redirigimos al login inmediatamente
+    window.localStorage.removeItem('token')
+    window.localStorage.removeItem('user_name')
+    window.localStorage.removeItem('user_email')
+    window.localStorage.removeItem('user_image') // Sumamos borrar la imagen
     navigate('/login')
   }
+
+  const handleToggleTheme = () => {
+    setIsDarkMode((prev) => !prev)
+  }
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', isDarkMode)
+    window.localStorage.setItem('theme', isDarkMode ? 'dark' : 'light')
+  }, [isDarkMode])
 
   return (
     <div className="space-y-4">
@@ -82,18 +39,64 @@ export default function AccountPage() {
             <div className="text-sm font-semibold text-foreground">{userName}</div>
             <div className="mt-1 text-xs text-muted-foreground">{userEmail}</div>
           </div>
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-sm">
-            {userName.slice(0, 1).toUpperCase()}
-          </div>
+          
+          {/* 👇 Lógica para mostrar la foto real o la inicial */}
+          {userImage ? (
+            <img
+              src={userImage}
+              alt={userName}
+              className="h-10 w-10 rounded-2xl object-cover shadow-sm border border-border"
+            />
+          ) : (
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-sm">
+              {userName.slice(0, 1).toUpperCase()}
+            </div>
+          )}
         </div>
       </PageTitle>
 
       <ColumnContainer>
+        {/* Nueva sección de Cuenta */}
+        <h2 className="text-sm font-semibold text-foreground">Gestión de Cuenta</h2>
+        <div className="mt-3 space-y-2 mb-4">
+          <Card
+            className="rounded-xl border border-border px-3 py-2 cursor-pointer hover:bg-muted/50 transition-colors"
+            role="button"
+            tabIndex={0}
+            onClick={() => navigate('/account/settings')}
+          >
+            <div className="text-xs font-medium text-foreground">Ajustes de perfil</div>
+            <div className="mt-1 text-xs text-muted-foreground">Cambiar tu nombre, email o foto</div>
+          </Card>
+
+          <Card
+            className="rounded-xl border border-border px-3 py-2 cursor-pointer hover:bg-muted/50 transition-colors"
+            role="button"
+            tabIndex={0}
+            onClick={() => navigate('/account/password')} 
+          >
+            <div className="text-xs font-medium text-foreground">Cambiar contraseña</div>
+            <div className="mt-1 text-xs text-muted-foreground">Actualizá tu clave de acceso</div>
+          </Card>
+        </div>
+
         <h2 className="text-sm font-semibold text-foreground">Preferencias</h2>
         <div className="mt-3 space-y-2">
-          <Card className="rounded-xl border border-border px-3 py-2">
+          <Card
+            className="rounded-xl border border-border px-3 py-2 cursor-pointer hover:bg-muted/50 transition-colors"
+            role="button"
+            tabIndex={0}
+            aria-label="Cambiar tema"
+            onClick={handleToggleTheme}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                handleToggleTheme()
+              }
+            }}
+          >
             <div className="text-xs font-medium text-foreground">Tema</div>
-            <div className="mt-1 text-xs text-muted-foreground">Sistema</div>
+            <div className="mt-1 text-xs text-muted-foreground">{isDarkMode ? 'Oscuro' : 'Claro'}</div>
           </Card>
           <Card className="rounded-xl border border-border px-3 py-2">
             <div className="text-xs font-medium text-foreground">Notificaciones</div>
@@ -101,12 +104,10 @@ export default function AccountPage() {
           </Card>
         </div>
 
-        <UserExpensesButton />
-
         {/* Botón de cierre de sesión real */}
         <Button 
-          className="mt-4 w-full rounded-xl" 
-          variant="destructive" // Cambié a destructive para que sea rojo y se note que es una acción crítica
+          className="mt-6 w-full rounded-xl" 
+          variant="destructive"
           type="button"
           onClick={handleLogout}
         >

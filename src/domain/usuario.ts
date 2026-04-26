@@ -58,6 +58,7 @@ export interface UsuarioLogueadoDTO {
     token: string
     nombre: string
     email: string
+    imagenUrl?: string
 }
 
 export interface UsuarioNombreIdDTO {
@@ -69,4 +70,22 @@ export interface SolicitudAmistadFront {
     id: number,
     nombre: string,
     imagenUrl: string,
+}
+
+export interface UsuarioInfoDTO {
+    nombre: string,
+    imagenUrl: string,
+    esAmigo: boolean,
+    gruposCompartidos: { id: number; nombre: string }[],
+}
+
+export interface UsuarioEditarDTO {
+  nombre: string
+  email: string
+  imagenUrl: string
+}
+
+export interface CambioContrasenaDTO {
+  contrasenaActual: string
+  contrasenaNueva: string
 }

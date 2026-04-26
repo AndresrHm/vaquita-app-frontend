@@ -16,7 +16,8 @@ function getInitials(name: string) {
 }
 
 export default function FriendsPage() {
-  const userId = Number(localStorage.getItem('id'))
+  // Solo lo usamos para filtrar que no nos aparezcamos en la lista de "Agregar amigos"
+  const currentUserId = Number(localStorage.getItem('id'))
 
   const [friends, setFriends] = useState<{ id: string; name: string; role: string; due: number; imageUrl: string }[]>([])
   const [searchQuery, setSearchQuery] = useState('')
@@ -28,14 +29,14 @@ export default function FriendsPage() {
   const [sentIds, setSentIds] = useState<Set<number>>(new Set())
 
   useEffect(() => {
-    if (!userId) return
-    usuarioService.obtenerAmigos(userId)
+    // 🔴 REFACTOR: Las funciones ya no piden el ID del usuario logueado
+    usuarioService.obtenerAmigos()
       .then((data) => {
         setFriends(data.map((u) => ({ id: String(u.id), name: u.nombre, role: 'Amigo', due: 0, imageUrl: '' })))
       })
       .catch(() => {})
 
-    usuarioService.obtenerSolicitudesPendientes(userId)
+    usuarioService.obtenerSolicitudesPendientes()
       .then(setSolicitudes)
       .catch(() => {})
 
@@ -49,18 +50,20 @@ export default function FriendsPage() {
   )
 
   const friendIds = new Set(friends.map((f) => Number(f.id)))
+  // solicitudEmisorIds no se estaba usando, lo dejo por si lo necesitás después
   const solicitudEmisorIds = new Set(solicitudes.map((s) => s.id))
 
   const addCandidates = allUsers.filter(
     (u) =>
-      u.id !== userId &&
+      u.id !== currentUserId && // Evita que te agregues a vos mismo en la UI
       !friendIds.has(u.id) &&
       addSearch.trim() !== '' &&
       u.nombre.toLowerCase().includes(addSearch.toLowerCase())
   )
 
   function handleAceptar(solicitud: SolicitudAmistadFront) {
-    usuarioService.responderSolicitudAmistad(userId, solicitud.id, true)
+    // 🔴 REFACTOR: Ya no mandamos userId, solo el ID de la solicitud y si aceptamos
+    usuarioService.responderSolicitudAmistad(solicitud.id, true)
       .then(() => {
         setSolicitudes((prev) => prev.filter((s) => s.id !== solicitud.id))
         setFriends((prev) => [
@@ -72,7 +75,8 @@ export default function FriendsPage() {
   }
 
   function handleRechazar(solicitud: SolicitudAmistadFront) {
-    usuarioService.responderSolicitudAmistad(userId, solicitud.id, false)
+    // 🔴 REFACTOR: Mismo caso que aceptar
+    usuarioService.responderSolicitudAmistad(solicitud.id, false)
       .then(() => {
         setSolicitudes((prev) => prev.filter((s) => s.id !== solicitud.id))
       })
@@ -80,7 +84,8 @@ export default function FriendsPage() {
   }
 
   function handleEnviarSolicitud(receptorId: number) {
-    usuarioService.enviarSolicitudAmistad(userId, receptorId)
+    // 🔴 REFACTOR: Solo mandamos el ID del receptor, el emisor va en el token
+    usuarioService.enviarSolicitudAmistad(receptorId)
       .then(() => {
         setSentIds((prev) => new Set(prev).add(receptorId))
       })

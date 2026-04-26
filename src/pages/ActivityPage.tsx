@@ -2,6 +2,7 @@ import { Search } from 'lucide-react'
 import PageTitle from '@/components/common/pageTitle'
 import Card from '@/components/common/card'
 import ColumnContainer from '@/components/common/columnContainer'
+import UserExpensesButton from '@/components/accountPage/UserExpensesButton'
 
 const mockActivity = [
   { id: 'a1', title: 'Ticket escaneado', detail: 'Fotocopias - $3.200', date: 'Hoy' },
@@ -13,7 +14,7 @@ export default function ActivityPage() {
   return (
     <div className="space-y-4">
       <PageTitle title="Actividad" subtitle="Resumen de movimientos (mock)." />
-
+      <UserExpensesButton />
       <ColumnContainer>
         {/* Search movimientos */}
         <label className="flex items-center gap-2 rounded-xl border border-border bg-background/70 px-3 py-2">
