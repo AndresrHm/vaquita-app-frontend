@@ -1,6 +1,5 @@
 import axios from 'axios'
 import { Usuario, type UsuarioLoginDTO, type UsuarioLogueadoDTO, type UsuarioNombreIdDTO, type SolicitudAmistadFront, type UsuarioInfoDTO, type UsuarioEditarDTO, type CambioContrasenaDTO } from '../domain/usuario'
-import type { Miembro } from '@/domain/Grupo'
 import api from './apiToken'
 
 const API_URL = '/usuarios' 
@@ -103,8 +102,8 @@ export const usuarioService = {
         return data
     },
 
-    async obtenerUsuarioInfo(id: number, idBuscado: number): Promise<UsuarioInfoDTO> {
-        const { data } = await axios.get<UsuarioInfoDTO>(`${API_URL}/${id}/info/${idBuscado}`)
+    async obtenerUsuarioInfo(idBuscado: number): Promise<UsuarioInfoDTO> {
+        const { data } = await axios.get<UsuarioInfoDTO>(`${API_URL}/info/${idBuscado}`)
         return data
     },
 
