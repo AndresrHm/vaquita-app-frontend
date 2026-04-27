@@ -1,4 +1,4 @@
-import axios from 'axios'
+
 import { Usuario, type UsuarioLoginDTO, type UsuarioLogueadoDTO, type UsuarioNombreIdDTO, type SolicitudAmistadFront, type UsuarioInfoDTO, type UsuarioEditarDTO, type CambioContrasenaDTO } from '../domain/usuario'
 import api from './apiToken'
 
@@ -103,11 +103,11 @@ export const usuarioService = {
     },
 
     async obtenerUsuarioInfo(idBuscado: number): Promise<UsuarioInfoDTO> {
-        const { data } = await axios.get<UsuarioInfoDTO>(`${API_URL}/info/${idBuscado}`)
+        const { data } = await api.get<UsuarioInfoDTO>(`${API_URL}/info/${idBuscado}`)
         return data
     },
 
     async eliminarAmigo(idUsuario: number, idAmigo: number): Promise<void> {
-        await axios.delete(`${API_URL}/${idUsuario}/amigos/${idAmigo}`)
+        await api.delete(`${API_URL}/${idUsuario}/amigos/${idAmigo}`)
     },
 }
