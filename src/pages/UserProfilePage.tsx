@@ -5,6 +5,8 @@ import { useOnInit } from '@/customHooks/hooks'
 import { usuarioService } from '@/service/usuarioService'
 import type { UsuarioInfoDTO } from '@/domain/usuario'
 import ColumnContainer from '@/components/common/columnContainer'
+import Modal from '@/components/common/modal'
+import { Button } from '@/components/ui/button'
 
 function getInitials(name: string) {
   return name
@@ -23,33 +25,37 @@ export default function UserProfilePage() {
 
   const [info, setInfo] = useState<UsuarioInfoDTO | null>(null)
   const [loading, setLoading] = useState(false)
+  const [confirmRemove, setConfirmRemove] = useState(false)
 
   useOnInit(() => {
     if (!targetId || !currentUserId) return
-    usuarioService.obtenerUsuarioInfo(currentUserId, targetId)
+    usuarioService.obtenerUsuarioInfo(targetId)
       .then(setInfo)
       .catch(() => {})
   }, [targetId])
 
-  function handleToggleFriend() {
-    if (!info) return
-    setLoading(true)
+  function handleFriendButtonClick() {
+    if (!info || info.solicitudPendiente) return
 
     if (info.esAmigo) {
-      usuarioService.eliminarAmigo(currentUserId, targetId)
-        .then(() => {
-          setInfo({ ...info, esAmigo: false })
-        })
-        .catch(() => {})
-        .finally(() => setLoading(false))
+      setConfirmRemove(true)
     } else {
+      setLoading(true)
       usuarioService.enviarSolicitudAmistad(targetId)
-        .then(() => {
-          setInfo({ ...info, esAmigo: true })
-        })
-        .catch(() => {})
+        .then(() => setInfo({ ...info, solicitudPendiente: true }))
+        .catch(() => setInfo({ ...info }))
         .finally(() => setLoading(false))
     }
+  }
+
+  function handleConfirmRemove() {
+    if (!info) return
+    setConfirmRemove(false)
+    setLoading(true)
+    usuarioService.eliminarAmigo(currentUserId, targetId)
+      .then(() => setInfo({ ...info, esAmigo: false }))
+      .catch(() => setInfo({ ...info }))
+      .finally(() => setLoading(false))
   }
 
   if (!info) {
@@ -103,11 +109,11 @@ export default function UserProfilePage() {
 
           {/* Add / Remove friend button */}
           <button
-            onClick={handleToggleFriend}
-            disabled={loading}
+            onClick={handleFriendButtonClick}
+            disabled={loading || info.solicitudPendiente}
             className={[
               'flex items-center gap-2 rounded-xl px-5 py-2 text-sm font-semibold transition-opacity disabled:opacity-50',
-              info.esAmigo
+              info.esAmigo || info.solicitudPendiente
                 ? 'border border-border bg-muted text-muted-foreground'
                 : 'bg-primary text-primary-foreground',
             ].join(' ')}
@@ -116,6 +122,11 @@ export default function UserProfilePage() {
               <>
                 <UserMinus className="h-4 w-4" />
                 Eliminar amigo
+              </>
+            ) : info.solicitudPendiente ? (
+              <>
+                <UserPlus className="h-4 w-4" />
+                Solicitud pendiente
               </>
             ) : (
               <>
@@ -149,6 +160,25 @@ export default function UserProfilePage() {
           )}
         </div>
       </ColumnContainer>
+
+      <Modal
+        isOpen={confirmRemove}
+        title="Eliminar amigo"
+        description={`¿Estás seguro de que querés eliminar a ${info.nombre} de tus amigos?`}
+        onClose={() => setConfirmRemove(false)}
+        footer={
+          <>
+            <Button variant="outline" onClick={() => setConfirmRemove(false)}>
+              Cancelar
+            </Button>
+            <Button variant="destructive" onClick={handleConfirmRemove}>
+              Eliminar
+            </Button>
+          </>
+        }
+      >
+        <></>
+      </Modal>
     </div>
   )
 }

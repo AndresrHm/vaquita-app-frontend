@@ -76,6 +76,7 @@ export interface UsuarioInfoDTO {
     nombre: string,
     imagenUrl: string,
     esAmigo: boolean,
+    solicitudPendiente: boolean,
     gruposCompartidos: { id: number; nombre: string }[],
 }
 
