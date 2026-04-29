@@ -10,7 +10,8 @@ import {
   type GrupoCardDTO, 
   type GrupoSettingsDTO, 
   type GrupoContextoUsuarioDTO, 
-  type Miembro 
+  type Miembro, 
+  type BalanceDTO
 } from '@/domain/Grupo'
 
 // ── Endpoints Refactorizados y Protegidos ─────────────────────────────────────
@@ -48,6 +49,12 @@ export async function obtenerGastosGrupo(
     `/grupo/${grupoId}/gastos`,
     { params: { page, size: finalSize } }
   )
+
+  return data
+}
+
+export async function obtenerBalancesGrupo(grupoId: number): Promise<BalanceDTO[]> {
+  const { data } = await api.get<BalanceDTO[]>(`/grupo/${grupoId}/balances`)
   return data
 }
 

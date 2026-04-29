@@ -61,7 +61,6 @@ export default function GroupsPage() {
   useOnInit(() => {
     fetchGroups(0)
     getDebt()
-    console.log(debt)
   })
 
   const handleLoadMore = () => {

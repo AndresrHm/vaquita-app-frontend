@@ -1,4 +1,4 @@
- 
+
 import { useNavigate, useParams } from 'react-router-dom'
 import { useState } from 'react'
 import ColumnContainer from '@/components/common/columnContainer'
@@ -9,6 +9,7 @@ import GroupHeader from '@/components/groupsPage/GroupHeader'
 import ExpensesList, { type ExpensesByMonth } from '@/components/groupsPage/ExpensesList'
 import { type Expense } from '@/components/groupsPage/ExpenseItem'
 import CreateExpenseButton from '@/components/groupsPage/CreateExpenseButton'
+import { BarChart3 } from 'lucide-react'
 import { useToast } from '@/customHooks/useToast'
 import { getMensajeError } from '@/utils/getMensajeError'
 
@@ -126,6 +127,17 @@ export default function GroupDetailPage() {
                     <p className="text-sm text-foreground">{groupDetail.descripcion}</p>
                     <p className="mt-2 text-sm text-foreground">Integrantes: {groupDetail.cantidadIntegrantes}</p>
                 </div>
+
+                <button
+                    type="button"
+                    onClick={() => navigate(`/groups/${grupoId}/balances`)}
+                    className="w-full inline-flex items-center gap-3 rounded-2xl border border-border bg-background/70 px-3 py-2 text-sm font-medium text-foreground shadow-sm hover:bg-muted transition"
+                >
+                    <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                        <BarChart3 className="h-5 w-5" />
+                    </span>
+                    Ver balances del grupo
+                </button>
 
                 <div className="mt-4 space-y-6">
                     {gastos.length === 0 ? (

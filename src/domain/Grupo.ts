@@ -148,3 +148,11 @@ export type Miembro = {
   rol: 'admin' | 'member';
   imagenUrl: string
 }
+
+export type BalanceDTO = {
+  deudorId: number,
+  deudorNombre: String,
+  acreedorId: number,
+  acreedorNombre: String,
+  monto: number
+}
