@@ -1,0 +1,9 @@
+export enum TipoActividad {
+    INGRESO_GRUPO = 'INGRESO_GRUPO',
+    GASTO_CREADO = 'GASTO_CREADO',
+    GASTO_ACTUALIZADO = 'GASTO_ACTUALIZADO',
+    GASTO_ELIMINADO = 'GASTO_ELIMINADO',
+    PAGO_REALIZADO = 'PAGO_REALIZADO',
+    PAGO_RECIBIDO = 'PAGO_RECIBIDO',
+    // Agregar más tipos según corresponda
+}
