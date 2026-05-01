@@ -12,7 +12,7 @@ import { formatCurrency } from '@/utils/formatCurrency'
 import { useToast } from '@/customHooks/useToast'
 import { getMensajeError } from '@/utils/getMensajeError'
 
-const PAGE_SIZE = 6
+const PAGE_SIZE = 5
 
 export default function GroupsPage() {
   const { showToast } = useToast()
@@ -29,7 +29,7 @@ export default function GroupsPage() {
     setLoading(true)
 
     try {
-      const res = await obtenerGrupos(pageToFetch, PAGE_SIZE)
+      const res = await obtenerGrupos(pageToFetch, PAGE_SIZE) // por ahora el page size es fijo
 
       setGroups(prev =>
         pageToFetch === 0
@@ -69,7 +69,7 @@ export default function GroupsPage() {
   }
 
   return (
-    <div className="flex flex-col space-y-4 max-h-[calc(100vh-115px)] overflow-hidden">
+    <div className="flex flex-col space-y-4">
       <PageTitle>
         <div className="pl-2.5 pt-2">
           <h2 className="text-xl font-semibold text-foreground">
@@ -117,13 +117,24 @@ export default function GroupsPage() {
 
         {/* Cargar más */}
         {hasNext && groups.length > 0 && (
-          <button
-            onClick={handleLoadMore}
-            disabled={loading}
-            className="mt-4 p-2 rounded-md bg-muted hover:bg-muted/80 text-sm"
-          >
-            {loading ? 'Cargando...' : 'Cargar más'}
-          </button>
+          <div className="mt-6 flex justify-center">
+            <button
+              onClick={handleLoadMore}
+              disabled={loading}
+              className="
+                inline-flex items-center gap-3
+                rounded-2xl border border-border
+                bg-background/70
+                px-3 py-2
+                text-sm font-medium text-foreground
+                shadow-sm
+                hover:bg-muted
+                transition
+                disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? 'Cargando...' : 'Cargar más'}
+            </button>
+          </div>
         )}
       </ColumnContainer>
 

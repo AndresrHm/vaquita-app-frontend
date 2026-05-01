@@ -1,16 +1,16 @@
-import api from './apiToken' 
-import { 
-  type GrupoDTO, 
-  type GrupoCreacionDTO, 
-  type GroupDetailPageResponse, 
-  Grupo, 
-  type GrupoNombreIdDTO, 
-  type GrupoDetalleDTO, 
-  type GrupoGastosPorAnioDTO, 
-  type GrupoCardDTO, 
-  type GrupoSettingsDTO, 
-  type GrupoContextoUsuarioDTO, 
-  type Miembro, 
+import api from './apiToken'
+import {
+  type GrupoDTO,
+  type GrupoCreacionDTO,
+  type GroupDetailPageResponse,
+  Grupo,
+  type GrupoNombreIdDTO,
+  type GrupoDetalleDTO,
+  type GrupoGastosPorAnioDTO,
+  type GrupoCardDTO,
+  type GrupoSettingsDTO,
+  type GrupoContextoUsuarioDTO,
+  type Miembro,
   type BalanceDTO
 } from '@/domain/Grupo'
 
@@ -18,12 +18,11 @@ import {
 
 export async function obtenerGrupos(
   page: number = 0,
-  size: number = 8,
+  size: number = 5,
 ): Promise<GroupDetailPageResponse<GrupoCardDTO>> {
-  const finalSize = size > 0 ? size : 8
-  
+
   const { data } = await api.get<GroupDetailPageResponse<GrupoCardDTO>>('/grupo', {
-    params: { page, size: finalSize },
+    params: { page, size },
   })
   return data
 }
