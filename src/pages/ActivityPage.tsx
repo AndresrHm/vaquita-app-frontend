@@ -26,7 +26,12 @@ export default function ActivityPage() {
                 <ActivityFilters onFilterChange={handleFilterChange} />
 
                 <div className="max-h-[52vh] overflow-y-auto pr-1">
-                    <ActivityList tipo={filters.tipo} desde={filters.desde} hasta={filters.hasta} />
+                    <ActivityList
+                        searchText={filters.searchText}
+                        tipo={filters.tipo}
+                        desde={filters.desde}
+                        hasta={filters.hasta}
+                    />
                 </div>
             </ColumnContainer>
         </div>

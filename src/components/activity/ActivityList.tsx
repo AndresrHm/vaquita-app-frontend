@@ -4,13 +4,14 @@ import type { PageResponse } from '@/domain/pageResponse'
 import ActivityCard from './ActivityCard'
 
 interface ActivityListProps {
+    searchText?: string
     tipo?: string
     desde?: string
     hasta?: string
     size?: number
 }
 
-export default function ActivityList({ tipo, desde, hasta, size = 6 }: ActivityListProps) {
+export default function ActivityList({ searchText, tipo, desde, hasta, size = 6 }: ActivityListProps) {
     const [actividades, setActividades] = useState<ActividadDTO[]>([])
     const [page, setPage] = useState(0)
     const [pageInfo, setPageInfo] = useState<Omit<PageResponse<ActividadDTO>, 'content'> | null>(null)
@@ -24,6 +25,7 @@ export default function ActivityList({ tipo, desde, hasta, size = 6 }: ActivityL
                 setError(null)
                 const { actividadService } = await import('@/service/activityService')
                 const result = await actividadService.obtenerActividades({
+                    searchText,
                     tipo: tipo as any,
                     desde,
                     hasta,
@@ -47,7 +49,7 @@ export default function ActivityList({ tipo, desde, hasta, size = 6 }: ActivityL
         }
 
         loadActividades()
-    }, [tipo, desde, hasta, page, size])
+    }, [searchText, tipo, desde, hasta, page, size])
 
     if (isLoading) {
         return (

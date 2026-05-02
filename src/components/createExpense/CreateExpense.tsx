@@ -24,6 +24,7 @@ import ExactAmountAllocator from './ExactAmountAllocator'
 import CategorySelector from './CategorySelector'
 import ParticipantSelector from './ParticipantSelector'
 import GroupSelector from './GroupSelector'
+import { useToast } from '@/customHooks/useToast'
 
 type LocationState = {
     scanResult?: ScanResult & { totalAmount: number }
@@ -72,6 +73,7 @@ export default function CreateExpense() {
     const [divisionType, setDivisionType] = useState<TipoDivision>(TipoDivision.PARTES_IGUALES)
 
     const navigate = useNavigate()
+    const { showToast } = useToast()
 
     const actualizarExpense = (cambios: Partial<Expense>) => {
         const expenseClon = new Expense()
@@ -166,9 +168,11 @@ export default function CreateExpense() {
         if (expenseParaValidar.valido()) {
             try {
                 await expenseService.createExpense(expense)
+                showToast('¡Gasto creado con éxito!', 'success')
                 navigate('/')
             } catch (error: unknown) {
-                console.error('Error creando gasto:', error.message)
+                const mensaje = error instanceof Error ? error.message : 'Error creando gasto'
+                console.error('Error creando gasto:', mensaje)
             }
         }
     }
