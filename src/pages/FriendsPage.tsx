@@ -29,13 +29,7 @@ export default function FriendsPage() {
   const [sentIds, setSentIds] = useState<Set<number>>(new Set())
 
   useEffect(() => {
-    // 🔴 REFACTOR: Las funciones ya no piden el ID del usuario logueado
-    usuarioService.obtenerAmigos()
-      .then((data) => {
-        setFriends(data.map((u) => ({ id: String(u.id), name: u.nombre, role: 'Amigo', due: 0, imageUrl: '' })))
-      })
-      .catch(() => {})
-
+    loadFriends()
     usuarioService.obtenerSolicitudesPendientes()
       .then(setSolicitudes)
       .catch(() => {})
@@ -44,6 +38,14 @@ export default function FriendsPage() {
       .then((data) => setAllUsers(data.map((u) => ({ id: u.id!, nombre: u.nombre }))))
       .catch(() => {})
   }, [])
+
+  const loadFriends = () => {
+    usuarioService.obtenerAmigos()
+      .then((data) => {
+        setFriends(data.map((u) => ({ id: String(u.id), name: u.nombre, role: 'Amigo', due: u.monto, imageUrl: '' })))
+      })
+      .catch(() => {})
+  }
 
   const filteredFriends = friends.filter((f) =>
     f.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -116,7 +118,7 @@ export default function FriendsPage() {
           {filteredFriends.length === 0 ? (
             <p className="text-sm text-muted-foreground">No tenés amigos aún.</p>
           ) : (
-            filteredFriends.map((f) => <FriendCard key={f.id} friend={f} />)
+            filteredFriends.map((f) => <FriendCard key={f.id} friend={f} onPagoExitoso={loadFriends} />)
           )}
         </div>
 
