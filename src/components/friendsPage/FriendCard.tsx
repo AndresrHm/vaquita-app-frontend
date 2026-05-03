@@ -19,12 +19,12 @@ function getInitials(name: string) {
         .join('')
 }
 
-export default function FriendCard({ friend }: { friend: Friend }) {
+export default function FriendCard({ friend, onPagoExitoso }: { friend: Friend, onPagoExitoso?: () => void }) {
     const navigate = useNavigate()
 
     const handlePagoExitoso = () => {
-        // Recargar la página para actualizar balances
-        window.location.reload()
+        // Recargar la lista de amigos para actualizar balances
+        onPagoExitoso?.()
     }
 
     return (
