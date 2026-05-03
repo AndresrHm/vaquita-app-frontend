@@ -80,6 +80,7 @@ export async function pagarDeudaGlobalAUsuario(
   monto: number
 ): Promise<void> {
   await api.post('/gasto/pagar/global', {
+    grupoId: null,
     acreedorId,
     monto,
   })
