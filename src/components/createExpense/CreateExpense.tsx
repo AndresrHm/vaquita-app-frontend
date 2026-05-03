@@ -1,4 +1,3 @@
-/* eslint-disable no-undef */
 import { useState } from 'react'
 import { Receipt, Calendar } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -193,10 +192,10 @@ export default function CreateExpense() {
                             <span className="text-3xl font-bold text-primary">$</span>
                             <input
                                 type="number"
-                                step="1000"
+                                step="0.01"
                                 placeholder="0"
                                 inputMode="decimal"
-                                value={expense.total.toFixed(2) || ''}
+                                value={expense.total || ''}
                                 disabled={expense.items.length > 0} // lo desactivamos si hay ítems
                                 onChange={(event) => actualizarExpense({ total: Number(event.target.value) || 0 })}
                                 className="w-full bg-transparent text-4xl font-bold text-foreground outline-none placeholder:text-muted-foreground/30 text-center"

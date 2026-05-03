@@ -62,7 +62,7 @@ export default function PayDebtModal({
 
     try {
       await pagarDeudaGrupoAUsuario(grupoId, acreedorId, parsedMonto)
-      showToast('Pago enviado correctamente', 'success')
+      showToast('Pago registrado correctamente', 'success')
       setOpen(false)
       onPagoExitoso?.()
     } catch (err) {
