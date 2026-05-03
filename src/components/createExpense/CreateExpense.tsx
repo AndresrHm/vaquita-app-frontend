@@ -164,7 +164,7 @@ export default function CreateExpense() {
         if (expenseParaValidar.valido()) {
             try {
                 await expenseService.createExpense(expense)
-                navigate(`/groups/${groupId}`)
+                navigate(`/groups/${expense.groupId}`)
             } catch (error: unknown) {
                 console.error('Error creando gasto:', error.message)
             }
