@@ -33,13 +33,13 @@ export default function AccountPage() {
 
   return (
     <div className="space-y-4">
-      <PageTitle title="Cuenta" subtitle="Información de tu perfil.">
+      <PageTitle title="Cuenta" subtitle="Tu perfil">
         <div className="mt-4 flex items-start justify-between gap-4">
           <div>
             <div className="text-sm font-semibold text-foreground">{userName}</div>
             <div className="mt-1 text-xs text-muted-foreground">{userEmail}</div>
           </div>
-          
+
           {/* 👇 Lógica para mostrar la foto real o la inicial */}
           {userImage ? (
             <img
@@ -73,7 +73,7 @@ export default function AccountPage() {
             className="rounded-xl border border-border px-3 py-2 cursor-pointer hover:bg-muted/50 transition-colors"
             role="button"
             tabIndex={0}
-            onClick={() => navigate('/account/password')} 
+            onClick={() => navigate('/account/password')}
           >
             <div className="text-xs font-medium text-foreground">Cambiar contraseña</div>
             <div className="mt-1 text-xs text-muted-foreground">Actualizá tu clave de acceso</div>
@@ -105,8 +105,8 @@ export default function AccountPage() {
         </div>
 
         {/* Botón de cierre de sesión real */}
-        <Button 
-          className="mt-6 w-full rounded-xl" 
+        <Button
+          className="mt-6 w-full rounded-xl"
           variant="destructive"
           type="button"
           onClick={handleLogout}

@@ -1,5 +1,5 @@
 import { useParams } from 'react-router-dom'
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useOnInit } from '@/customHooks/hooks'
 import { obtenerBalancesGrupo, obtenerDetalleGrupo } from '@/service/groupsService'
 import type { BalanceDTO, GrupoDetalleDTO } from '@/domain/Grupo'
@@ -12,29 +12,52 @@ import { BalanceRow } from '@/components/balancesPage/balanceRow'
 
 export default function GroupBalancesPage() {
     const { groupId } = useParams()
-    const currentUserId = Number(localStorage.getItem('id'))
+    type MaybeLocalStorage = {
+        localStorage: {
+            getItem(key: string): string | null
+        }
+    }
+    const currentUserId = Number(
+        typeof globalThis !== 'undefined' && 'localStorage' in globalThis
+            ? (globalThis as unknown as MaybeLocalStorage).localStorage.getItem('id')
+            : null
+    )
+    const groupNumericId = groupId ? Number(groupId) : NaN
 
     const [balances, setBalances] = useState<BalanceDTO[]>([])
     const [groupDetail, setGroupDetail] = useState<GrupoDetalleDTO | null>(null)
     const [loading, setLoading] = useState(true)
 
-    useOnInit(() => {
-        const fetchAll = async () => {
-            if (!groupId) return
-            try {
-                const [data, detail] = await Promise.all([
-                    obtenerBalancesGrupo(Number(groupId)),
-                    obtenerDetalleGrupo(Number(groupId)),
-                ])
-                setBalances(data)
-                setGroupDetail(detail)
-            } catch (err) {
-                console.error('Error al cargar balances', err)
-            } finally {
-                setLoading(false)
-            }
+    const fetchBalances = useCallback(async () => {
+        if (!groupId || Number.isNaN(groupNumericId)) return
+
+        try {
+            const data = await obtenerBalancesGrupo(groupNumericId)
+            setBalances(data)
+        } catch (err) {
+            console.error('Error al actualizar balances', err)
         }
-        void fetchAll()
+    }, [groupId, groupNumericId])
+
+    const fetchGroupData = useCallback(async () => {
+        if (!groupId || Number.isNaN(groupNumericId)) return
+
+        try {
+            const [data, detail] = await Promise.all([
+                obtenerBalancesGrupo(groupNumericId),
+                obtenerDetalleGrupo(groupNumericId),
+            ])
+            setBalances(data)
+            setGroupDetail(detail)
+        } catch (err) {
+            console.error('Error al cargar balances', err)
+        } finally {
+            setLoading(false)
+        }
+    }, [groupId, groupNumericId])
+
+    useOnInit(() => {
+        void fetchGroupData()
     })
 
     const owedToMe = balances.filter((b) => b.acreedorId === currentUserId)
@@ -128,6 +151,12 @@ export default function GroupBalancesPage() {
                                             sublabel="pendiente"
                                             amount={`-${formatCurrency(b.monto)}`}
                                             variant="danger"
+                                            showPayButton
+                                            grupoId={groupNumericId}
+                                            totalMonto={b.monto}
+                                            acreedorId={b.acreedorId}
+                                            acreedorNombre={b.acreedorNombre}
+                                            onPagoExitoso={fetchBalances}
                                         />
                                     </div>
                                 ))}

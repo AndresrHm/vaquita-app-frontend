@@ -11,6 +11,16 @@ export const MoneyBadge: React.FC<MoneyBadgeProps> = ({
     currency = '$',
     locale = 'es-AR',
 }) => {
+    if (amount === 0) {
+        return (
+            <div className="text-right">
+                <div className="inline-flex rounded-lg border border-gray-300 bg-gray-100 px-1.5 py-0.5 text-xs font-semibold text-gray-600">
+                    Sin deudas
+                </div>
+            </div>
+        )
+    }
+
     const isPositive = amount <= 0 // <= 0 = saldo a favor o en cero
 
     const formatted = Math.abs(amount).toLocaleString(locale)

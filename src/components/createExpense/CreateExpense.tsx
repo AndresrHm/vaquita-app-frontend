@@ -1,4 +1,3 @@
-/* eslint-disable no-undef */
 import { useState } from 'react'
 import { Receipt, Calendar } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -56,7 +55,6 @@ export default function CreateExpense() {
 
         return newExpense
     })
-
 
     const [participants, setParticipants] = useState<Usuario[]>([])
     const [groups, setGroups] = useState<Grupo[]>([])
@@ -169,7 +167,11 @@ export default function CreateExpense() {
             try {
                 await expenseService.createExpense(expense)
                 showToast('¡Gasto creado con éxito!', 'success')
-                navigate('/')
+                if (groupId) {
+                    navigate(`/groups/${groupId}`)
+                } else {
+                    navigate('/')
+                }
             } catch (error: unknown) {
                 const mensaje = error instanceof Error ? error.message : 'Error creando gasto'
                 console.error('Error creando gasto:', mensaje)
@@ -197,10 +199,10 @@ export default function CreateExpense() {
                             <span className="text-3xl font-bold text-primary">$</span>
                             <input
                                 type="number"
-                                step="1000"
+                                step="0.01"
                                 placeholder="0"
                                 inputMode="decimal"
-                                value={expense.total.toFixed(2) || ''}
+                                value={expense.total || ''}
                                 disabled={expense.items.length > 0} // lo desactivamos si hay ítems
                                 onChange={(event) => actualizarExpense({ total: Number(event.target.value) || 0 })}
                                 className="w-full bg-transparent text-4xl font-bold text-foreground outline-none placeholder:text-muted-foreground/30 text-center"
@@ -222,7 +224,7 @@ export default function CreateExpense() {
                         <ParticipantSelector
                             participants={participants}
                             selectedIds={expense.participantIds}
-                            currentUser={{ id: Number(localStorage.id) } as Usuario} // O el objeto usuario que tengas
+                            currentUser={{ id: Number(localStorage.id) } as Usuario}
                             isLoading={isLoadingParticipants}
                             isOpen={isParticipantsOpen}
                             enabled={!!effectiveGroupId}

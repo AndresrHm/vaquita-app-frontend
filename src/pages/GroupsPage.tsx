@@ -13,7 +13,7 @@ import { formatCurrency } from '@/utils/formatCurrency'
 import { useToast } from '@/customHooks/useToast'
 import { getMensajeError } from '@/utils/getMensajeError'
 
-const PAGE_SIZE = 6
+const PAGE_SIZE = 5
 
 export default function GroupsPage() {
   const { showToast } = useToast()

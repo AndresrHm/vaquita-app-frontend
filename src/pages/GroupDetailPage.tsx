@@ -169,11 +169,20 @@ export default function GroupDetailPage() {
                     )}
 
                     {hasNext && (
-                        <div className="flex justify-center py-4">
+                        <div className="mt-6 flex justify-center">
                             <button
                                 onClick={() => void fetchGastos(page)}
                                 disabled={loadingGastos}
-                                className="px-4 py-2 rounded-md bg-primary text-primary-foreground disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="
+                                    inline-flex items-center gap-3
+                                    rounded-2xl border border-border
+                                    bg-background/70
+                                    px-3 py-2
+                                    text-sm font-medium text-foreground
+                                    shadow-sm
+                                    hover:bg-muted
+                                    transition
+                                    disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {loadingGastos ? 'Cargando...' : 'Cargar más'}
                             </button>
