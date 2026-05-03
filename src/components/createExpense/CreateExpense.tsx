@@ -55,7 +55,6 @@ export default function CreateExpense() {
         return newExpense
     })
 
-
     const [participants, setParticipants] = useState<Usuario[]>([])
     const [groups, setGroups] = useState<Grupo[]>([])
     const [isParticipantsOpen, setIsParticipantsOpen] = useState(false)
@@ -165,7 +164,7 @@ export default function CreateExpense() {
         if (expenseParaValidar.valido()) {
             try {
                 await expenseService.createExpense(expense)
-                navigate('/')
+                navigate(`/groups/${groupId}`)
             } catch (error: unknown) {
                 console.error('Error creando gasto:', error.message)
             }
@@ -217,7 +216,7 @@ export default function CreateExpense() {
                         <ParticipantSelector
                             participants={participants}
                             selectedIds={expense.participantIds}
-                            currentUser={{ id: Number(localStorage.id) } as Usuario} // O el objeto usuario que tengas
+                            currentUser={{ id: Number(localStorage.id) } as Usuario}
                             isLoading={isLoadingParticipants}
                             isOpen={isParticipantsOpen}
                             enabled={!!effectiveGroupId}
