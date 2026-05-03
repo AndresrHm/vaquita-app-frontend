@@ -4,10 +4,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { formatCurrency } from '@/utils/formatCurrency'
 import { useToast } from '@/customHooks/useToast'
-import { pagarDeudaGrupoAUsuario } from '@/service/groupsService'
+import { pagarDeudaGrupoAUsuario, pagarDeudaGlobalAUsuario } from '@/service/groupsService'
 
 interface PayDebtModalProps {
-  grupoId: number
+  grupoId?: number
   acreedorId: number
   acreedorNombre: string
   totalMonto: number
@@ -61,7 +61,11 @@ export default function PayDebtModal({
     }
 
     try {
-      await pagarDeudaGrupoAUsuario(grupoId, acreedorId, parsedMonto)
+      if (grupoId !== undefined) {
+        await pagarDeudaGrupoAUsuario(grupoId, acreedorId, parsedMonto)
+      } else {
+        await pagarDeudaGlobalAUsuario(acreedorId, parsedMonto)
+      }
       showToast('Pago registrado correctamente', 'success')
       setOpen(false)
       onPagoExitoso?.()

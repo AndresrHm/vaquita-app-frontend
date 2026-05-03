@@ -29,10 +29,9 @@ export default function FriendsPage() {
   const [sentIds, setSentIds] = useState<Set<number>>(new Set())
 
   useEffect(() => {
-    // 🔴 REFACTOR: Las funciones ya no piden el ID del usuario logueado
     usuarioService.obtenerAmigos()
       .then((data) => {
-        setFriends(data.map((u) => ({ id: String(u.id), name: u.nombre, role: 'Amigo', due: 0, imageUrl: '' })))
+        setFriends(data.map((u) => ({ id: String(u.id), name: u.nombre, role: 'Amigo', due: u.monto, imageUrl: '' })))
       })
       .catch(() => {})
 

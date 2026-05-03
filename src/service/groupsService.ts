@@ -75,6 +75,16 @@ export async function pagarDeudaGrupoAUsuario(
   })
 }
 
+export async function pagarDeudaGlobalAUsuario(
+  acreedorId: number,
+  monto: number
+): Promise<void> {
+  await api.post('/gasto/pagar/global', {
+    acreedorId,
+    monto,
+  })
+}
+
 export async function obtenerGrupoSettings(id: number): Promise<GrupoSettingsDTO> {
   const { data } = await api.get<GrupoSettingsDTO>(`/grupo/${id}/settings`)
   return data

@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import MoneyBadge from '@/components/moneyBadge/moneyBadge'
+import PayDebtModal from '@/components/balancesPage/PayDebtModal'
 
 type Friend = {
     id: string
@@ -20,6 +21,11 @@ function getInitials(name: string) {
 
 export default function FriendCard({ friend }: { friend: Friend }) {
     const navigate = useNavigate()
+
+    const handlePagoExitoso = () => {
+        // Recargar la página para actualizar balances
+        window.location.reload()
+    }
 
     return (
         <div
@@ -44,7 +50,19 @@ export default function FriendCard({ friend }: { friend: Friend }) {
                         <div className="mt-1 text-xs text-muted-foreground">{friend.role}</div>
                     </div>
                 </div>
-                <MoneyBadge amount={friend.due} />
+                <div className="flex items-center gap-2">
+                    <MoneyBadge amount={friend.due} />
+                    {friend.due > 0 && (
+                        <div onClick={(e) => e.stopPropagation()}>
+                            <PayDebtModal
+                                acreedorId={Number(friend.id)}
+                                acreedorNombre={friend.name}
+                                totalMonto={Math.abs(friend.due)}
+                                onPagoExitoso={handlePagoExitoso}
+                            />
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     )
