@@ -19,10 +19,20 @@ import {
 export async function obtenerGrupos(
   page: number = 0,
   size: number = 5,
+  search?: string,
+  filter?: string,
 ): Promise<GroupDetailPageResponse<GrupoCardDTO>> {
+  const finalSize = size > 0 ? size : 8
+  const searchTerm = search?.trim()
+  const filterTerm = filter?.trim()
 
   const { data } = await api.get<GroupDetailPageResponse<GrupoCardDTO>>('/grupo', {
-    params: { page, size },
+    params: {
+      page,
+      size: finalSize,
+      search: searchTerm || undefined,
+      filter: filterTerm || undefined,
+    },
   })
   return data
 }

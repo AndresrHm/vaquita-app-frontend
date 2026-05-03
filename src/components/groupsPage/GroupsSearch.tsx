@@ -13,9 +13,11 @@ const FILTER_OPTIONS = [
 
 export default function GroupsSearch({
     onFilterChange,
+    onSearchChange,
     onAddFriend
 }: {
     onFilterChange?: (v: string) => void
+    onSearchChange?: (v: string) => void
     onAddFriend?: () => void
 }) {
     const [open, setOpen] = useState(false)
@@ -87,6 +89,7 @@ export default function GroupsSearch({
                         ref={inputRef}
                         type="text"
                         placeholder="Buscar grupos"
+                        onChange={(e) => onSearchChange?.(e.target.value)}
                         className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
                     />
 

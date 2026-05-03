@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import GroupCard from '@/components/groupsPage/GroupCard'
 import GroupsSearch from '@/components/groupsPage/GroupsSearch'
 import CreateGroupButton from '@/components/groupsPage/CreateGroupButton'
 import ColumnContainer from '@/components/common/columnContainer'
+import { AppPagination } from '@/components/common/pagination'
 import PageTitle from '@/components/common/pageTitle'
 import type { GrupoCardDTO } from '@/domain/Grupo'
 import { useOnInit } from '@/customHooks/hooks'
@@ -19,33 +20,52 @@ export default function GroupsPage() {
 
   const [groups, setGroups] = useState<GrupoCardDTO[]>([])
   const [page, setPage] = useState(0)
-  const [hasNext, setHasNext] = useState(true)
+  const [totalPages, setTotalPages] = useState(0)
   const [loading, setLoading] = useState(false)
   const [debt, setDebt] = useState(0)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [filter, setFilter] = useState('all')
+  const requestIdRef = useRef(0)
+  const loadingRef = useRef(false)
 
-  const fetchGroups = async (pageToFetch = 0) => {
-    if (loading) return
+  const fetchGroups = useCallback(async (pageToFetch = 0, query = '', filterParam = '') => {
+    if (loadingRef.current) return
 
+    const requestId = ++requestIdRef.current
+    loadingRef.current = true
     setLoading(true)
 
     try {
-      const res = await obtenerGrupos(pageToFetch, PAGE_SIZE) // por ahora el page size es fijo
+      const res = await obtenerGrupos(pageToFetch, PAGE_SIZE, query, filterParam)
 
-      setGroups(prev =>
-        pageToFetch === 0
-          ? res.content
-          : [...prev, ...res.content]
-      )
+      if (requestId !== requestIdRef.current) return
 
-      setHasNext(res.hasNext)
+      setGroups(res.content)
+
+      setTotalPages(res.totalPages)
       setPage(pageToFetch)
     } catch (error: unknown) {
       const mensaje = getMensajeError(error)
       showToast(mensaje, 'error')
     } finally {
+      loadingRef.current = false
       setLoading(false)
     }
-  }
+  }, [showToast])
+
+  const handleSearchChange = useCallback((text: string) => {
+    setSearchQuery(text)
+    setGroups([])
+    setPage(0)
+    fetchGroups(0, text, filter)
+  }, [fetchGroups, filter])
+
+  const handleFilterChange = useCallback((f: string) => {
+    setFilter(f)
+    setGroups([])
+    setPage(0)
+    fetchGroups(0, searchQuery, f)
+  }, [fetchGroups, searchQuery])
 
   const getDebt = async () => {
     try {
@@ -59,13 +79,13 @@ export default function GroupsPage() {
   }
 
   useOnInit(() => {
-    fetchGroups(0)
+    fetchGroups(0, searchQuery, filter)
     getDebt()
-  })
+  }, [fetchGroups, searchQuery, filter])
 
-  const handleLoadMore = () => {
-    if (!hasNext || loading) return
-    fetchGroups(page + 1)
+  const handlePageChange = (nextPage: number) => {
+    if (loading || nextPage === page) return
+    fetchGroups(nextPage, searchQuery, filter)
   }
 
   return (
@@ -79,7 +99,7 @@ export default function GroupsPage() {
             {debt > 0 ? `Debés ${formatCurrency(debt)}` : 'No debés nada, ¡genial!'}
           </p>
         </div>
-        <GroupsSearch />
+        <GroupsSearch onSearchChange={handleSearchChange} onFilterChange={handleFilterChange} />
       </PageTitle>
 
       <ColumnContainer>
@@ -115,25 +135,9 @@ export default function GroupsPage() {
           <GroupCard key={g.id} group={g} />
         ))}
 
-        {/* Cargar más */}
-        {hasNext && groups.length > 0 && (
-          <div className="mt-6 flex justify-center">
-            <button
-              onClick={handleLoadMore}
-              disabled={loading}
-              className="
-                inline-flex items-center gap-3
-                rounded-2xl border border-border
-                bg-background/70
-                px-3 py-2
-                text-sm font-medium text-foreground
-                shadow-sm
-                hover:bg-muted
-                transition
-                disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? 'Cargando...' : 'Cargar más'}
-            </button>
+        {totalPages > 1 && (
+          <div className="pt-1">
+            <AppPagination page={page} totalPages={totalPages} onPageChange={handlePageChange} />
           </div>
         )}
       </ColumnContainer>

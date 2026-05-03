@@ -10,6 +10,7 @@ const manejarError = (error: any): never => {
 }
 
 interface ObtenerActividadesParams {
+    searchText?: string
     tipo?: TipoActividad
     desde?: string // ISO DateTime format: "2026-04-26T18:30:00"
     hasta?: string // ISO DateTime format: "2026-04-26T18:30:00"
@@ -20,7 +21,9 @@ interface ObtenerActividadesParams {
 export const actividadService = {
     async obtenerActividades(params: ObtenerActividadesParams = {}): Promise<PageResponse<ActividadDTO>> {
         try {
+            const searchText = params.searchText?.trim()
             const requestParams = {
+                searchText: searchText || undefined,
                 tipo: params.tipo ?? undefined,
                 desde: params.desde ?? undefined,
                 hasta: params.hasta ?? undefined,
