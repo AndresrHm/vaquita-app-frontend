@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { AvatarCircle } from '../common/avatarCircle'
+import PayDebtModal from './PayDebtModal'
 
 export function BalanceRow({
   label,
@@ -7,12 +8,24 @@ export function BalanceRow({
   amount,
   variant,
   avatarNombre,
+  grupoId,
+  totalMonto,
+  acreedorId,
+  acreedorNombre,
+  showPayButton = false,
+  onPagoExitoso,
 }: {
   label: ReactNode
   sublabel?: string
   amount: string
   variant: 'success' | 'neutral' | 'danger'
   avatarNombre: string
+  grupoId?: number
+  totalMonto?: number
+  acreedorId?: number
+  acreedorNombre?: string
+  showPayButton?: boolean
+  onPagoExitoso?: () => void
 }) {
   const amountColor =
     variant === 'success'
@@ -30,7 +43,18 @@ export function BalanceRow({
           <div className="mt-0.5 text-xs text-muted-foreground">{sublabel}</div>
         )}
       </div>
-      <div className={`shrink-0 text-sm font-medium ${amountColor}`}>{amount}</div>
+      <div className="flex items-center gap-2">
+        <div className={`shrink-0 text-sm font-medium ${amountColor}`}>{amount}</div>
+        {showPayButton && grupoId !== undefined && totalMonto !== undefined && acreedorId !== undefined && acreedorNombre ? (
+          <PayDebtModal
+            grupoId={grupoId}
+            acreedorId={acreedorId}
+            acreedorNombre={acreedorNombre}
+            totalMonto={totalMonto}
+            onPagoExitoso={onPagoExitoso}
+          />
+        ) : null}
+      </div>
     </div>
   )
 }

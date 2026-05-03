@@ -77,9 +77,9 @@ export const usuarioService = {
 
     // --- MÓDULO AMIGOS ---
 
-    async obtenerAmigos(): Promise<Usuario[]> {
-        const { data } = await api.get<UsuarioNombreIdDTO[]>(`${API_URL}/me/amigos`)
-        return data.map(userJson => Usuario.fromNombreIdJSON(userJson))
+    async obtenerAmigos(): Promise<UsuarioConBalanceDTO[]> {
+        const { data } = await api.get<UsuarioConBalanceDTO[]>(`${API_URL}/me/amigos`)
+        return data
     },
 
     async obtenerSolicitudesPendientes(): Promise<SolicitudAmistadFront[]> {

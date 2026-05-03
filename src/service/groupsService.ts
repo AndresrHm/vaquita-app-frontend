@@ -63,6 +63,29 @@ export async function obtenerDetalleGrupo(grupoId: number): Promise<GrupoDetalle
   return data
 }
 
+export async function pagarDeudaGrupoAUsuario(
+  grupoId: number,
+  acreedorId: number,
+  monto: number
+): Promise<void> {
+  await api.post('/grupo/pagar/usuario', {
+    grupoId,
+    acreedorId,
+    monto,
+  })
+}
+
+export async function pagarDeudaGlobalAUsuario(
+  acreedorId: number,
+  monto: number
+): Promise<void> {
+  await api.post('/gasto/pagar/global', {
+    grupoId: null,
+    acreedorId,
+    monto,
+  })
+}
+
 export async function obtenerGrupoSettings(id: number): Promise<GrupoSettingsDTO> {
   const { data } = await api.get<GrupoSettingsDTO>(`/grupo/${id}/settings`)
   return data
