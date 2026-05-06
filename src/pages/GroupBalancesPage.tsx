@@ -1,5 +1,7 @@
 import { useParams } from 'react-router-dom'
 import { useState, useCallback } from 'react'
+import { useToast } from '@/customHooks/useToast'
+import { getMensajeError } from '@/utils/getMensajeError'
 import { useOnInit } from '@/customHooks/hooks'
 import { obtenerBalancesGrupo, obtenerDetalleGrupo } from '@/service/groupsService'
 import type { BalanceDTO, GrupoDetalleDTO } from '@/domain/Grupo'
@@ -28,6 +30,8 @@ export default function GroupBalancesPage() {
     const [groupDetail, setGroupDetail] = useState<GrupoDetalleDTO | null>(null)
     const [loading, setLoading] = useState(true)
 
+    const { showToast } = useToast()
+
     const fetchBalances = useCallback(async () => {
         if (!groupId || Number.isNaN(groupNumericId)) return
 
@@ -35,6 +39,8 @@ export default function GroupBalancesPage() {
             const data = await obtenerBalancesGrupo(groupNumericId)
             setBalances(data)
         } catch (err) {
+            const mensaje = getMensajeError(err)
+            showToast(mensaje, 'error')
             console.error('Error al actualizar balances', err)
         }
     }, [groupId, groupNumericId])
@@ -50,6 +56,8 @@ export default function GroupBalancesPage() {
             setBalances(data)
             setGroupDetail(detail)
         } catch (err) {
+            const mensaje = getMensajeError(err)
+            showToast(mensaje, 'error')
             console.error('Error al cargar balances', err)
         } finally {
             setLoading(false)
