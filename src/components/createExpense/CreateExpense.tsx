@@ -45,10 +45,16 @@ export default function CreateExpense() {
             newExpense.category = mapearCategoria(scanResult.category)
 
             const items = convertirItems(scanResult.items)
-
             newExpense.items = items
+
+            const totalEnCentavos = items.reduce(
+                (acc, item) => acc + Math.round(item.total() * 100),
+                0
+            )
+            const total = totalEnCentavos / 100
+
             newExpense.total = items.length
-                ? items.reduce((acc, i) => acc + i.total(), 0)
+                ? total
                 : scanResult.totalAmount
         }
 
@@ -371,17 +377,10 @@ function convertirItems(scanItems?: LineItem[]): ExpenseItem[] {
     return scanItems.map(item => {
         const cantidad = item.quantity ?? 1
 
-        const precioUnitario =
-            cantidad > 0 ? item.price / cantidad : item.price
-
         return new ExpenseItem(
             item.name,
             cantidad,
-            precioUnitario
+            item.price // ← NO dividir
         )
     })
 }
-
-// TODO:
-// 1. que quede seleccionada la categoría correspondiente
-// 2. que quede seleccionada la fecha correspondiente
