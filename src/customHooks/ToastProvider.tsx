@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react'
+import React, { createContext, useContext, useState, useCallback } from 'react'
 import type { ToastMessage } from './toastTypes'
 import { Toast } from '../components/toast/toast'
 
@@ -12,10 +12,13 @@ const ToastContext = createContext<ToastContextType | undefined>(undefined)
 export const ToastProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
   const [toast, setToast] = useState<ToastMessage | null>(null)
 
-  const showToast = (message: string, type: ToastMessage['type'], duration = 4000) => {
-    setToast({ message, type, duration })
-    setTimeout(() => setToast(null), duration)
-  }
+  const showToast = useCallback(
+    (message: string, type: ToastMessage['type'], duration = 4000) => {
+      setToast({ message, type, duration })
+      setTimeout(() => setToast(null), duration)
+    },
+    []
+  )
 
   return (
     <ToastContext.Provider value={{ toast, showToast }}>
@@ -32,7 +35,7 @@ export const useToastContext = () => {
   if (!ctx) {
     return {
       toast: null as ToastMessage | null,
-      showToast: (_m: string, _t: ToastMessage['type']) => {},
+      showToast: (_m: string, _t: ToastMessage['type']) => { },
     }
   }
   return ctx

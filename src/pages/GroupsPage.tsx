@@ -27,6 +27,7 @@ export default function GroupsPage() {
   const [filter, setFilter] = useState('all')
   const requestIdRef = useRef(0)
   const loadingRef = useRef(false)
+  const errorShownRef = useRef(false)
 
   const fetchGroups = useCallback(async (pageToFetch = 0, query = '', filterParam = '') => {
     if (loadingRef.current) return
@@ -41,12 +42,19 @@ export default function GroupsPage() {
       if (requestId !== requestIdRef.current) return
 
       setGroups(res.content)
-
       setTotalPages(res.totalPages)
       setPage(pageToFetch)
+
+      // ✅ RESET si volvió a funcionar
+      errorShownRef.current = false
+
     } catch (error: unknown) {
-      const mensaje = getMensajeError(error)
-      showToast(mensaje, 'error')
+      // ✅ SOLO mostrar 1 vez
+      if (!errorShownRef.current) {
+        const mensaje = getMensajeError(error)
+        showToast(mensaje, 'error')
+        errorShownRef.current = true
+      }
     } finally {
       loadingRef.current = false
       setLoading(false)
@@ -103,18 +111,10 @@ export default function GroupsPage() {
       </PageTitle>
 
       <ColumnContainer>
-        {/* Cantidad de grupos */}
-        {/* TODO FIXEAR ESTO, tira el size actual */}
-        {/* {hasNext && groups.length > 0 && (
-          <p className="mt-1 text-sm text-muted-foreground">
-            Pertenecés a {groups.length} {groups.length === 1 ? 'grupo' : 'grupos'}
-          </p>
-        )} */}
-
-        {/* Empty state */}
-        {groups.length === 0 && !loading && (
-          <div className="fixed inset-0 flex items-center justify-center pointer-events-none">
-            <div className="pointer-events-auto text-center rounded-xl border-2 border-dashed bg-card p-8 shadow-sm max-w-sm w-full mx-4">
+        {groups.length === 0 && !loading ? (
+          // Empty state
+          <div className="flex items-center justify-center min-h-[180px] w-full">
+            <div className="text-center rounded-xl border-2 border-dashed bg-card p-8 shadow-sm max-w-sm w-full">
               <p className="text-sm text-muted-foreground">
                 Todavía no tenés grupos...
               </p>
@@ -128,17 +128,23 @@ export default function GroupsPage() {
               </div>
             </div>
           </div>
-        )}
+        ) : (
+          <>
+            {/* Lista */}
+            {groups.map((g) => (
+              <GroupCard key={g.id} group={g} />
+            ))}
 
-        {/* Lista */}
-        {groups.map((g) => (
-          <GroupCard key={g.id} group={g} />
-        ))}
-
-        {totalPages > 1 && (
-          <div className="pt-1">
-            <AppPagination page={page} totalPages={totalPages} onPageChange={handlePageChange} />
-          </div>
+            {totalPages > 1 && (
+              <div className="pt-1">
+                <AppPagination
+                  page={page}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
+                />
+              </div>
+            )}
+          </>
         )}
       </ColumnContainer>
 
