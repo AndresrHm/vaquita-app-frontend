@@ -1,5 +1,7 @@
 /* eslint-disable no-undef */
 import { useMemo, useRef, useState } from 'react'
+import { useToast } from '@/customHooks/useToast'
+import { getMensajeError } from '@/utils/getMensajeError'
 import { Button } from '@/components/ui/button'
 import {
   Edit3, Sparkles, Upload, Camera, RotateCcw,
@@ -18,6 +20,7 @@ import CollapsibleCard from '@/components/common/collapsibleCard'
 
 export default function GroupsScanPage() {
   const navigate = useNavigate()
+  const { showToast } = useToast()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const cameraInputRef = useRef<HTMLInputElement>(null)
 
@@ -75,6 +78,8 @@ export default function GroupsScanPage() {
 
       setState('result')
     } catch (e) {
+      const mensaje = getMensajeError(e)
+      showToast(mensaje, 'error')
       if (axios.isAxiosError(e)) {
         const msg = e.response?.data?.message ?? e.response?.data ?? e.message
         setErrorMsg(typeof msg === 'string' ? msg : 'Error al conectar con el servidor')

@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import { useToast } from '@/customHooks/useToast'
+import { getMensajeError } from '@/utils/getMensajeError'
 import type { ActividadDTO } from '@/domain/actividadDTO'
 import type { PageResponse } from '@/domain/pageResponse'
 import ActivityCard from './ActivityCard'
@@ -12,6 +14,7 @@ interface ActivityListProps {
 }
 
 export default function ActivityList({ searchText, tipo, desde, hasta, size = 6 }: ActivityListProps) {
+    const { showToast } = useToast()
     const [actividades, setActividades] = useState<ActividadDTO[]>([])
     const [page, setPage] = useState(0)
     const [pageInfo, setPageInfo] = useState<Omit<PageResponse<ActividadDTO>, 'content'> | null>(null)
@@ -41,6 +44,8 @@ export default function ActivityList({ searchText, tipo, desde, hasta, size = 6 
                     hasNext: result.hasNext,
                 })
             } catch (err) {
+                const mensaje = getMensajeError(err)
+                showToast(mensaje, 'error')
                 setError(err instanceof Error ? err.message : 'Error cargando actividades')
                 setActividades([])
             } finally {

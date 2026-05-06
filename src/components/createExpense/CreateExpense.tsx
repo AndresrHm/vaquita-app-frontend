@@ -102,7 +102,9 @@ export default function CreateExpense() {
             const gruposBack = await obtenerGruposDeUsuario()
             setGroups(gruposBack)
         } catch (error: unknown) {
-            console.log(error)
+            const mensaje = error instanceof Error ? error.message : 'Error cargando grupos'
+            showToast(mensaje, 'error')
+            console.error(error)
         }
     }
 
@@ -140,6 +142,8 @@ export default function CreateExpense() {
                 groupId: id
             })
         } catch (error) {
+            const mensaje = error instanceof Error ? error.message : 'Error cargando participantes'
+            showToast(mensaje, 'error')
             console.error('Error al cargar participantes:', error)
         } finally {
             setIsLoadingParticipants(false)
@@ -174,6 +178,7 @@ export default function CreateExpense() {
                 }
             } catch (error: unknown) {
                 const mensaje = error instanceof Error ? error.message : 'Error creando gasto'
+                showToast(mensaje, 'error')
                 console.error('Error creando gasto:', mensaje)
             }
         }
@@ -184,6 +189,8 @@ export default function CreateExpense() {
             const grupo = await obtenerGrupoPorId(id)
             setGroupNameState(grupo.nombre)
         } catch (error) {
+            const mensaje = error instanceof Error ? error.message : 'Error obteniendo nombre de grupo'
+            showToast(mensaje, 'error')
             console.error('Error al obtener nombre del grupo:', error)
         }
     }

@@ -33,7 +33,10 @@ export default function CreateGroupPage() {
   useEffect(() => {
     const userId = Number(window.localStorage.getItem('id'))
     if (!userId) return
-    usuarioService.obtenerAmigos().then(setFriends).catch(() => {})
+    usuarioService.obtenerAmigos().then(setFriends).catch((err) => {
+      const mensaje = getMensajeError(err)
+      showToast(mensaje, 'error')
+    })
   }, [])
 
   const filteredFriends = useMemo(() => {
