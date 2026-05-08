@@ -337,6 +337,7 @@ export default function GroupSettingsPage() {
                                             <Avatar src={m.imagenUrl} alt={m.nombre} />
                                             <div>
                                                 <div className="font-medium">{m.nombre} {contextoUsuario.usuarioId === m.id && '(Tú)'}</div>
+                                                {m.username && <div className="text-xs text-muted-foreground">@{m.username}</div>}
                                                 <div className="text-sm text-muted-foreground capitalize">{m.rol}</div>
                                             </div>
                                         </div>
@@ -501,7 +502,10 @@ export default function GroupSettingsPage() {
                                             className="w-4 h-4 accent-primary"
                                         />
                                         <Avatar alt={f.nombre} />
-                                        <span className="text-sm font-medium">{f.nombre}</span>
+                                        <div>
+                                            <div className="text-sm font-medium">{f.nombre}</div>
+                                            {f.username && <div className="text-xs text-muted-foreground">@{f.username}</div>}
+                                        </div>
                                     </label>
                                 ))
                             )}

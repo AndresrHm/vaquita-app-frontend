@@ -180,7 +180,10 @@ export default function GroupDetailPage() {
                                         <div key={miembro.id} className="grid grid-cols-[1fr_36px_auto] items-center gap-3 rounded-xl border border-border/60 bg-background/60 px-3 py-2">
                                             <div className="flex items-center gap-3">
                                                 <AvatarCircle nombre={miembro.nombre} />
-                                                <p className="text-sm font-medium text-foreground">{miembro.nombre}</p>
+                                                <div>
+                                                    <p className="text-sm font-medium text-foreground">{miembro.nombre}</p>
+                                                    {miembro.username && <p className="text-xs text-muted-foreground">@{miembro.username}</p>}
+                                                </div>
                                             </div>
 
                                             <div className="flex items-center justify-center">

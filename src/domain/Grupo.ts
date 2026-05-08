@@ -145,6 +145,7 @@ export type GrupoContextoUsuarioDTO = {
 export type Miembro = {
   id: number;
   nombre: string;
+  username?: string;
   rol: 'admin' | 'member';
   imagenUrl: string
   esRata?: boolean
