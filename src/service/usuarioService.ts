@@ -1,5 +1,5 @@
 
-import { Usuario, type UsuarioLoginDTO, type UsuarioLogueadoDTO, type UsuarioNombreIdDTO, type SolicitudAmistadFront, type UsuarioInfoDTO, type UsuarioEditarDTO, type CambioContrasenaDTO } from '../domain/usuario'
+import { Usuario, type UsuarioLoginDTO, type UsuarioLogueadoDTO, type UsuarioNombreIdDTO, type SolicitudAmistadFront, type UsuarioInfoDTO, type UsuarioEditarDTO, type CambioContrasenaDTO, type UsuarioConBalanceDTO } from '../domain/usuario'
 import api from './apiToken'
 
 const API_URL = '/usuarios' 

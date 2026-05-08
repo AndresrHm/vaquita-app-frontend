@@ -12,7 +12,7 @@ import type { GrupoContextoUsuarioDTO, GrupoSettingsDTO, Miembro } from '@/domai
 import { useOnInit } from '@/customHooks/hooks'
 import { obtenerGrupoUsuarioContexto, obtenerGrupoSettings, obtenerMiembrosDeGrupoSettings, actualizarGrupoSettings, eliminarMiembro, agregarMiembros, eliminarGrupo } from '@/service/groupsService'
 import { usuarioService } from '@/service/usuarioService'
-import type { Usuario } from '@/domain/usuario'
+import type { UsuarioConBalanceDTO } from '@/domain/usuario'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useToast } from '@/customHooks/useToast'
 import { getMensajeError } from '@/utils/getMensajeError'
@@ -78,7 +78,7 @@ export default function GroupSettingsPage() {
     const [loading, setLoading] = useState(true)
     const [memberToDelete, setMemberToDelete] = useState<Miembro | null>(null)
     const [addFriendsOpen, setAddFriendsOpen] = useState(false)
-    const [friends, setFriends] = useState<Usuario[]>([])
+    const [friends, setFriends] = useState<UsuarioConBalanceDTO[]>([])
     const [selectedFriendIds, setSelectedFriendIds] = useState<Set<number>>(new Set())
     const [addingMembers, setAddingMembers] = useState(false)
     const [deletingGroup, setDeletingGroup] = useState(false)

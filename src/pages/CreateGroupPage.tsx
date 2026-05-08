@@ -4,7 +4,7 @@ import { ChevronLeft, Search, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { crearGrupo } from '@/service/groupsService'
 import { usuarioService } from '@/service/usuarioService'
-import type { Usuario } from '@/domain/usuario'
+import type { UsuarioConBalanceDTO } from '@/domain/usuario'
 import { useToast } from '@/customHooks/useToast'
 import { getMensajeError } from '@/utils/getMensajeError'
 
@@ -28,7 +28,7 @@ export default function CreateGroupPage() {
   const [status, setStatus] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [friends, setFriends] = useState<Usuario[]>([])
+  const [friends, setFriends] = useState<UsuarioConBalanceDTO[]>([])
 
   useEffect(() => {
     const userId = Number(window.localStorage.getItem('id'))
