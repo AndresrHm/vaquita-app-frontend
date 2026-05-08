@@ -1,19 +1,26 @@
-import { ChevronLeft, Settings, Users } from 'lucide-react'
+import { ChevronDown, ChevronLeft, ChevronUp, Settings, Users } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import IconNavButton from '@/components/common/IconNavButton'
 import type { GrupoDetalleDTO } from '@/domain/Grupo'
 
 function GroupMembersCount({ count }: { count: number }) {
     return (
-        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/40 backdrop-blur-sm text-white text-xs">
+        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/45 backdrop-blur-sm text-white">
             <Users className="h-3.5 w-3.5" />
-            <span>{count}</span>
-            <span>falta pasar nombre + icono . . .</span>
+            <span className="text-xs">{count}</span>
         </div>
     )
 }
 
-export default function GroupHeader({ groupDetail }: { groupDetail: GrupoDetalleDTO | null }) {
+export default function GroupHeader({
+    groupDetail,
+    expanded,
+    onToggle,
+}: {
+    groupDetail: GrupoDetalleDTO | null
+    expanded: boolean
+    onToggle: () => void
+}) {
     const navigate = useNavigate()
 
     if (!groupDetail) return null
@@ -48,7 +55,7 @@ export default function GroupHeader({ groupDetail }: { groupDetail: GrupoDetalle
                     </div>
 
                     {/* Título + integrantes */}
-                    <div className="absolute inset-x-4 bottom-4 space-y-1.5">
+                    <div className="absolute inset-x-4 bottom-8 space-y-1.5">
                         <h1 className="text-xl font-semibold text-white drop-shadow-sm leading-tight line-clamp-2">
                             {groupDetail.nombre}
                         </h1>
@@ -56,6 +63,23 @@ export default function GroupHeader({ groupDetail }: { groupDetail: GrupoDetalle
                         <GroupMembersCount
                             count={groupDetail.cantidadIntegrantes ?? 0}
                         />
+                    </div>
+
+                    <div className="absolute inset-x-0 -bottom-5 flex justify-center">
+                        <button
+                            type="button"
+                            onClick={onToggle}
+                            aria-expanded={expanded}
+                            aria-label={expanded ? 'Ocultar info del grupo' : 'Mostrar info del grupo'}
+                            className="group relative inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/25 bg-slate-900/80 text-white shadow-[0_8px_24px_rgba(2,8,23,0.45)] backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:bg-slate-800/90"
+                        >
+                            <span className="absolute inset-0 rounded-full ring-1 ring-inset ring-white/10" />
+                            {expanded ? (
+                                <ChevronUp className="relative h-5 w-5 transition-transform duration-200 group-hover:-translate-y-0.5" />
+                            ) : (
+                                <ChevronDown className="relative h-5 w-5 transition-transform duration-200 group-hover:translate-y-0.5" />
+                            )}
+                        </button>
                     </div>
                 </div>
             </div>

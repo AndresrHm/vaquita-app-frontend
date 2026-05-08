@@ -29,7 +29,6 @@ export default function ExpensesResultsCard({
         <div className="flex items-start justify-between gap-3">
           <div>
             <h3 className="text-sm font-semibold text-foreground">Resultados</h3>
-            <p className="mt-1 text-xs text-muted-foreground">Listado paginado según los filtros aplicados.</p>
           </div>
           <p className="rounded-full bg-muted px-2 py-1 text-xs text-muted-foreground">{totalElements} gasto(s)</p>
         </div>

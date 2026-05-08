@@ -1,16 +1,20 @@
- 
+
 import { useNavigate, useParams } from 'react-router-dom'
-import { useState } from 'react'
+import { useEffect, useState, type UIEvent } from 'react'
 import ColumnContainer from '@/components/common/columnContainer'
 import { useOnInit } from '@/customHooks/hooks'
-import { obtenerDetalleGrupo, obtenerGastosGrupo } from '@/service/groupsService'
-import type { GrupoDetalleDTO, GrupoGastosPorAnioDTO } from '@/domain/Grupo'
+import { obtenerDetalleGrupo, obtenerGastosGrupo, obtenerGrupoSettings, obtenerMiembrosDeGrupoSettings } from '@/service/groupsService'
+import type { GrupoDetalleDTO, GrupoGastosPorAnioDTO, Miembro } from '@/domain/Grupo'
 import GroupHeader from '@/components/groupsPage/GroupHeader'
 import ExpensesList, { type ExpensesByMonth } from '@/components/groupsPage/ExpensesList'
 import { type Expense } from '@/components/groupsPage/ExpenseItem'
 import CreateExpenseButton from '@/components/groupsPage/CreateExpenseButton'
+import { BarChart3 } from 'lucide-react'
 import { useToast } from '@/customHooks/useToast'
 import { getMensajeError } from '@/utils/getMensajeError'
+import { AvatarCircle } from '@/components/common/avatarCircle'
+
+const MEMBERS_PAGE_SIZE = 8
 
 export default function GroupDetailPage() {
     const { groupId } = useParams()
@@ -21,6 +25,10 @@ export default function GroupDetailPage() {
 
     // Detalle del grupo (info básica)
     const [groupDetail, setGroupDetail] = useState<GrupoDetalleDTO | null>(null)
+    const [miembros, setMiembros] = useState<Miembro[]>([])
+    const [modoRataActivo, setModoRataActivo] = useState(false)
+    const [showGroupInfo, setShowGroupInfo] = useState(false)
+    const [visibleMembersCount, setVisibleMembersCount] = useState(MEMBERS_PAGE_SIZE)
 
     // Gastos del grupo
     const [gastos, setGastos] = useState<GrupoGastosPorAnioDTO[]>([])
@@ -52,8 +60,15 @@ export default function GroupDetailPage() {
 
         const fetchAll = async () => {
             try {
-                const data = await obtenerDetalleGrupo(grupoId)
-                setGroupDetail(data)
+                const [groupData, membersData, settingsData] = await Promise.all([
+                    obtenerDetalleGrupo(grupoId),
+                    obtenerMiembrosDeGrupoSettings(grupoId),
+                    obtenerGrupoSettings(grupoId),
+                ])
+
+                setGroupDetail(groupData)
+                setMiembros(membersData)
+                setModoRataActivo(settingsData.modoRata)
 
                 await fetchGastos(0)
             } catch (error: unknown) {
@@ -98,6 +113,23 @@ export default function GroupDetailPage() {
         return result
     }
 
+    useEffect(() => {
+        if (showGroupInfo) {
+            setVisibleMembersCount(MEMBERS_PAGE_SIZE)
+        }
+    }, [showGroupInfo, miembros.length])
+
+    const handleMembersScroll = (event: UIEvent<HTMLDivElement>) => {
+        const { scrollTop, scrollHeight, clientHeight } = event.currentTarget
+        const nearBottom = scrollTop + clientHeight >= scrollHeight - 24
+
+        if (nearBottom) {
+            setVisibleMembersCount(prev => Math.min(prev + MEMBERS_PAGE_SIZE, miembros.length))
+        }
+    }
+
+    const visibleMembers = miembros.slice(0, visibleMembersCount)
+
     // Skeleton mientras carga el detalle del grupo
     if (groupDetail === null) {
         return (
@@ -119,13 +151,71 @@ export default function GroupDetailPage() {
 
     return (
         <div className="space-y-4">
-            <GroupHeader groupDetail={groupDetail} />
+            <GroupHeader
+                groupDetail={groupDetail}
+                expanded={showGroupInfo}
+                onToggle={() => setShowGroupInfo(prev => !prev)}
+            />
 
             <ColumnContainer>
-                <div className="p-4">
-                    <p className="text-sm text-foreground">{groupDetail.descripcion}</p>
-                    <p className="mt-2 text-sm text-foreground">Integrantes: {groupDetail.cantidadIntegrantes}</p>
-                </div>
+                {showGroupInfo && (
+                    <div className="rounded-2xl border border-border bg-muted/20 p-4 space-y-4">
+                        <div>
+                            <h2 className="text-sm font-semibold text-foreground">Descripcion</h2>
+                            <p className="mt-1 text-sm text-foreground">
+                                {groupDetail.descripcion || 'Sin descripcion'}
+                            </p>
+                        </div>
+
+                        <div>
+                            <h2 className="text-sm font-semibold text-foreground">
+                                Integrantes ({groupDetail.cantidadIntegrantes})
+                            </h2>
+
+                            <div className="mt-2 max-h-56 space-y-2 overflow-y-auto pr-1" onScroll={handleMembersScroll}>
+                                {visibleMembers.length === 0 ? (
+                                    <p className="text-sm text-muted-foreground">No hay integrantes para mostrar.</p>
+                                ) : (
+                                    visibleMembers.map((miembro) => (
+                                        <div key={miembro.id} className="grid grid-cols-[1fr_36px_auto] items-center gap-3 rounded-xl border border-border/60 bg-background/60 px-3 py-2">
+                                            <div className="flex items-center gap-3">
+                                                <AvatarCircle nombre={miembro.nombre} />
+                                                <p className="text-sm font-medium text-foreground">{miembro.nombre}</p>
+                                            </div>
+
+                                            <div className="flex items-center justify-center">
+                                                {modoRataActivo && miembro.esRata ? (
+                                                    <span title="Modo rata" className="text-sm leading-none">🐀</span>
+                                                ) : null}
+                                            </div>
+
+                                            <div className="flex items-center justify-end">
+                                                <span className="rounded-full bg-muted px-2 py-0.5 text-xs capitalize text-muted-foreground">
+                                                    {miembro.rol}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+
+                                {visibleMembersCount < miembros.length && (
+                                    <p className="pt-1 text-center text-xs text-muted-foreground">Desliza para cargar mas integrantes...</p>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                <button
+                    type="button"
+                    onClick={() => navigate(`/groups/${grupoId}/balances`)}
+                    className="w-full inline-flex items-center gap-3 rounded-2xl border border-border bg-background/70 px-3 py-2 text-sm font-medium text-foreground shadow-sm hover:bg-muted transition"
+                >
+                    <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                        <BarChart3 className="h-5 w-5" />
+                    </span>
+                    Ver balances del grupo
+                </button>
 
                 <div className="mt-4 space-y-6">
                     {gastos.length === 0 ? (
@@ -157,11 +247,20 @@ export default function GroupDetailPage() {
                     )}
 
                     {hasNext && (
-                        <div className="flex justify-center py-4">
+                        <div className="mt-6 flex justify-center">
                             <button
                                 onClick={() => void fetchGastos(page)}
                                 disabled={loadingGastos}
-                                className="px-4 py-2 rounded-md bg-primary text-primary-foreground disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="
+                                    inline-flex items-center gap-3
+                                    rounded-2xl border border-border
+                                    bg-background/70
+                                    px-3 py-2
+                                    text-sm font-medium text-foreground
+                                    shadow-sm
+                                    hover:bg-muted
+                                    transition
+                                    disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {loadingGastos ? 'Cargando...' : 'Cargar más'}
                             </button>

@@ -67,6 +67,11 @@ export interface UsuarioNombreIdDTO {
     id: number,
     nombre: string,
 }
+export interface UsuarioConBalanceDTO {
+    id: number,
+    nombre: string,
+    monto: number,
+}
 
 export interface SolicitudAmistadFront {
     id: number,

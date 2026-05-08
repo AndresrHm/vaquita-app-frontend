@@ -1,28 +1,38 @@
-import api from './apiToken' 
-import { 
-  type GrupoDTO, 
-  type GrupoCreacionDTO, 
-  type GroupDetailPageResponse, 
-  Grupo, 
-  type GrupoNombreIdDTO, 
-  type GrupoDetalleDTO, 
-  type GrupoGastosPorAnioDTO, 
-  type GrupoCardDTO, 
-  type GrupoSettingsDTO, 
-  type GrupoContextoUsuarioDTO, 
-  type Miembro 
+import api from './apiToken'
+import {
+  type GrupoDTO,
+  type GrupoCreacionDTO,
+  type GroupDetailPageResponse,
+  Grupo,
+  type GrupoNombreIdDTO,
+  type GrupoDetalleDTO,
+  type GrupoGastosPorAnioDTO,
+  type GrupoCardDTO,
+  type GrupoSettingsDTO,
+  type GrupoContextoUsuarioDTO,
+  type Miembro,
+  type BalanceDTO
 } from '@/domain/Grupo'
 
 // ── Endpoints Refactorizados y Protegidos ─────────────────────────────────────
 
 export async function obtenerGrupos(
   page: number = 0,
-  size: number = 8,
+  size: number = 5,
+  search?: string,
+  filter?: string,
 ): Promise<GroupDetailPageResponse<GrupoCardDTO>> {
   const finalSize = size > 0 ? size : 8
-  
+  const searchTerm = search?.trim()
+  const filterTerm = filter?.trim()
+
   const { data } = await api.get<GroupDetailPageResponse<GrupoCardDTO>>('/grupo', {
-    params: { page, size: finalSize },
+    params: {
+      page,
+      size: finalSize,
+      search: searchTerm || undefined,
+      filter: filterTerm || undefined,
+    },
   })
   return data
 }
@@ -48,12 +58,41 @@ export async function obtenerGastosGrupo(
     `/grupo/${grupoId}/gastos`,
     { params: { page, size: finalSize } }
   )
+
+  return data
+}
+
+export async function obtenerBalancesGrupo(grupoId: number): Promise<BalanceDTO[]> {
+  const { data } = await api.get<BalanceDTO[]>(`/grupo/${grupoId}/balances`)
   return data
 }
 
 export async function obtenerDetalleGrupo(grupoId: number): Promise<GrupoDetalleDTO> {
   const { data } = await api.get<GrupoDetalleDTO>(`/grupo/${grupoId}/detalle`)
   return data
+}
+
+export async function pagarDeudaGrupoAUsuario(
+  grupoId: number,
+  acreedorId: number,
+  monto: number
+): Promise<void> {
+  await api.post('/grupo/pagar/usuario', {
+    grupoId,
+    acreedorId,
+    monto,
+  })
+}
+
+export async function pagarDeudaGlobalAUsuario(
+  acreedorId: number,
+  monto: number
+): Promise<void> {
+  await api.post('/gasto/pagar/global', {
+    grupoId: null,
+    acreedorId,
+    monto,
+  })
 }
 
 export async function obtenerGrupoSettings(id: number): Promise<GrupoSettingsDTO> {

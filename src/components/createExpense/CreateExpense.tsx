@@ -1,4 +1,3 @@
-/* eslint-disable no-undef */
 import { useState } from 'react'
 import { Receipt, Calendar } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -24,6 +23,7 @@ import ExactAmountAllocator from './ExactAmountAllocator'
 import CategorySelector from './CategorySelector'
 import ParticipantSelector from './ParticipantSelector'
 import GroupSelector from './GroupSelector'
+import { useToast } from '@/customHooks/useToast'
 
 type LocationState = {
     scanResult?: ScanResult & { totalAmount: number }
@@ -45,17 +45,22 @@ export default function CreateExpense() {
             newExpense.category = mapearCategoria(scanResult.category)
 
             const items = convertirItems(scanResult.items)
-
             newExpense.items = items
+
+            const totalEnCentavos = items.reduce(
+                (acc, item) => acc + Math.round(item.total() * 100),
+                0
+            )
+            const total = totalEnCentavos / 100
+
             newExpense.total = items.length
-                ? items.reduce((acc, i) => acc + i.total(), 0)
+                ? total
                 : scanResult.totalAmount
         }
 
 
         return newExpense
     })
-
 
     const [participants, setParticipants] = useState<Usuario[]>([])
     const [groups, setGroups] = useState<Grupo[]>([])
@@ -72,6 +77,7 @@ export default function CreateExpense() {
     const [divisionType, setDivisionType] = useState<TipoDivision>(TipoDivision.PARTES_IGUALES)
 
     const navigate = useNavigate()
+    const { showToast } = useToast()
 
     const actualizarExpense = (cambios: Partial<Expense>) => {
         const expenseClon = new Expense()
@@ -102,7 +108,9 @@ export default function CreateExpense() {
             const gruposBack = await obtenerGruposDeUsuario()
             setGroups(gruposBack)
         } catch (error: unknown) {
-            console.log(error)
+            const mensaje = error instanceof Error ? error.message : 'Error cargando grupos'
+            showToast(mensaje, 'error')
+            console.error(error)
         }
     }
 
@@ -140,6 +148,8 @@ export default function CreateExpense() {
                 groupId: id
             })
         } catch (error) {
+            const mensaje = error instanceof Error ? error.message : 'Error cargando participantes'
+            showToast(mensaje, 'error')
             console.error('Error al cargar participantes:', error)
         } finally {
             setIsLoadingParticipants(false)
@@ -166,9 +176,16 @@ export default function CreateExpense() {
         if (expenseParaValidar.valido()) {
             try {
                 await expenseService.createExpense(expense)
-                navigate('/')
+                showToast('¡Gasto creado con éxito!', 'success')
+                if (groupId) {
+                    navigate(`/groups/${groupId}`)
+                } else {
+                    navigate('/')
+                }
             } catch (error: unknown) {
-                console.error('Error creando gasto:', error.message)
+                const mensaje = error instanceof Error ? error.message : 'Error creando gasto'
+                showToast(mensaje, 'error')
+                console.error('Error creando gasto:', mensaje)
             }
         }
     }
@@ -178,6 +195,8 @@ export default function CreateExpense() {
             const grupo = await obtenerGrupoPorId(id)
             setGroupNameState(grupo.nombre)
         } catch (error) {
+            const mensaje = error instanceof Error ? error.message : 'Error obteniendo nombre de grupo'
+            showToast(mensaje, 'error')
             console.error('Error al obtener nombre del grupo:', error)
         }
     }
@@ -193,10 +212,10 @@ export default function CreateExpense() {
                             <span className="text-3xl font-bold text-primary">$</span>
                             <input
                                 type="number"
-                                step="1000"
+                                step="0.01"
                                 placeholder="0"
                                 inputMode="decimal"
-                                value={expense.total.toFixed(2) || ''}
+                                value={expense.total || ''}
                                 disabled={expense.items.length > 0} // lo desactivamos si hay ítems
                                 onChange={(event) => actualizarExpense({ total: Number(event.target.value) || 0 })}
                                 className="w-full bg-transparent text-4xl font-bold text-foreground outline-none placeholder:text-muted-foreground/30 text-center"
@@ -218,7 +237,7 @@ export default function CreateExpense() {
                         <ParticipantSelector
                             participants={participants}
                             selectedIds={expense.participantIds}
-                            currentUser={{ id: Number(localStorage.id) } as Usuario} // O el objeto usuario que tengas
+                            currentUser={{ id: Number(localStorage.id) } as Usuario}
                             isLoading={isLoadingParticipants}
                             isOpen={isParticipantsOpen}
                             enabled={!!effectiveGroupId}
@@ -358,17 +377,10 @@ function convertirItems(scanItems?: LineItem[]): ExpenseItem[] {
     return scanItems.map(item => {
         const cantidad = item.quantity ?? 1
 
-        const precioUnitario =
-            cantidad > 0 ? item.price / cantidad : item.price
-
         return new ExpenseItem(
             item.name,
             cantidad,
-            precioUnitario
+            item.price // ← NO dividir
         )
     })
 }
-
-// TODO:
-// 1. que quede seleccionada la categoría correspondiente
-// 2. que quede seleccionada la fecha correspondiente

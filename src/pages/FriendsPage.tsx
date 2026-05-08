@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import { useToast } from '@/customHooks/useToast'
+import { getMensajeError } from '@/utils/getMensajeError'
 import { Search, UserPlus, Check, X } from 'lucide-react'
 import PageTitle from '@/components/common/pageTitle'
 import ColumnContainer from '@/components/common/columnContainer'
@@ -17,6 +19,7 @@ function getInitials(name: string) {
 }
 
 export default function FriendsPage() {
+  const { showToast } = useToast()
   // Solo lo usamos para filtrar que no nos aparezcamos en la lista de "Agregar amigos"
   const currentUserId = Number(localStorage.getItem('id'))
 
@@ -30,21 +33,23 @@ export default function FriendsPage() {
   const [sentIds, setSentIds] = useState<Set<number>>(new Set())
 
   useEffect(() => {
-    // 🔴 REFACTOR: Las funciones ya no piden el ID del usuario logueado
-    usuarioService.obtenerAmigos()
-      .then((data) => {
-        setFriends(data.map((u) => ({ id: String(u.id), name: u.nombre, role: 'Amigo', due: 0, imageUrl: '' })))
-      })
-      .catch(() => {})
-
+    loadFriends()
     usuarioService.obtenerSolicitudesPendientes()
       .then(setSolicitudes)
-      .catch(() => {})
+      .catch((err) => showToast(getMensajeError(err), 'error'))
 
     usuarioService.obtenerTodos()
       .then((data) => setAllUsers(data.map((u) => ({ id: u.id!, nombre: u.nombre }))))
-      .catch(() => {})
+      .catch((err) => showToast(getMensajeError(err), 'error'))
   }, [])
+
+  const loadFriends = () => {
+    usuarioService.obtenerAmigos()
+      .then((data) => {
+        setFriends(data.map((u) => ({ id: String(u.id), name: u.nombre, role: 'Amigo', due: u.monto, imageUrl: '' })))
+      })
+      .catch((err) => showToast(getMensajeError(err), 'error'))
+  }
 
   const filteredFriends = friends.filter((f) =>
     f.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -72,7 +77,7 @@ export default function FriendsPage() {
           { id: String(solicitud.id), name: solicitud.nombre, role: 'Amigo', due: 0, imageUrl: solicitud.imagenUrl },
         ])
       })
-      .catch(() => {})
+      .catch((err) => showToast(getMensajeError(err), 'error'))
   }
 
   function handleRechazar(solicitud: SolicitudAmistadFront) {
@@ -81,7 +86,7 @@ export default function FriendsPage() {
       .then(() => {
         setSolicitudes((prev) => prev.filter((s) => s.id !== solicitud.id))
       })
-      .catch(() => {})
+      .catch((err) => showToast(getMensajeError(err), 'error'))
   }
 
   function handleEnviarSolicitud(receptorId: number) {
@@ -90,7 +95,7 @@ export default function FriendsPage() {
       .then(() => {
         setSentIds((prev) => new Set(prev).add(receptorId))
       })
-      .catch(() => {})
+      .catch((err) => showToast(getMensajeError(err), 'error'))
   }
 
   return (
@@ -117,7 +122,7 @@ export default function FriendsPage() {
           {filteredFriends.length === 0 ? (
             <p className="text-sm text-muted-foreground">No tenés amigos aún.</p>
           ) : (
-            filteredFriends.map((f) => <FriendCard key={f.id} friend={f} />)
+            filteredFriends.map((f) => <FriendCard key={f.id} friend={f} onPagoExitoso={loadFriends} />)
           )}
         </div>
 

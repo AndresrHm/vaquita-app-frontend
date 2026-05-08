@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ChevronLeft, Search, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -31,9 +31,12 @@ export default function CreateGroupPage() {
   const [friends, setFriends] = useState<Usuario[]>([])
 
   useEffect(() => {
-    const userId = Number(localStorage.getItem('id'))
+    const userId = Number(window.localStorage.getItem('id'))
     if (!userId) return
-    usuarioService.obtenerAmigos().then(setFriends).catch(() => {})
+    usuarioService.obtenerAmigos().then(setFriends).catch((err) => {
+      const mensaje = getMensajeError(err)
+      showToast(mensaje, 'error')
+    })
   }, [])
 
   const filteredFriends = useMemo(() => {
@@ -53,7 +56,7 @@ export default function CreateGroupPage() {
     })
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     if (!isValid) return
 
@@ -67,6 +70,7 @@ export default function CreateGroupPage() {
         imagenUrl: imageUrl.trim(),
         integrantesIds: Array.from(selectedIds).map(Number),
       })
+      showToast('¡Grupo creado con éxito!', 'success')
       setStatus('Grupo creado. Redirigiendo...')
       setTimeout(() => navigate('/groups'), 700)
     } catch (error: unknown) {

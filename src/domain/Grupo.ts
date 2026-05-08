@@ -66,7 +66,7 @@ export class Grupo {
     this.integrantes.push(nuevo)
   }
 
-  registrarGasto(gasto: Expense): void {
+  registrarGasto(_gasto: Expense): void {
     // TODO
   }
 
@@ -147,4 +147,13 @@ export type Miembro = {
   nombre: string;
   rol: 'admin' | 'member';
   imagenUrl: string
+  esRata?: boolean
+}
+
+export type BalanceDTO = {
+  deudorId: number,
+  deudorNombre: string,
+  acreedorId: number,
+  acreedorNombre: string,
+  monto: number
 }

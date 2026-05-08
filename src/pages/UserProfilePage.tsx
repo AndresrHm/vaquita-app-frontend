@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { useToast } from '@/customHooks/useToast'
+import { getMensajeError } from '@/utils/getMensajeError'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, UserMinus, UserPlus } from 'lucide-react'
 import { useOnInit } from '@/customHooks/hooks'
@@ -46,13 +48,17 @@ export default function UserProfilePage() {
   const [info, setInfo] = useState<UsuarioInfoDTO | null>(null)
   const [loading, setLoading] = useState(false)
   const [confirmRemove, setConfirmRemove] = useState(false)
+  const { showToast } = useToast()
   const [activeTab, setActiveTab] = useState<Tab>('gastos')
 
   useOnInit(() => {
     if (!targetId || !currentUserId) return
     usuarioService.obtenerUsuarioInfo(targetId)
       .then(setInfo)
-      .catch(() => {})
+      .catch((err) => {
+        const mensaje = getMensajeError(err)
+        showToast(mensaje, 'error')
+      })
   }, [targetId])
 
   function handleFriendButtonClick() {
@@ -63,9 +69,13 @@ export default function UserProfilePage() {
     } else {
       setLoading(true)
       usuarioService.enviarSolicitudAmistad(targetId)
-        .then(() => setInfo({ ...info, solicitudPendiente: true }))
-        .catch(() => setInfo({ ...info }))
-        .finally(() => setLoading(false))
+          .then(() => setInfo({ ...info, solicitudPendiente: true }))
+          .catch((err) => {
+            setInfo({ ...info })
+            const mensaje = getMensajeError(err)
+            showToast(mensaje, 'error')
+          })
+          .finally(() => setLoading(false))
     }
   }
 
@@ -75,7 +85,11 @@ export default function UserProfilePage() {
     setLoading(true)
     usuarioService.eliminarAmigo(currentUserId, targetId)
       .then(() => setInfo({ ...info, esAmigo: false }))
-      .catch(() => setInfo({ ...info }))
+      .catch((err) => {
+        setInfo({ ...info })
+        const mensaje = getMensajeError(err)
+        showToast(mensaje, 'error')
+      })
       .finally(() => setLoading(false))
   }
 
