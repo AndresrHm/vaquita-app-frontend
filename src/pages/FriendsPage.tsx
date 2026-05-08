@@ -3,6 +3,7 @@ import { Search, UserPlus, Check, X } from 'lucide-react'
 import PageTitle from '@/components/common/pageTitle'
 import ColumnContainer from '@/components/common/columnContainer'
 import FriendCard from '@/components/friendsPage/FriendCard'
+
 import { usuarioService } from '@/service/usuarioService'
 import type { SolicitudAmistadFront } from '@/domain/usuario'
 

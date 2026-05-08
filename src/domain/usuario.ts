@@ -1,3 +1,5 @@
+import type { GrupoGastosPorAnioDTO } from '@/domain/Grupo'
+
 export class Usuario {
     id?: number
     nombre: string = ''
@@ -78,6 +80,7 @@ export interface UsuarioInfoDTO {
     esAmigo: boolean,
     solicitudPendiente: boolean,
     gruposCompartidos: { id: number; nombre: string }[],
+    gastosPendientes: GrupoGastosPorAnioDTO[],
 }
 
 export interface UsuarioEditarDTO {

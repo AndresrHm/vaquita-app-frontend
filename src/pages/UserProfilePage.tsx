@@ -1,12 +1,17 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, UserMinus, UserPlus, Settings } from 'lucide-react'
+import { ArrowLeft, UserMinus, UserPlus } from 'lucide-react'
 import { useOnInit } from '@/customHooks/hooks'
 import { usuarioService } from '@/service/usuarioService'
 import type { UsuarioInfoDTO } from '@/domain/usuario'
 import ColumnContainer from '@/components/common/columnContainer'
 import Modal from '@/components/common/modal'
 import { Button } from '@/components/ui/button'
+import ExpensesList, { type ExpensesByMonth } from '@/components/groupsPage/ExpensesList'
+import { type Expense } from '@/components/groupsPage/ExpenseItem'
+import type { GrupoGastosPorAnioDTO } from '@/domain/Grupo'
+
+type Tab = 'gastos' | 'grupos'
 
 function getInitials(name: string) {
   return name
@@ -15,6 +20,21 @@ function getInitials(name: string) {
     .slice(0, 2)
     .map((part) => part[0]?.toUpperCase() ?? '')
     .join('')
+}
+
+function toExpensesByMonth(yearGroup: GrupoGastosPorAnioDTO): ExpensesByMonth {
+  return yearGroup.months.map((m) => ({
+    month: m.month,
+    expenses: m.expenses.map((e) => ({
+      id: String(e.id),
+      date: { day: e.day },
+      title: e.title,
+      amount: e.amount,
+      currency: e.currency,
+      paymentType: e.paymentType as Expense['paymentType'],
+      imageUrl: e.imageUrl,
+    })),
+  }))
 }
 
 export default function UserProfilePage() {
@@ -26,6 +46,7 @@ export default function UserProfilePage() {
   const [info, setInfo] = useState<UsuarioInfoDTO | null>(null)
   const [loading, setLoading] = useState(false)
   const [confirmRemove, setConfirmRemove] = useState(false)
+  const [activeTab, setActiveTab] = useState<Tab>('gastos')
 
   useOnInit(() => {
     if (!targetId || !currentUserId) return
@@ -75,6 +96,11 @@ export default function UserProfilePage() {
       </div>
     )
   }
+
+  const tabs: { key: Tab; label: string }[] = [
+    { key: 'gastos', label: 'Gastos' },
+    { key: 'grupos', label: `Grupos${info.gruposCompartidos.length > 0 ? ` (${info.gruposCompartidos.length})` : ''}` },
+  ]
 
   return (
     <div className="space-y-4">
@@ -137,25 +163,63 @@ export default function UserProfilePage() {
           </button>
         </div>
 
-        {/* Shared groups */}
-        <div className="border-t border-border px-4 py-4">
-          <h2 className="text-sm font-semibold text-foreground">
-            Grupos en común{info.gruposCompartidos.length > 0 && ` (${info.gruposCompartidos.length})`}
-          </h2>
+        {/* Tabs */}
+        <div className="border-t border-border">
+          <div className="flex">
+            {tabs.map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={[
+                  'flex-1 py-3 text-sm font-semibold transition-colors border-b-2',
+                  activeTab === tab.key
+                    ? 'border-primary text-foreground'
+                    : 'border-transparent text-muted-foreground hover:text-foreground',
+                ].join(' ')}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
 
-          {info.gruposCompartidos.length === 0 ? (
-            <p className="mt-2 text-sm text-muted-foreground">No compartís grupos con esta persona.</p>
-          ) : (
-            <div className="mt-3 space-y-2">
-              {info.gruposCompartidos.map((g) => (
-                <button
-                  key={g.id}
-                  onClick={() => navigate(`/groups/${g.id}`)}
-                  className="w-full rounded-xl border border-border bg-background/70 px-4 py-3 text-left text-sm font-medium text-foreground hover:bg-muted/50 transition-colors"
-                >
-                  {g.nombre}
-                </button>
-              ))}
+          {/* Tab: Gastos */}
+          {activeTab === 'gastos' && (
+            <div className="px-4 py-4">
+              {info.gastosPendientes.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No hay gastos en común con esta persona.</p>
+              ) : (
+                <div className="space-y-6">
+                  {info.gastosPendientes.map((yearGroup) => (
+                    <div key={yearGroup.year}>
+                      <h2 className="rounded-md bg-muted/80 px-3 py-1 text-lg font-semibold text-muted-foreground">
+                        {yearGroup.year}
+                      </h2>
+                      <ExpensesList data={toExpensesByMonth(yearGroup)} />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Tab: Grupos */}
+          {activeTab === 'grupos' && (
+            <div className="px-4 py-4">
+              {info.gruposCompartidos.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No compartís grupos con esta persona.</p>
+              ) : (
+                <div className="space-y-2">
+                  {info.gruposCompartidos.map((g) => (
+                    <button
+                      key={g.id}
+                      onClick={() => navigate(`/groups/${g.id}`)}
+                      className="w-full rounded-xl border border-border bg-background/70 px-4 py-3 text-left text-sm font-medium text-foreground hover:bg-muted/50 transition-colors"
+                    >
+                      {g.nombre}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
