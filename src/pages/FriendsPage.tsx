@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useToast } from '@/customHooks/useToast'
 import { getMensajeError } from '@/utils/getMensajeError'
 import { Search, Check, X } from 'lucide-react'
@@ -20,6 +21,7 @@ function getInitials(name: string) {
 
 export default function FriendsPage() {
   const { showToast } = useToast()
+  const navigate = useNavigate()
   // Solo lo usamos para filtrar que no nos aparezcamos en la lista de "Agregar amigos"
   const currentUserId = Number(localStorage.getItem('id'))
 
@@ -195,7 +197,7 @@ export default function FriendsPage() {
             <div className="mt-3 space-y-2">
               {usernameResults.map((u) => (
                 <div key={u.id} className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
+                  <button type="button" onClick={() => navigate(`/friends/${u.id}`)} className="flex items-center gap-3 text-left hover:opacity-75 transition-opacity">
                     {u.imagenUrl ? (
                       <img src={u.imagenUrl} alt={u.nombre} className="h-9 w-9 shrink-0 rounded-full border border-border object-cover" />
                     ) : (
@@ -207,7 +209,7 @@ export default function FriendsPage() {
                       <p className="text-sm font-medium text-foreground">{u.nombre}</p>
                       <p className="text-xs text-muted-foreground">@{u.username}</p>
                     </div>
-                  </div>
+                  </button>
                   <button
                     onClick={() => handleEnviarSolicitud(u.id)}
                     disabled={sentIds.has(u.id)}

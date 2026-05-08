@@ -333,14 +333,14 @@ export default function GroupSettingsPage() {
                             <div className="space-y-3">
                                 {miembros?.map((m) => (
                                     <div key={m.id} className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-3 py-2">
-                                        <div className="flex items-center space-x-3">
+                                        <button type="button" onClick={() => navigate(`/friends/${m.id}`)} className="flex items-center space-x-3 text-left hover:opacity-75 transition-opacity">
                                             <Avatar src={m.imagenUrl} alt={m.nombre} />
                                             <div>
                                                 <div className="font-medium">{m.nombre} {contextoUsuario.usuarioId === m.id && '(Tú)'}</div>
                                                 {m.username && <div className="text-xs text-muted-foreground">@{m.username}</div>}
                                                 <div className="text-sm text-muted-foreground capitalize">{m.rol}</div>
                                             </div>
-                                        </div>
+                                        </button>
                                         <div className="pr-3">
                                             {m.rol === 'admin' ? (
                                                 <div className="inline-flex items-center gap-2 text-muted-foreground font-semibold pr-1">
