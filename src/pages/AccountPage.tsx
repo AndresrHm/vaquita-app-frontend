@@ -10,6 +10,7 @@ export default function AccountPage() {
   const [isDarkMode, setIsDarkMode] = useState(() => document.documentElement.classList.contains('dark'))
 
   const userName = window.localStorage.getItem('user_name') || 'Usuario'
+  const userUsername = window.localStorage.getItem('user_username') || ''
   const userEmail = window.localStorage.getItem('user_email') || 'email@ejemplo.com'
   // 👇 Traemos la imagen que guardamos en el login o al editar el perfil
   const userImage = window.localStorage.getItem('user_image') || ''
@@ -37,6 +38,9 @@ export default function AccountPage() {
         <div className="mt-4 flex items-start justify-between gap-4">
           <div>
             <div className="text-sm font-semibold text-foreground">{userName}</div>
+            {userUsername && (
+              <div className="text-xs text-muted-foreground">@{userUsername}</div>
+            )}
             <div className="mt-1 text-xs text-muted-foreground">{userEmail}</div>
           </div>
 

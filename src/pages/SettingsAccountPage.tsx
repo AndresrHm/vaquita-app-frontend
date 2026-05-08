@@ -136,7 +136,6 @@ export default function SettingsAccountPage() {
                 <span className="text-sm text-muted-foreground select-none">@</span>
                 <span className="ml-1 text-sm text-muted-foreground">{username}</span>
               </div>
-              <p className="text-xs text-muted-foreground">El nombre de usuario no se puede cambiar.</p>
             </div>
 
             <div className="space-y-1.5">
