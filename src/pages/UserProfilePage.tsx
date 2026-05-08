@@ -146,6 +146,7 @@ export default function UserProfilePage() {
           )}
 
           <h1 className="text-xl font-semibold text-foreground">{info.nombre}</h1>
+          <p className="text-sm text-muted-foreground">@{info.username}</p>
 
           {/* Add / Remove friend button */}
           <button

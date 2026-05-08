@@ -22,7 +22,8 @@ export default function SettingsAccountPage() {
 
   const [nombre, setNombre] = useState(window.localStorage.getItem('user_name') || '')
   const [email, setEmail] = useState(window.localStorage.getItem('user_email') || '')
-  const [imagenUrl, setImagenUrl] = useState(window.localStorage.getItem('user_image') || '') 
+  const [imagenUrl, setImagenUrl] = useState(window.localStorage.getItem('user_image') || '')
+  const username = window.localStorage.getItem('user_username') || ''
 
   const [loading, setLoading] = useState(false)
 
@@ -128,12 +129,18 @@ export default function SettingsAccountPage() {
           </div>
 
           <div className="space-y-4 w-full mt-2">
-            
+
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-foreground">
-                Nombre
-              </label>
-              {/* INPUT NATIVO ESTILIZADO */}
+              <label className="text-sm font-semibold text-foreground">Nombre de usuario</label>
+              <div className="flex items-center rounded-xl border border-border bg-muted/50 px-4 py-2.5">
+                <span className="text-sm text-muted-foreground select-none">@</span>
+                <span className="ml-1 text-sm text-muted-foreground">{username}</span>
+              </div>
+              <p className="text-xs text-muted-foreground">El nombre de usuario no se puede cambiar.</p>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-foreground">Nombre</label>
               <input
                 type="text"
                 value={nombre}
@@ -144,10 +151,7 @@ export default function SettingsAccountPage() {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-foreground">
-                Correo electrónico
-              </label>
-              {/* INPUT NATIVO ESTILIZADO */}
+              <label className="text-sm font-semibold text-foreground">Correo electrónico</label>
               <input
                 type="email"
                 value={email}
