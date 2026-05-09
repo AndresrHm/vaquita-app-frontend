@@ -178,10 +178,13 @@ export default function GroupDetailPage() {
                                 ) : (
                                     visibleMembers.map((miembro) => (
                                         <div key={miembro.id} className="grid grid-cols-[1fr_36px_auto] items-center gap-3 rounded-xl border border-border/60 bg-background/60 px-3 py-2">
-                                            <div className="flex items-center gap-3">
+                                            <button type="button" onClick={() => navigate(`/friends/${miembro.id}`)} className="flex items-center gap-3 text-left hover:opacity-75 transition-opacity">
                                                 <AvatarCircle nombre={miembro.nombre} />
-                                                <p className="text-sm font-medium text-foreground">{miembro.nombre}</p>
-                                            </div>
+                                                <div>
+                                                    <p className="text-sm font-medium text-foreground">{miembro.nombre}</p>
+                                                    {miembro.username && <p className="text-xs text-muted-foreground">@{miembro.username}</p>}
+                                                </div>
+                                            </button>
 
                                             <div className="flex items-center justify-center">
                                                 {modoRataActivo && miembro.esRata ? (

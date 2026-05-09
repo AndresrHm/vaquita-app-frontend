@@ -29,7 +29,13 @@ export default function RegisterPage() {
     const erroresFront: string[] = [] // Armamos nuestra libreta en React
     
     if (usuario.nombre.trim() === '') erroresFront.push('• Faltó escribir tu nombre')
-    
+
+    if (usuario.username.trim() === '') {
+        erroresFront.push('• Faltó escribir tu nombre de usuario')
+    } else if (!/^[a-zA-Z0-9._]{3,20}$/.test(usuario.username)) {
+        erroresFront.push('• El nombre de usuario solo puede contener letras, números, puntos y guiones bajos (3-20 caracteres)')
+    }
+
     if (usuario.email.trim() === '') {
         erroresFront.push('• Faltó escribir tu email')
     } else if (!usuario.email.includes('@')) {
@@ -77,13 +83,29 @@ export default function RegisterPage() {
             <label className="block">
               <span className="text-sm font-medium text-foreground">Nombre</span>
               <input
-                name="nombre" 
+                name="nombre"
                 value={usuario.nombre}
                 onChange={handleChange}
                 type="text"
                 placeholder="Juan"
                 className="mt-2 w-full rounded-xl border border-border bg-input px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
               />
+            </label>
+
+            <label className="block">
+              <span className="text-sm font-medium text-foreground">Nombre de usuario</span>
+              <div className="mt-2 flex items-center rounded-xl border border-border bg-input px-3 py-2 focus-within:ring-2 focus-within:ring-ring">
+                <span className="text-sm text-muted-foreground select-none">@</span>
+                <input
+                  name="username"
+                  value={usuario.username}
+                  onChange={handleChange}
+                  type="text"
+                  placeholder="juan.perez"
+                  className="flex-1 bg-transparent text-sm text-foreground outline-none ml-1"
+                />
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">Letras, números, puntos y guiones bajos. No se puede cambiar después.</p>
             </label>
 
             <label className="block">

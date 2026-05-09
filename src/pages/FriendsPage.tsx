@@ -1,13 +1,14 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useToast } from '@/customHooks/useToast'
 import { getMensajeError } from '@/utils/getMensajeError'
-import { Search, UserPlus, Check, X } from 'lucide-react'
+import { Search, Check, X } from 'lucide-react'
 import PageTitle from '@/components/common/pageTitle'
 import ColumnContainer from '@/components/common/columnContainer'
 import FriendCard from '@/components/friendsPage/FriendCard'
 
 import { usuarioService } from '@/service/usuarioService'
-import type { SolicitudAmistadFront } from '@/domain/usuario'
+import type { SolicitudAmistadFront, UsuarioBusquedaDTO } from '@/domain/usuario'
 
 function getInitials(name: string) {
   return name
@@ -20,6 +21,7 @@ function getInitials(name: string) {
 
 export default function FriendsPage() {
   const { showToast } = useToast()
+  const navigate = useNavigate()
   // Solo lo usamos para filtrar que no nos aparezcamos en la lista de "Agregar amigos"
   const currentUserId = Number(localStorage.getItem('id'))
 
@@ -28,20 +30,34 @@ export default function FriendsPage() {
 
   const [solicitudes, setSolicitudes] = useState<SolicitudAmistadFront[]>([])
 
-  const [allUsers, setAllUsers] = useState<{ id: number; nombre: string }[]>([])
-  const [addSearch, setAddSearch] = useState('')
   const [sentIds, setSentIds] = useState<Set<number>>(new Set())
+  const [usernameSearch, setUsernameSearch] = useState('')
+  const [usernameResults, setUsernameResults] = useState<UsuarioBusquedaDTO[]>([])
+  const [searchLoading, setSearchLoading] = useState(false)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     loadFriends()
     usuarioService.obtenerSolicitudesPendientes()
       .then(setSolicitudes)
       .catch((err) => showToast(getMensajeError(err), 'error'))
-
-    usuarioService.obtenerTodos()
-      .then((data) => setAllUsers(data.map((u) => ({ id: u.id!, nombre: u.nombre }))))
-      .catch((err) => showToast(getMensajeError(err), 'error'))
   }, [])
+
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    if (usernameSearch.trim().length < 2) {
+      setUsernameResults([])
+      return
+    }
+    debounceRef.current = setTimeout(() => {
+      setSearchLoading(true)
+      usuarioService.buscarPorUsername(usernameSearch.trim())
+        .then(setUsernameResults)
+        .catch((err) => showToast(getMensajeError(err), 'error'))
+        .finally(() => setSearchLoading(false))
+    }, 400)
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
+  }, [usernameSearch])
 
   const loadFriends = () => {
     usuarioService.obtenerAmigos()
@@ -56,16 +72,6 @@ export default function FriendsPage() {
   )
 
   const friendIds = new Set(friends.map((f) => Number(f.id)))
-  // solicitudEmisorIds no se estaba usando, lo dejo por si lo necesitás después
-  const solicitudEmisorIds = new Set(solicitudes.map((s) => s.id))
-
-  const addCandidates = allUsers.filter(
-    (u) =>
-      u.id !== currentUserId && // Evita que te agregues a vos mismo en la UI
-      !friendIds.has(u.id) &&
-      addSearch.trim() !== '' &&
-      u.nombre.toLowerCase().includes(addSearch.toLowerCase())
-  )
 
   function handleAceptar(solicitud: SolicitudAmistadFront) {
     // 🔴 REFACTOR: Ya no mandamos userId, solo el ID de la solicitud y si aceptamos
@@ -173,29 +179,37 @@ export default function FriendsPage() {
           )}
         </div>
 
-        {/* Agregar amigo */}
+        {/* Agregar amigo por username */}
         <div className="rounded-2xl border border-border bg-background/70 p-4 shadow-sm">
           <h2 className="text-sm font-semibold text-foreground">Agregar amigo</h2>
-          <label className="mt-3 flex items-center gap-2 rounded-xl border border-border bg-background px-3 py-2">
-            <UserPlus className="h-4 w-4 text-muted-foreground" />
+          <div className="mt-3 flex items-center gap-2 rounded-xl border border-border bg-background px-3 py-2">
+            <span className="text-sm text-muted-foreground select-none">@</span>
             <input
               type="text"
-              placeholder="Buscar por nombre"
-              value={addSearch}
-              onChange={(e) => setAddSearch(e.target.value)}
+              placeholder="nombre de usuario"
+              value={usernameSearch}
+              onChange={(e) => setUsernameSearch(e.target.value)}
               className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
             />
-          </label>
-          {addCandidates.length > 0 && (
+            {searchLoading && <div className="h-4 w-4 animate-spin rounded-full border-2 border-border border-t-foreground" />}
+          </div>
+          {usernameResults.length > 0 && (
             <div className="mt-3 space-y-2">
-              {addCandidates.map((u) => (
+              {usernameResults.map((u) => (
                 <div key={u.id} className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border bg-muted/80 text-xs font-semibold text-muted-foreground">
-                      {getInitials(u.nombre)}
+                  <button type="button" onClick={() => navigate(`/friends/${u.id}`)} className="flex items-center gap-3 text-left hover:opacity-75 transition-opacity">
+                    {u.imagenUrl ? (
+                      <img src={u.imagenUrl} alt={u.nombre} className="h-9 w-9 shrink-0 rounded-full border border-border object-cover" />
+                    ) : (
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border bg-muted/80 text-xs font-semibold text-muted-foreground">
+                        {getInitials(u.nombre)}
+                      </div>
+                    )}
+                    <div>
+                      <p className="text-sm font-medium text-foreground">{u.nombre}</p>
+                      <p className="text-xs text-muted-foreground">@{u.username}</p>
                     </div>
-                    <span className="text-sm font-medium text-foreground">{u.nombre}</span>
-                  </div>
+                  </button>
                   <button
                     onClick={() => handleEnviarSolicitud(u.id)}
                     disabled={sentIds.has(u.id)}
