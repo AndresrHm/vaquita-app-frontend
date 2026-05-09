@@ -57,7 +57,8 @@ export interface UsuarioLoginDTO {
 
 export interface UsuarioLogueadoDTO {
     id: number
-    token: string
+    accessToken: string  
+    refreshToken: string
     nombre: string
     email: string
     imagenUrl?: string
