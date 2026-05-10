@@ -20,6 +20,7 @@ import { TipoDivision } from '@/domain/enums/tipoDivision'
 import { ExpenseAllocation } from '@/domain/expenseAllocation'
 import DivisionTypeSelector from './DivisionTypeSelector'
 import ExactAmountAllocator from './ExactAmountAllocator'
+import PercentageAllocator from './PercentageAllocator'
 import CategorySelector from './CategorySelector'
 import ParticipantSelector from './ParticipantSelector'
 import GroupSelector from './GroupSelector'
@@ -166,7 +167,19 @@ export default function CreateExpense() {
         })
     }
 
+    const handlePercentageChange = (participantId: number, percentage: number) => {
+        const otrasAsignaciones = expense.allocations.filter(a => a.participantId !== participantId)
+        const nuevasAsignaciones = [...otrasAsignaciones, new ExpenseAllocation(participantId, percentage)]
+
+        actualizarExpense({
+            tipoDivision: TipoDivision.PORCENTUAL,
+            allocations: nuevasAsignaciones
+        })
+    }
+
     const totalAsignado = expense.allocations.reduce((acc, curr) => acc + curr.total, 0)
+
+    const totalPercentage = expense.allocations.reduce((acc, curr) => acc + curr.total, 0)
 
     const crearExpense = async () => {
         const expenseParaValidar = Expense.clone(expense)
@@ -263,6 +276,16 @@ export default function CreateExpense() {
                                 expense={expense}
                                 totalAsignado={totalAsignado}
                                 onAmountChange={handleExactAmountChange}
+                            />
+                        )}
+
+                        {/* Sección Dinámica para Porcentual */}
+                        {divisionType === TipoDivision.PORCENTUAL && (
+                            <PercentageAllocator
+                                participants={participants}
+                                expense={expense}
+                                totalAsignado={totalPercentage}
+                                onPercentageChange={handlePercentageChange}
                             />
                         )}
 

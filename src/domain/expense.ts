@@ -16,7 +16,7 @@ export type ExpenseJSON = {
     fecha: string
     items: ExpenseItemDTO[]
     tipoGasto: TipoDivision
-    asignacionesExactas: ExpenseAllocationDTO[]
+    asignacionesExactas?: ExpenseAllocationDTO[]
 }
 
 export type ExpenseParticipantJSON = {
@@ -109,6 +109,20 @@ export class Expense extends Validable {
                 this.agregarError(new InputError('itemsName', `El nombre de un producto no puede superar los ${MAX_CHARACTERS_PRODUCT_NAME} caracteres`))
             }
         }
+
+        if (this.tipoDivision === TipoDivision.PARTES_EXACTAS) {
+            const sumaAsignada = this.allocations.reduce((acc, curr) => acc + curr.total, 0)
+            if (Math.abs(sumaAsignada - this.total) > 0.01) {
+                this.agregarError(new InputError('allocations', 'La suma de las asignaciones exactas debe ser igual al total'))
+            }
+        }
+
+        if (this.tipoDivision === TipoDivision.PORCENTUAL) {
+            const sumaPorcentajes = this.allocations.reduce((acc, curr) => acc + curr.total, 0)
+            if (Math.abs(sumaPorcentajes - 100) > 0.01) {
+                this.agregarError(new InputError('allocations', 'La suma de los porcentajes debe ser 100%'))
+            }
+        }
     }
 
     toJSON(): ExpenseJSON {
@@ -117,7 +131,7 @@ export class Expense extends Validable {
             asignacionesMap[alloc.participantId] = alloc.total
         })
 
-        return {
+        const result: ExpenseJSON = {
             grupoID: this.groupId,
             pagadorID: this.pagadorId,
             participantesIDs: this.participantIds,
@@ -126,9 +140,14 @@ export class Expense extends Validable {
             categoria: this.category,
             fecha: this.date,
             items: this.items.map((item) => item.toDTO()),
-            asignacionesExactas: asignacionesMap as any,
             tipoGasto: this.tipoDivision
         }
+
+        if (this.tipoDivision === TipoDivision.PARTES_EXACTAS || this.tipoDivision === TipoDivision.PORCENTUAL) {
+            result.asignacionesExactas = asignacionesMap as any
+        }
+
+        return result
     }
     /* No se usa (por ahora)
         static fromJSON(json: ExpenseJSON): Expense {
