@@ -5,6 +5,7 @@ export class Usuario {
     nombre: string = ''
     email: string = ''
     contrasena: string = ''
+    username: string = ''
 
     constructor(data?: Partial<Usuario>) {
         if (data) {
@@ -12,14 +13,11 @@ export class Usuario {
         }
     }
 
-    // Convierte el JSON del Backend en un Objeto "vivo" de TS
     static fromJSON(json: any): Usuario {
         const usuario = new Usuario()
         usuario.id = json.id
         usuario.nombre = json.nombre
         usuario.email = json.email
-        // La contraseña no solemos traerla del back por seguridad, 
-        // pero la dejamos si el DTO la incluye.
         return usuario
     }
 
@@ -30,12 +28,12 @@ export class Usuario {
         return usuario
     }
 
-    // Prepara el objeto para ser enviado al Backend (POST/PUT)
     toJSON(): any {
         return {
             nombre: this.nombre,
             email: this.email,
-            contrasena: this.contrasena
+            contrasena: this.contrasena,
+            username: this.username,
         }
     }
 
@@ -48,6 +46,7 @@ export interface UsuarioRegistradoDTO {
     nombre: string;
     email: string;
     contrasena: string;
+    username: string;
 }
 
 export interface UsuarioLoginDTO {
@@ -61,17 +60,28 @@ export interface UsuarioLogueadoDTO {
     refreshToken: string
     nombre: string
     email: string
+    username: string
     imagenUrl?: string
 }
 
 export interface UsuarioNombreIdDTO {
     id: number,
     nombre: string,
+    username: string,
 }
+
 export interface UsuarioConBalanceDTO {
     id: number,
     nombre: string,
+    username: string,
     monto: number,
+}
+
+export interface UsuarioBusquedaDTO {
+    id: number,
+    nombre: string,
+    username: string,
+    imagenUrl: string,
 }
 
 export interface SolicitudAmistadFront {
@@ -82,6 +92,7 @@ export interface SolicitudAmistadFront {
 
 export interface UsuarioInfoDTO {
     nombre: string,
+    username: string,
     imagenUrl: string,
     esAmigo: boolean,
     solicitudPendiente: boolean,

@@ -1,5 +1,5 @@
 
-import { Usuario, type UsuarioLoginDTO, type UsuarioLogueadoDTO, type UsuarioNombreIdDTO, type SolicitudAmistadFront, type UsuarioInfoDTO, type UsuarioEditarDTO, type CambioContrasenaDTO, type UsuarioConBalanceDTO } from '../domain/usuario'
+import { Usuario, type UsuarioLoginDTO, type UsuarioLogueadoDTO, type UsuarioNombreIdDTO, type SolicitudAmistadFront, type UsuarioInfoDTO, type UsuarioEditarDTO, type CambioContrasenaDTO, type UsuarioConBalanceDTO, type UsuarioBusquedaDTO } from '../domain/usuario'
 import api from './apiToken'
 
 const API_URL = '/usuarios' 
@@ -30,6 +30,7 @@ export const usuarioService = {
                 localStorage.setItem('refreshToken', data.refreshToken);
                 localStorage.setItem('user_name', data.nombre)
                 localStorage.setItem('user_email', data.email)
+                localStorage.setItem('user_username', data.username)
                 localStorage.setItem('id', data.id.toString())
                 localStorage.setItem('user_image', data.imagenUrl || '')
             }
@@ -113,5 +114,10 @@ export const usuarioService = {
 
     async eliminarAmigo(idUsuario: number, idAmigo: number): Promise<void> {
         await api.delete(`${API_URL}/${idUsuario}/amigos/${idAmigo}`)
+    },
+
+    async buscarPorUsername(q: string): Promise<UsuarioBusquedaDTO[]> {
+        const { data } = await api.get<UsuarioBusquedaDTO[]>(`${API_URL}/buscar`, { params: { q } })
+        return data
     },
 }
