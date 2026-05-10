@@ -25,8 +25,9 @@ export const usuarioService = {
         try {
             const { data } = await api.post<UsuarioLogueadoDTO>('/usuarios/login', credenciales)
 
-            if (data.token) {
-                localStorage.setItem('token', data.token)
+            if (data.accessToken) {
+                localStorage.setItem('accessToken', data.accessToken);
+                localStorage.setItem('refreshToken', data.refreshToken);
                 localStorage.setItem('user_name', data.nombre)
                 localStorage.setItem('user_email', data.email)
                 localStorage.setItem('user_username', data.username)
@@ -58,7 +59,10 @@ export const usuarioService = {
         try {
             const { data } = await api.put(`/usuarios/me`, datos)
             
-            localStorage.setItem('token', data.token) 
+            if (data.accessToken) {
+                localStorage.setItem('accessToken', data.accessToken)
+                localStorage.setItem('refreshToken', data.refreshToken)
+            }
             
             return data
         } catch (error: any) {
