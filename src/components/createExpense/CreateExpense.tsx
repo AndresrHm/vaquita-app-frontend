@@ -19,7 +19,7 @@ import type { LineItem, ScanResult } from '@/domain/smartScanDTO'
 import { TipoDivision } from '@/domain/enums/tipoDivision'
 import { ExpenseAllocation } from '@/domain/expenseAllocation'
 import DivisionTypeSelector from './DivisionTypeSelector'
-import ExactAmountAllocator from './ExactAmountAllocator'
+import AllocationSummary from './AllocationSummary'
 import CategorySelector from './CategorySelector'
 import ParticipantSelector from './ParticipantSelector'
 import GroupSelector from './GroupSelector'
@@ -166,7 +166,15 @@ export default function CreateExpense() {
         })
     }
 
-    const totalAsignado = expense.allocations.reduce((acc, curr) => acc + curr.total, 0)
+    const handlePercentageChange = (participantId: number, percentage: number) => {
+        const otrasAsignaciones = expense.allocations.filter(a => a.participantId !== participantId)
+        const nuevasAsignaciones = [...otrasAsignaciones, new ExpenseAllocation(participantId, percentage)]
+
+        actualizarExpense({
+            tipoDivision: TipoDivision.PORCENTUAL,
+            allocations: nuevasAsignaciones
+        })
+    }
 
     const crearExpense = async () => {
         const expenseParaValidar = Expense.clone(expense)
@@ -256,13 +264,13 @@ export default function CreateExpense() {
                             />
                         </FieldWrapper>
 
-                        {/* Sección Dinámica para Partes Exactas */}
-                        {divisionType === TipoDivision.PARTES_EXACTAS && (
-                            <ExactAmountAllocator
+                        {/* Sección Dinámica para Asignaciones */}
+                        {(divisionType === TipoDivision.PARTES_EXACTAS || divisionType === TipoDivision.PORCENTUAL || divisionType === TipoDivision.PARTES_IGUALES || divisionType === TipoDivision.ALEATORIO) && (
+                            <AllocationSummary
                                 participants={participants}
                                 expense={expense}
-                                totalAsignado={totalAsignado}
-                                onAmountChange={handleExactAmountChange}
+                                onExactAmountChange={divisionType === TipoDivision.PARTES_EXACTAS ? handleExactAmountChange : undefined}
+                                onPercentageChange={divisionType === TipoDivision.PORCENTUAL ? handlePercentageChange : undefined}
                             />
                         )}
 

@@ -161,9 +161,9 @@ export default function GroupDetailPage() {
                 {showGroupInfo && (
                     <div className="rounded-2xl border border-border bg-muted/20 p-4 space-y-4">
                         <div>
-                            <h2 className="text-sm font-semibold text-foreground">Descripcion</h2>
+                            <h2 className="text-sm font-semibold text-foreground">Descripción</h2>
                             <p className="mt-1 text-sm text-foreground">
-                                {groupDetail.descripcion || 'Sin descripcion'}
+                                {groupDetail.descripcion || 'Sin descripción'}
                             </p>
                         </div>
 
