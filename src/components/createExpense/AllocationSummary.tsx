@@ -21,6 +21,8 @@ export default function AllocationSummary({ participants, expense, onExactAmount
                 return (allocation.total / 100) * expense.total
             }
             return allocation?.total || 0
+        } else if (expense.tipoDivision === TipoDivision.ALEATORIO) {
+            return 0
         }
         return 0
     }
@@ -44,6 +46,7 @@ export default function AllocationSummary({ participants, expense, onExactAmount
                 {expense.tipoDivision === TipoDivision.PARTES_IGUALES && 'División igual'}
                 {expense.tipoDivision === TipoDivision.PARTES_EXACTAS && 'Asignar montos'}
                 {expense.tipoDivision === TipoDivision.PORCENTUAL && 'Asignar porcentajes'}
+                {expense.tipoDivision === TipoDivision.ALEATORIO && 'División aleatoria'}
             </span>
 
             <div className="rounded-xl border border-border bg-background/30 divide-y divide-border/50">
@@ -90,7 +93,7 @@ export default function AllocationSummary({ participants, expense, onExactAmount
                                         />
                                     ) : (
                                         <span className="py-1.5 text-sm text-right min-w-[80px]">
-                                            {amount.toFixed(2)}
+                                            {expense.tipoDivision === TipoDivision.ALEATORIO ? '???' : amount.toFixed(2)}
                                         </span>
                                     )}
                                 </div>
@@ -101,7 +104,7 @@ export default function AllocationSummary({ participants, expense, onExactAmount
             </div>
 
             {/* Validador visual */}
-            {expense.tipoDivision !== TipoDivision.PARTES_IGUALES && (
+            {expense.tipoDivision !== TipoDivision.PARTES_IGUALES && expense.tipoDivision !== TipoDivision.ALEATORIO && (
                 <div className="flex justify-between px-2">
                     <span className="text-[10px] text-muted-foreground">
                         {expense.tipoDivision === TipoDivision.PARTES_EXACTAS ? 'Suma asignada:' : 'Suma porcentajes:'}

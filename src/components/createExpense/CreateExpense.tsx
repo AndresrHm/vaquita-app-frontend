@@ -265,7 +265,7 @@ export default function CreateExpense() {
                         </FieldWrapper>
 
                         {/* Sección Dinámica para Asignaciones */}
-                        {(divisionType === TipoDivision.PARTES_EXACTAS || divisionType === TipoDivision.PORCENTUAL || divisionType === TipoDivision.PARTES_IGUALES) && (
+                        {(divisionType === TipoDivision.PARTES_EXACTAS || divisionType === TipoDivision.PORCENTUAL || divisionType === TipoDivision.PARTES_IGUALES || divisionType === TipoDivision.ALEATORIO) && (
                             <AllocationSummary
                                 participants={participants}
                                 expense={expense}
