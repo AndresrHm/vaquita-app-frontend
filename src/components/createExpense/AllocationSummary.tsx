@@ -42,12 +42,13 @@ export default function AllocationSummary({ participants, expense, onExactAmount
 
     return (
         <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
-            <span className="text-[10px] font-semibold text-muted-foreground uppercase px-1">
-                {expense.tipoDivision === TipoDivision.PARTES_IGUALES && 'División igual'}
-                {expense.tipoDivision === TipoDivision.PARTES_EXACTAS && 'Asignar montos'}
-                {expense.tipoDivision === TipoDivision.PORCENTUAL && 'Asignar porcentajes'}
-                {expense.tipoDivision === TipoDivision.ALEATORIO && 'División aleatoria'}
-            </span>
+            
+            <p className="text-xs text-muted-foreground px-1">
+                {expense.tipoDivision === TipoDivision.PARTES_IGUALES && 'Cada integrante paga lo mismo. Nada de cosas raras.'}
+                {expense.tipoDivision === TipoDivision.PARTES_EXACTAS && 'Definí el monto exacto a pagar por cada integrante.'}
+                {expense.tipoDivision === TipoDivision.PORCENTUAL && 'Definí el porcentaje del total que le corresponde pagar a cada integrante.'}
+                {expense.tipoDivision === TipoDivision.ALEATORIO && '¿No pueden ponerse de acuerdo? ¡Nosotros nos encargamos!'}
+            </p>
 
             <div className="rounded-xl border border-border bg-background/30 divide-y divide-border/50">
                 {activeParticipants.map((participant) => {
