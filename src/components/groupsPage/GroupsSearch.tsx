@@ -1,8 +1,9 @@
 /* eslint-disable no-undef */
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { Search, Sliders, Users } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { debounce, SEARCH_DEBOUNCE_MS } from '@/lib/utils'
 
 const FILTER_OPTIONS = [
     { value: 'all', label: 'Todos los grupos' },
@@ -26,6 +27,17 @@ export default function GroupsSearch({
     const inputRef = useRef<HTMLInputElement | null>(null)
     const dropdownRef = useRef<HTMLDivElement | null>(null)
     const [dropdownPos, setDropdownPos] = useState<{ top: number; right: number } | null>(null)
+
+    const debouncedSearch = useMemo(
+        () => debounce((value: string) => onSearchChange?.(value), SEARCH_DEBOUNCE_MS),
+        [onSearchChange],
+    )
+
+    useEffect(() => {
+        return () => {
+            debouncedSearch.cancel()
+        }
+    }, [debouncedSearch])
 
     useEffect(() => {
         function onDoc(e: MouseEvent) {
@@ -89,7 +101,7 @@ export default function GroupsSearch({
                         ref={inputRef}
                         type="text"
                         placeholder="Buscar grupos"
-                        onChange={(e) => onSearchChange?.(e.target.value)}
+                        onChange={(e) => debouncedSearch(e.target.value)}
                         className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
                     />
 

@@ -1,8 +1,9 @@
-import { useState, useCallback, useEffect, useRef } from 'react'
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { Filter, Search, X } from 'lucide-react'
 import type { TipoActividad } from '@/domain/enums/tipoActividad'
 import { TipoActividad as TipoActividadEnum } from '@/domain/enums/tipoActividad'
+import { debounce, SEARCH_DEBOUNCE_MS } from '@/lib/utils'
 
 interface ActivityFiltersProps {
     onFilterChange: (filters: ActivityFiltersState) => void
@@ -61,27 +62,42 @@ export default function ActivityFilters({ onFilterChange }: ActivityFiltersProps
         }
     }, [open])
 
+    const debouncedFilterChange = useMemo(
+        () => debounce((text: string, tipo?: TipoActividad) => {
+            onFilterChange({ searchText: text, tipo })
+        }, SEARCH_DEBOUNCE_MS),
+        [onFilterChange],
+    )
+
+    useEffect(() => {
+        return () => {
+            debouncedFilterChange.cancel()
+        }
+    }, [debouncedFilterChange])
+
     const handleSearch = useCallback(
         (text: string) => {
             setSearchText(text)
-            onFilterChange({ searchText: text, tipo: selectedTipo })
+            debouncedFilterChange(text, selectedTipo)
         },
-        [selectedTipo, onFilterChange],
+        [selectedTipo, debouncedFilterChange],
     )
 
     const handleTipoChange = useCallback(
         (tipo: TipoActividad | undefined) => {
+            debouncedFilterChange.cancel()
             setSelectedTipo(tipo)
             onFilterChange({ searchText, tipo })
         },
-        [searchText, onFilterChange],
+        [searchText, onFilterChange, debouncedFilterChange],
     )
 
     const handleClear = useCallback(() => {
+        debouncedFilterChange.cancel()
         setSearchText('')
         setSelectedTipo(undefined)
         onFilterChange({ searchText: '', tipo: undefined })
-    }, [onFilterChange])
+    }, [debouncedFilterChange, onFilterChange])
 
     const hasFilters = searchText || selectedTipo
 
