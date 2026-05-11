@@ -1,8 +1,9 @@
+/// <reference types="react" />
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { Filter, Search, X } from 'lucide-react'
 import type { TipoActividad } from '@/domain/enums/tipoActividad'
-import { TipoActividad as TipoActividadEnum } from '@/domain/enums/tipoActividad'
+import { TipoActividad as TipoActividadEnum, TipoActividadLabel } from '@/domain/enums/tipoActividad'
 import { debounce, SEARCH_DEBOUNCE_MS } from '@/lib/utils'
 
 interface ActivityFiltersProps {
@@ -25,8 +26,8 @@ export default function ActivityFilters({ onFilterChange }: ActivityFiltersProps
     const [dropdownPos, setDropdownPos] = useState<{ top: number; right: number } | null>(null)
 
     useEffect(() => {
-        function onDoc(e: MouseEvent) {
-            const target = e.target as Node
+        function onDoc(e: globalThis.Event) {
+            const target = e.target as globalThis.Element
             const insideTrigger = containerRef.current?.contains(target)
             const insideDropdown = dropdownRef.current?.contains(target)
             if (!insideTrigger && !insideDropdown) {
@@ -185,7 +186,7 @@ export default function ActivityFilters({ onFilterChange }: ActivityFiltersProps
                                             >
                                                 {checked ? <span className="h-2 w-2 rounded-full bg-primary-foreground block" /> : null}
                                             </span>
-                                            <span className="flex-1">{tipo}</span>
+                                            <span className="flex-1">{TipoActividadLabel[tipo]}</span>
                                         </button>
                                     )
                                 })}

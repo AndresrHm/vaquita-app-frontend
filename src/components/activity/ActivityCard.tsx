@@ -1,5 +1,5 @@
 import type { ActividadDTO, ActividadMetadata } from '@/domain/actividadDTO'
-import { TipoActividad } from '@/domain/enums/tipoActividad'
+import { TipoActividad, TipoActividadLabel } from '@/domain/enums/tipoActividad'
 import Card from '@/components/common/card'
 
 interface ActivityCardProps {
@@ -24,10 +24,10 @@ const getTimeAgo = (fecha: string): string => {
     const diffDays = Math.floor(diffHours / 24)
 
     if (diffSecs < 60) return 'hace unos segundos'
-    if (diffMins < 60) return `hace ${diffMins}m`
-    if (diffHours < 24) return `hace ${diffHours}h`
+    if (diffMins < 60) return `hace ${diffMins} m`
+    if (diffHours < 24) return `hace ${diffHours} h`
     if (diffDays === 1) return 'Ayer'
-    if (diffDays < 7) return `hace ${diffDays}d`
+    if (diffDays < 7) return `hace ${diffDays} d`
     return fecha_date.toLocaleDateString('es-ES')
 }
 
@@ -59,8 +59,9 @@ const ActivityCardGrupo = ({ actividad }: ActivityCardProps) => {
 
 const ActivityCardGasto = ({ actividad }: ActivityCardProps) => {
     const metadata = parseMetadata(actividad.metadata)
-    const isCreated = actividad.tipo === TipoActividad.GASTO_CREADO
-    const icon = isCreated ? '➕' : actividad.tipo === TipoActividad.GASTO_ELIMINADO ? '🗑️' : '✏️'
+    const isCreated = actividad.tipo === TipoActividad.MIS_DEUDAS
+    const isDeleted = actividad.tipo === TipoActividad.MIS_PAGOS
+    const icon = isCreated ? '➕' : isDeleted ? '🗑️' : '✏️'
 
     return (
         <Card>
@@ -84,21 +85,18 @@ const ActivityCardGasto = ({ actividad }: ActivityCardProps) => {
     )
 }
 
-const ActivityCardPago = ({ actividad }: ActivityCardProps) => {
-    const isPago = actividad.tipo === TipoActividad.PAGO_REALIZADO
-    const icon = isPago ? '💳' : '💰'
-
+const ActivityCardCuenta = ({ actividad }: ActivityCardProps) => {
     return (
         <Card>
             <div className="flex items-center justify-between gap-3">
                 <div className="flex-1">
                     <div className="flex items-center gap-2">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100 text-sm">
-                            {icon}
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-sm">
+                            👤
                         </div>
                         <div>
                             <div className="text-sm font-semibold text-foreground">{actividad.descripcion}</div>
-                            <div className="mt-1 text-xs text-muted-foreground">Pago registrado en el sistema</div>
+                            <div className="mt-1 text-xs text-muted-foreground">Cuenta registrada en el sistema</div>
                         </div>
                     </div>
                 </div>
@@ -113,20 +111,22 @@ export default function ActivityCard({ actividad }: ActivityCardProps) {
     switch (actividad.tipo) {
         case TipoActividad.INGRESO_GRUPO:
             return <ActivityCardGrupo actividad={actividad} />
-        case TipoActividad.GASTO_CREADO:
-        case TipoActividad.GASTO_ACTUALIZADO:
-        case TipoActividad.GASTO_ELIMINADO:
+        case TipoActividad.EGRESO_GRUPO:
+            return <ActivityCardGrupo actividad={actividad} />
+        case TipoActividad.MIS_DEUDAS:
+        case TipoActividad.MIS_PAGOS:
+        case TipoActividad.COBROS_RECIBIDOS:
+        case TipoActividad.MIS_DEUDAS_SALDADAS:
             return <ActivityCardGasto actividad={actividad} />
-        case TipoActividad.PAGO_REALIZADO:
-        case TipoActividad.PAGO_RECIBIDO:
-            return <ActivityCardPago actividad={actividad} />
+        case TipoActividad.CUENTA_CREADA:
+            return <ActivityCardCuenta actividad={actividad} />
         default:
             return (
                 <Card>
                     <div className="flex items-center justify-between gap-3">
                         <div>
                             <div className="text-sm font-semibold text-foreground">{actividad.descripcion}</div>
-                            <div className="mt-1 text-xs text-muted-foreground">Tipo: {actividad.tipo}</div>
+                            <div className="mt-1 text-xs text-muted-foreground">Tipo: {TipoActividadLabel[actividad.tipo] ?? actividad.tipo}</div>
                         </div>
                         <div className="text-xs text-muted-foreground">{getTimeAgo(actividad.fecha)}</div>
                     </div>
