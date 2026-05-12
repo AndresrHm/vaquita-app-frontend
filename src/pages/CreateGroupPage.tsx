@@ -7,6 +7,7 @@ import { usuarioService } from '@/service/usuarioService'
 import type { UsuarioConBalanceDTO } from '@/domain/usuario'
 import { useToast } from '@/customHooks/useToast'
 import { getMensajeError } from '@/utils/getMensajeError'
+import { useNetwork } from '@/customHooks/useNetwork'
 
 function getInitials(name: string) {
   return name
@@ -29,6 +30,7 @@ export default function CreateGroupPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [friends, setFriends] = useState<UsuarioConBalanceDTO[]>([])
+  const isOnline = useNetwork()
 
   useEffect(() => {
     const userId = Number(window.localStorage.getItem('id'))
@@ -222,7 +224,7 @@ export default function CreateGroupPage() {
           </div>
         )}
 
-        <Button className="w-full rounded-xl" disabled={!isValid || loading} type="submit">
+        <Button className="w-full rounded-xl" disabled={!isOnline || !isValid || loading} type="submit">
           {loading ? 'Creando...' : 'Crear grupo'}
         </Button>
       </form>
