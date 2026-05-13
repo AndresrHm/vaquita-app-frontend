@@ -49,7 +49,7 @@ export class Expense extends Validable {
         public pagadorId = 0,
         public participantIds: number[] = [],
         public description = '',
-        public total = 0,
+        public _total = 0,
         public category = DEFAULT_CATEGORY,
         public date = new Date().toISOString().split('T')[0],
         public items: ExpenseItem[] = [],
@@ -57,6 +57,25 @@ export class Expense extends Validable {
         public allocations: ExpenseAllocation[] = [],
     ) {
         super()
+    }
+
+    get total(): number {
+
+        if (this.items.length === 0) {
+            return Number(this._total.toFixed(2))
+        }
+
+        const totalEnCentavos = this.items.reduce(
+            (acc, item) =>
+                acc + Math.round(item.total() * 100),
+            0
+        )
+
+        return Number((totalEnCentavos / 100).toFixed(2))
+    }
+
+    set total(value: number) {
+        this._total = Number(value.toFixed(2))
     }
 
     validarEspecifico(): void {
@@ -97,7 +116,14 @@ export class Expense extends Validable {
                 this.agregarError(new InputError('items', 'Cada ítem debe tener nombre, cantidad y precio unitario válidos'))
             }
 
-            if (this.total != this.totalItems()) {
+            const sumaItemsEnCentavos = this.items.reduce(
+                (acc, item) => acc + Math.round(item.total() * 100),
+                0
+            )
+
+            const totalEnCentavos = Math.round(this.total * 100)
+
+            if (sumaItemsEnCentavos !== totalEnCentavos) {
                 this.agregarError(new InputError('itemsTotal', 'La suma de los valores de los ítems debe ser igual al total'))
             }
 
@@ -131,12 +157,19 @@ export class Expense extends Validable {
             asignacionesMap[alloc.participantId] = alloc.total
         })
 
+        const totalEnCentavos = this.items.reduce(
+            (acc, item) => acc + Math.round(item.total() * 100),
+            0
+        )
+
+        const totalSeguro = totalEnCentavos / 100
+
         const result: ExpenseJSON = {
             grupoID: this.groupId,
             pagadorID: this.pagadorId,
             participantesIDs: this.participantIds,
             descripcion: this.description,
-            monto: this.total,
+            monto: totalSeguro,
             categoria: this.category,
             fecha: this.date,
             items: this.items.map((item) => item.toDTO()),
@@ -179,11 +212,4 @@ export class Expense extends Validable {
             expense.allocations.map((allocation) => new ExpenseAllocation(allocation.participantId, allocation.total)),
         )
     }
-
-    private totalItems() {
-        var total = 0
-        this.items.forEach(it => total += it.total())
-        return total
-    }
-
 }

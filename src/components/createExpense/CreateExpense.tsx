@@ -105,11 +105,13 @@ export default function CreateExpense() {
     }
 
     const handleItemsChange = (items: ExpenseItem[]) => {
-        const total = items.reduce((acc, item) => acc + item.total(), 0)
+
+        const totalEnCentavos = items.reduce((acc, item) => {
+            return acc + Math.round(item.total() * 100)
+        }, 0)
 
         actualizarExpense({
-            items,
-            total
+            items
         })
     }
 
@@ -287,16 +289,9 @@ export default function CreateExpense() {
                         <span className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wider">Monto total</span>
                         <div className="flex items-center gap-1 w-full max-w-md">
                             <span className="text-3xl font-bold text-primary">$</span>
-                            <input
-                                type="number"
-                                step="0.01"
-                                placeholder="0"
-                                inputMode="decimal"
-                                value={expense.total.toFixed(2) || ''}
-                                disabled={expense.items.length > 0} // lo desactivamos si hay ítems
-                                onChange={(event) => actualizarExpense({ total: Number(event.target.value) || 0 })}
-                                className="w-full bg-transparent text-4xl font-bold text-foreground outline-none placeholder:text-muted-foreground/30 text-center"
-                            />
+                            <div className="text-4xl font-bold text-center justify-center">
+                                {expense.total.toFixed(2)}
+                            </div>
                         </div>
                     </div>
 
@@ -396,7 +391,10 @@ export default function CreateExpense() {
 
                     <div className="pt-4">
                         <Button
-                            onClick={crearExpense}
+                            onClick={() => {
+                                console.log(expense)
+                                crearExpense()
+                            }}
                             disabled={!expense.valido()}
                             className="w-full h-12 rounded-2xl text-md font-bold shadow-lg shadow-primary/20 transition-all active:scale-[0.98]"
                         >
