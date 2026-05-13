@@ -266,7 +266,7 @@ export default function CreateExpense() {
                         </div>
                     </div>
 
-                    <div className="rounded-2xl border border-border bg-card/70 p-4 shadow-sm backdrop-blur-xl space-y-4">
+                    <div className="rounded-2xl border border-border bg-card/70 p-4 shadow-sm backdrop-blur-xl flex flex-col gap-7">
                         <GroupSelector
                             groups={groups}
                             selectedGroupId={expense.groupId}
@@ -289,25 +289,27 @@ export default function CreateExpense() {
                         />
 
                         {/* Selector de Tipo de División */}
-                        <FieldWrapper label="Método de división">
-                            <DivisionTypeSelector
-                                value={divisionType}
-                                onChange={(type) => {
-                                    setDivisionType(type)
-                                    actualizarExpense({ tipoDivision: type })
-                                }}
-                            />
-                        </FieldWrapper>
+                        <span className='space-y-2'>
+                            <FieldWrapper label="Método de división">
+                                <DivisionTypeSelector
+                                    value={divisionType}
+                                    onChange={(type) => {
+                                        setDivisionType(type)
+                                        actualizarExpense({ tipoDivision: type })
+                                    }}
+                                />
+                            </FieldWrapper>
 
-                        {/* Sección Dinámica para Asignaciones */}
-                        {(divisionType === TipoDivision.PARTES_EXACTAS || divisionType === TipoDivision.PORCENTUAL || divisionType === TipoDivision.PARTES_IGUALES || divisionType === TipoDivision.ALEATORIO) && (
-                            <AllocationSummary
-                                participants={participants}
-                                expense={expense}
-                                onExactAmountChange={divisionType === TipoDivision.PARTES_EXACTAS ? handleExactAmountChange : undefined}
-                                onPercentageChange={divisionType === TipoDivision.PORCENTUAL ? handlePercentageChange : undefined}
-                            />
-                        )}
+                            {/* Sección Dinámica para Asignaciones */}
+                            {(divisionType === TipoDivision.PARTES_EXACTAS || divisionType === TipoDivision.PORCENTUAL || divisionType === TipoDivision.PARTES_IGUALES || divisionType === TipoDivision.ALEATORIO) && (
+                                <AllocationSummary
+                                    participants={participants}
+                                    expense={expense}
+                                    onExactAmountChange={divisionType === TipoDivision.PARTES_EXACTAS ? handleExactAmountChange : undefined}
+                                    onPercentageChange={divisionType === TipoDivision.PORCENTUAL ? handlePercentageChange : undefined}
+                                />
+                            )}
+                        </span>
 
                         {/* Descripción */}
                         <FieldWrapper label="Descripción" instruction="¿En qué se gastó?">
