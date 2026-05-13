@@ -1,4 +1,5 @@
-import { useState } from 'react'
+/* eslint-disable no-undef */
+import { useRef, useState } from 'react'
 import { Receipt, Calendar } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { CATEGORIES } from '@/components/createExpense/categories'
@@ -15,7 +16,7 @@ import type { Grupo } from '@/domain/Grupo'
 import { obtenerGrupoPorId, obtenerGruposDeUsuario } from '@/service/groupsService'
 import { useOnInit } from '@/customHooks/hooks'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
-import type { LineItem, ScanResult } from '@/domain/smartScanDTO'
+import type { ExpenseAttachment, LineItem, ScanResult } from '@/domain/smartScanDTO'
 import { TipoDivision } from '@/domain/enums/tipoDivision'
 import { ExpenseAllocation } from '@/domain/expenseAllocation'
 import DivisionTypeSelector from './DivisionTypeSelector'
@@ -24,14 +25,23 @@ import CategorySelector from './CategorySelector'
 import ParticipantSelector from './ParticipantSelector'
 import GroupSelector from './GroupSelector'
 import { useToast } from '@/customHooks/useToast'
+import ExpenseAttachmentsField from './ExpenseAttachmentsField'
+import { attachmentService } from '@/service/attachmentService'
 
 type LocationState = {
     scanResult?: ScanResult & { totalAmount: number }
+    attachments?: ExpenseAttachment[]
 }
 
 export default function CreateExpense() {
-
     const location = useLocation()
+    const locationState = location.state as LocationState
+
+    const [attachments, setAttachments] = useState<ExpenseAttachment[]>(
+        locationState?.attachments || []
+    )
+
+    const attachmentInputRef = useRef<HTMLInputElement>(null)
 
     const [expense, setExpense] = useState<Expense>(() => {
         const scanResult = (location.state as LocationState)?.scanResult
@@ -40,24 +50,24 @@ export default function CreateExpense() {
 
         if (scanResult) {
             newExpense.description = scanResult.description || ''
-            newExpense.total = scanResult.totalAmount
-            newExpense.date = scanResult.date || new Date().toISOString().split('T')[0]
+            newExpense.date =
+                scanResult.date || new Date().toISOString().split('T')[0]
+
             newExpense.category = mapearCategoria(scanResult.category)
 
             const items = convertirItems(scanResult.items)
             newExpense.items = items
 
-            const totalEnCentavos = items.reduce(
-                (acc, item) => acc + Math.round(item.total() * 100),
-                0
-            )
-            const total = totalEnCentavos / 100
+            const totalEnCentavos = items.reduce((acc, item) => {
+                return acc + Math.round(item.total() * 100)
+            }, 0)
+
+            const total = Number((totalEnCentavos / 100).toFixed(2))
 
             newExpense.total = items.length
                 ? total
-                : scanResult.totalAmount
+                : Number(scanResult.totalAmount.toFixed(2))
         }
-
 
         return newExpense
     })
@@ -95,11 +105,13 @@ export default function CreateExpense() {
     }
 
     const handleItemsChange = (items: ExpenseItem[]) => {
-        const total = items.reduce((acc, item) => acc + item.total(), 0)
+
+        const totalEnCentavos = items.reduce((acc, item) => {
+            return acc + Math.round(item.total() * 100)
+        }, 0)
 
         actualizarExpense({
-            items,
-            total
+            items
         })
     }
 
@@ -112,6 +124,32 @@ export default function CreateExpense() {
             showToast(mensaje, 'error')
             console.error(error)
         }
+    }
+
+    const handleAddAttachments = (
+        event: React.ChangeEvent<HTMLInputElement>
+    ) => {
+        const files = Array.from(event.target.files || [])
+
+        const newAttachments = files.map(file => ({
+            id: crypto.randomUUID(),
+            file,
+            preview: URL.createObjectURL(file)
+        }))
+
+        setAttachments(prev => [...prev, ...newAttachments])
+    }
+
+    const handleRemoveAttachment = (id: string) => {
+        setAttachments(prev => {
+            const attachment = prev.find(a => a.id === id)
+
+            if (attachment) {
+                URL.revokeObjectURL(attachment.preview)
+            }
+
+            return prev.filter(a => a.id !== id)
+        })
     }
 
     // Si se pasa la id de grupo usamos esa misma (crear gasto dentro de groupDetail)
@@ -177,24 +215,57 @@ export default function CreateExpense() {
     }
 
     const crearExpense = async () => {
+
         const expenseParaValidar = Expense.clone(expense)
+
         expenseParaValidar.validar()
 
         setExpense(expenseParaValidar)
-        if (expenseParaValidar.valido()) {
-            try {
+
+        if (!expenseParaValidar.valido()) {
+            return
+        }
+
+        try {
+
+            // 1. CREAR GASTO
+            const createdExpense =
                 await expenseService.createExpense(expense)
-                showToast('¡Gasto creado con éxito!', 'success')
-                if (groupId) {
-                    navigate(`/groups/${groupId}`)
-                } else {
-                    navigate('/')
-                }
-            } catch (error: unknown) {
-                const mensaje = error instanceof Error ? error.message : 'Error creando gasto'
-                showToast(mensaje, 'error')
-                console.error('Error creando gasto:', mensaje)
+
+            // 2. SUBIR ATTACHMENTS
+            if (attachments.length > 0) {
+
+                await attachmentService.uploadAttachments(
+                    createdExpense.id,
+                    attachments
+                )
             }
+
+            showToast(
+                '¡Gasto creado con éxito!',
+                'success'
+            )
+
+            // 3. NAVIGATION
+            if (groupId) {
+                navigate(`/groups/${groupId}`)
+            } else {
+                navigate('/')
+            }
+
+        } catch (error: unknown) {
+
+            const mensaje =
+                error instanceof Error
+                    ? error.message
+                    : 'Error creando gasto'
+
+            showToast(mensaje, 'error')
+
+            console.error(
+                'Error creando gasto:',
+                mensaje
+            )
         }
     }
 
@@ -218,20 +289,13 @@ export default function CreateExpense() {
                         <span className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wider">Monto total</span>
                         <div className="flex items-center gap-1 w-full max-w-md">
                             <span className="text-3xl font-bold text-primary">$</span>
-                            <input
-                                type="number"
-                                step="0.01"
-                                placeholder="0"
-                                inputMode="decimal"
-                                value={expense.total || ''}
-                                disabled={expense.items.length > 0} // lo desactivamos si hay ítems
-                                onChange={(event) => actualizarExpense({ total: Number(event.target.value) || 0 })}
-                                className="w-full bg-transparent text-4xl font-bold text-foreground outline-none placeholder:text-muted-foreground/30 text-center"
-                            />
+                            <div className="text-4xl font-bold text-center justify-center">
+                                {expense.total.toFixed(2)}
+                            </div>
                         </div>
                     </div>
 
-                    <div className="rounded-2xl border border-border bg-card/70 p-4 shadow-sm backdrop-blur-xl space-y-4">
+                    <div className="rounded-2xl border border-border bg-card/70 p-4 shadow-sm backdrop-blur-xl flex flex-col gap-7">
                         <GroupSelector
                             groups={groups}
                             selectedGroupId={expense.groupId}
@@ -254,26 +318,29 @@ export default function CreateExpense() {
                         />
 
                         {/* Selector de Tipo de División */}
-                        <FieldWrapper label="Método de división">
-                            <DivisionTypeSelector
-                                value={divisionType}
-                                onChange={(type) => {
-                                    setDivisionType(type)
-                                    actualizarExpense({ tipoDivision: type })
-                                }}
-                            />
-                        </FieldWrapper>
+                        <span className='space-y-2'>
+                            <FieldWrapper label="Método de división">
+                                <DivisionTypeSelector
+                                    value={divisionType}
+                                    onChange={(type) => {
+                                        setDivisionType(type)
+                                        actualizarExpense({ tipoDivision: type })
+                                    }}
+                                />
+                            </FieldWrapper>
 
-                        {/* Sección Dinámica para Asignaciones */}
-                        {(divisionType === TipoDivision.PARTES_EXACTAS || divisionType === TipoDivision.PORCENTUAL || divisionType === TipoDivision.PARTES_IGUALES || divisionType === TipoDivision.ALEATORIO) && (
-                            <AllocationSummary
-                                participants={participants}
-                                expense={expense}
-                                onExactAmountChange={divisionType === TipoDivision.PARTES_EXACTAS ? handleExactAmountChange : undefined}
-                                onPercentageChange={divisionType === TipoDivision.PORCENTUAL ? handlePercentageChange : undefined}
-                            />
-                        )}
+                            {/* Sección Dinámica para Asignaciones */}
+                            {(divisionType === TipoDivision.PARTES_EXACTAS || divisionType === TipoDivision.PORCENTUAL || divisionType === TipoDivision.PARTES_IGUALES || divisionType === TipoDivision.ALEATORIO) && (
+                                <AllocationSummary
+                                    participants={participants}
+                                    expense={expense}
+                                    onExactAmountChange={divisionType === TipoDivision.PARTES_EXACTAS ? handleExactAmountChange : undefined}
+                                    onPercentageChange={divisionType === TipoDivision.PORCENTUAL ? handlePercentageChange : undefined}
+                                />
+                            )}
+                        </span>
 
+                        {/* Descripción */}
                         <FieldWrapper label="Descripción" instruction="¿En qué se gastó?">
                             <div className="flex items-center gap-3 rounded-xl border border-border bg-background/70 px-3 py-2.5">
                                 <Receipt className="h-4 w-4 text-muted-foreground shrink-0" />
@@ -287,8 +354,18 @@ export default function CreateExpense() {
                             </div>
                         </FieldWrapper>
 
+                        {/* Comprobantes */}
+                        <ExpenseAttachmentsField
+                            attachments={attachments}
+                            onAdd={handleAddAttachments}
+                            onRemove={handleRemoveAttachment}
+                        />
+
+                        {/* Ítems */}
                         <CreateExpenseItem items={expense.items} onChange={handleItemsChange} />
 
+
+                        {/* Categorías */}
                         <CategorySelector
                             label="Categoría"
                             instruction="Elegí un tipo de gasto"
@@ -314,7 +391,10 @@ export default function CreateExpense() {
 
                     <div className="pt-4">
                         <Button
-                            onClick={crearExpense}
+                            onClick={() => {
+                                console.log(expense)
+                                crearExpense()
+                            }}
                             disabled={!expense.valido()}
                             className="w-full h-12 rounded-2xl text-md font-bold shadow-lg shadow-primary/20 transition-all active:scale-[0.98]"
                         >
