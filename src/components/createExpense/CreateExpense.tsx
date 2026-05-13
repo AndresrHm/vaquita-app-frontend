@@ -1,6 +1,6 @@
 /* eslint-disable no-undef */
 import { useRef, useState } from 'react'
-import { Receipt, Calendar, Plus, X } from 'lucide-react'
+import { Receipt, Calendar } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { CATEGORIES } from '@/components/createExpense/categories'
 import CreateExpenseItem from '@/components/createExpense/CreateExpenseItem'
@@ -25,8 +25,8 @@ import CategorySelector from './CategorySelector'
 import ParticipantSelector from './ParticipantSelector'
 import GroupSelector from './GroupSelector'
 import { useToast } from '@/customHooks/useToast'
-import { Divider } from '../common/divider'
 import ExpenseAttachmentsField from './ExpenseAttachmentsField'
+import { attachmentService } from '@/service/attachmentService'
 
 type LocationState = {
     scanResult?: ScanResult & { totalAmount: number }
@@ -50,24 +50,24 @@ export default function CreateExpense() {
 
         if (scanResult) {
             newExpense.description = scanResult.description || ''
-            newExpense.total = scanResult.totalAmount
-            newExpense.date = scanResult.date || new Date().toISOString().split('T')[0]
+            newExpense.date =
+                scanResult.date || new Date().toISOString().split('T')[0]
+
             newExpense.category = mapearCategoria(scanResult.category)
 
             const items = convertirItems(scanResult.items)
             newExpense.items = items
 
-            const totalEnCentavos = items.reduce(
-                (acc, item) => acc + Math.round(item.total() * 100),
-                0
-            )
-            const total = totalEnCentavos / 100
+            const totalEnCentavos = items.reduce((acc, item) => {
+                return acc + Math.round(item.total() * 100)
+            }, 0)
+
+            const total = Number((totalEnCentavos / 100).toFixed(2))
 
             newExpense.total = items.length
                 ? total
-                : scanResult.totalAmount
+                : Number(scanResult.totalAmount.toFixed(2))
         }
-
 
         return newExpense
     })
@@ -213,24 +213,57 @@ export default function CreateExpense() {
     }
 
     const crearExpense = async () => {
+
         const expenseParaValidar = Expense.clone(expense)
+
         expenseParaValidar.validar()
 
         setExpense(expenseParaValidar)
-        if (expenseParaValidar.valido()) {
-            try {
+
+        if (!expenseParaValidar.valido()) {
+            return
+        }
+
+        try {
+
+            // 1. CREAR GASTO
+            const createdExpense =
                 await expenseService.createExpense(expense)
-                showToast('¡Gasto creado con éxito!', 'success')
-                if (groupId) {
-                    navigate(`/groups/${groupId}`)
-                } else {
-                    navigate('/')
-                }
-            } catch (error: unknown) {
-                const mensaje = error instanceof Error ? error.message : 'Error creando gasto'
-                showToast(mensaje, 'error')
-                console.error('Error creando gasto:', mensaje)
+
+            // 2. SUBIR ATTACHMENTS
+            if (attachments.length > 0) {
+
+                await attachmentService.uploadAttachments(
+                    createdExpense.id,
+                    attachments
+                )
             }
+
+            showToast(
+                '¡Gasto creado con éxito!',
+                'success'
+            )
+
+            // 3. NAVIGATION
+            if (groupId) {
+                navigate(`/groups/${groupId}`)
+            } else {
+                navigate('/')
+            }
+
+        } catch (error: unknown) {
+
+            const mensaje =
+                error instanceof Error
+                    ? error.message
+                    : 'Error creando gasto'
+
+            showToast(mensaje, 'error')
+
+            console.error(
+                'Error creando gasto:',
+                mensaje
+            )
         }
     }
 
@@ -259,7 +292,7 @@ export default function CreateExpense() {
                                 step="0.01"
                                 placeholder="0"
                                 inputMode="decimal"
-                                value={expense.total || ''}
+                                value={expense.total.toFixed(2) || ''}
                                 disabled={expense.items.length > 0} // lo desactivamos si hay ítems
                                 onChange={(event) => actualizarExpense({ total: Number(event.target.value) || 0 })}
                                 className="w-full bg-transparent text-4xl font-bold text-foreground outline-none placeholder:text-muted-foreground/30 text-center"
