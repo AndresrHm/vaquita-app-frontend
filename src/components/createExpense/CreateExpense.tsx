@@ -26,6 +26,7 @@ import ParticipantSelector from './ParticipantSelector'
 import GroupSelector from './GroupSelector'
 import { useToast } from '@/customHooks/useToast'
 import { Divider } from '../common/divider'
+import ExpenseAttachmentsField from './ExpenseAttachmentsField'
 
 type LocationState = {
     scanResult?: ScanResult & { totalAmount: number }
@@ -325,96 +326,12 @@ export default function CreateExpense() {
                             </div>
                         </FieldWrapper>
 
-                        {/* Imágenes */}
-                        <FieldWrapper
-                            label="Comprobantes"
-                            instruction="Agregá fotos o tickets del gasto"
-                        >
-                            <div className="space-y-4">
-
-                                <div className="grid grid-cols-3 gap-3">
-                                    {attachments.map((attachment) => (
-                                        <div
-                                            key={attachment.id}
-                                            className="
-                        relative
-                        aspect-square
-                        overflow-hidden
-                        rounded-2xl
-                        border
-                        border-blue-100
-                        bg-white
-                        shadow-sm
-                    "
-                                        >
-                                            <img
-                                                src={attachment.preview}
-                                                alt="attachment"
-                                                className="
-                            h-full
-                            w-full
-                            object-cover
-                        "
-                                            />
-
-                                            <button
-                                                type="button"
-                                                onClick={() => handleRemoveAttachment(attachment.id)}
-                                                className="
-                            absolute
-                            right-2
-                            top-2
-                            flex
-                            h-7
-                            w-7
-                            items-center
-                            justify-center
-                            rounded-full
-                            bg-white/90
-                            shadow-md
-                            backdrop-blur
-                            transition
-                            hover:scale-105
-                        "
-                                            >
-                                                <X className="h-4 w-4 text-red-500" />
-                                            </button>
-                                        </div>
-                                    ))}
-
-                                    {/* BOTÓN AGREGAR */}
-                                    <button
-                                        type="button"
-                                        onClick={() => attachmentInputRef.current?.click()}
-                                        className="
-                    flex
-                    aspect-square
-                    items-center
-                    justify-center
-                    rounded-2xl
-                    border-2
-                    border-dashed
-                    border-blue-200
-                    bg-blue-50/70
-                    transition-all
-                    hover:bg-blue-100
-                    active:scale-[0.98]
-                "
-                                    >
-                                        <Plus className="h-8 w-8 text-blue-500" />
-                                    </button>
-                                </div>
-
-                                <input
-                                    ref={attachmentInputRef}
-                                    type="file"
-                                    multiple
-                                    accept="image/*,application/pdf"
-                                    className="hidden"
-                                    onChange={handleAddAttachments}
-                                />
-                            </div>
-                        </FieldWrapper>
+                        {/* Comprobantes */}
+                        <ExpenseAttachmentsField
+                            attachments={attachments}
+                            onAdd={handleAddAttachments}
+                            onRemove={handleRemoveAttachment}
+                        />
 
                         {/* Ítems */}
                         <CreateExpenseItem items={expense.items} onChange={handleItemsChange} />
