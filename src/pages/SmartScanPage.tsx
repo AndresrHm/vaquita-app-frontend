@@ -13,7 +13,7 @@ import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import EditableLineItems from '@/components/smartScan/editableLineItems'
 import Card from '@/components/common/card'
-import { CATEGORY_LABELS, CURRENCY_SYMBOLS, type LineItem, type ScanResult, type ScanState } from '@/domain/smartScanDTO'
+import { CATEGORY_LABELS, CURRENCY_SYMBOLS, type ExpenseAttachment, type LineItem, type ScanResult, type ScanState } from '@/domain/smartScanDTO'
 import { scan, scanMock } from '@/service/smartScanService'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import CollapsibleCard from '@/components/common/collapsibleCard'
@@ -25,7 +25,7 @@ export default function GroupsScanPage() {
   const cameraInputRef = useRef<HTMLInputElement>(null)
 
   const [state, setState] = useState<ScanState>('idle')
-  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [attachments, setAttachments] = useState<ExpenseAttachment[]>([])
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
@@ -43,33 +43,43 @@ export default function GroupsScanPage() {
 
   function handleFileSelected(file: File) {
     if (!file.type.startsWith('image/')) return
-    setImageFile(file)
-    setImagePreview(URL.createObjectURL(file))
+
+    const attachment: ExpenseAttachment = {
+      id: crypto.randomUUID(),
+      file,
+      preview: URL.createObjectURL(file)
+    }
+
+    setAttachments(prev => [...prev, attachment])
+
+    // usamos la primera imagen como preview principal
+    if (!imagePreview) {
+      setImagePreview(attachment.preview)
+    }
+
     setState('preview')
   }
 
   function handleReset() {
-    setImageFile(null)
+    attachments.forEach(a => URL.revokeObjectURL(a.preview))
+
+    setAttachments([])
     setImagePreview(null)
     setEditableResult(null)
     setErrorMsg(null)
     setState('idle')
-    if (imagePreview) URL.revokeObjectURL(imagePreview)
   }
 
   async function handleScan() {
-    if (!imageFile) return
+    if (!attachments.length) return
 
     setState('loading')
     setErrorMsg(null)
 
     try {
-      const compressedImage = await compressImage(imageFile)
+      const compressedImage = await compressImage(attachments[0].file)
 
-      const data = await scan(compressedImage)
-
-      console.log('Original:', imageFile.size / 1024, 'KB')
-      console.log('Compressed:', compressedImage.size / 1024, 'KB')
+      const data = await scanMock(compressedImage)
 
       setEditableResult({
         ...data,
@@ -136,7 +146,7 @@ export default function GroupsScanPage() {
               <>
                 <div className="mt-4 flex justify-center">
                   <div
-                    className="w-full max-w-sm max-h-[300px] rounded-2xl overflow-hidden border border-border cursor-pointer group"
+                    className="w-full max-w-sm max-h-75 rounded-2xl overflow-hidden border border-border cursor-pointer group"
                     onClick={() => setIsPreviewOpen(true)}
                   >
                     <img
@@ -388,7 +398,8 @@ export default function GroupsScanPage() {
                       scanResult: {
                         ...editableResult,
                         totalAmount: total
-                      }
+                      },
+                      attachments
                     }
                   })}
                 >

@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import { Usuario } from '@/domain/usuario'
 import { Expense } from '@/domain/expense'
 import { TipoDivision } from '@/domain/enums/tipoDivision'
@@ -37,12 +38,12 @@ export default function AllocationSummary({ participants, expense, onExactAmount
 
     const totalAssigned = expense.allocations.reduce((acc, curr) => acc + curr.total, 0)
     const isValid = expense.tipoDivision === TipoDivision.PARTES_IGUALES ||
-                   (expense.tipoDivision === TipoDivision.PARTES_EXACTAS && Math.abs(totalAssigned - expense.total) < 0.01) ||
-                   (expense.tipoDivision === TipoDivision.PORCENTUAL && Math.abs(totalAssigned - 100) < 0.01)
+        (expense.tipoDivision === TipoDivision.PARTES_EXACTAS && Math.abs(totalAssigned - expense.total) < 0.01) ||
+        (expense.tipoDivision === TipoDivision.PORCENTUAL && Math.abs(totalAssigned - 100) < 0.01)
 
     return (
         <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
-            
+
             <p className="text-xs text-muted-foreground px-1">
                 {expense.tipoDivision === TipoDivision.PARTES_IGUALES && 'Cada integrante paga lo mismo. Nada de cosas raras.'}
                 {expense.tipoDivision === TipoDivision.PARTES_EXACTAS && 'Definí el monto exacto a pagar por cada integrante.'}

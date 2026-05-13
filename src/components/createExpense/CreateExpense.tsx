@@ -1,5 +1,6 @@
-import { useState } from 'react'
-import { Receipt, Calendar } from 'lucide-react'
+/* eslint-disable no-undef */
+import { useRef, useState } from 'react'
+import { Receipt, Calendar, Plus, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { CATEGORIES } from '@/components/createExpense/categories'
 import CreateExpenseItem from '@/components/createExpense/CreateExpenseItem'
@@ -15,7 +16,7 @@ import type { Grupo } from '@/domain/Grupo'
 import { obtenerGrupoPorId, obtenerGruposDeUsuario } from '@/service/groupsService'
 import { useOnInit } from '@/customHooks/hooks'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
-import type { LineItem, ScanResult } from '@/domain/smartScanDTO'
+import type { ExpenseAttachment, LineItem, ScanResult } from '@/domain/smartScanDTO'
 import { TipoDivision } from '@/domain/enums/tipoDivision'
 import { ExpenseAllocation } from '@/domain/expenseAllocation'
 import DivisionTypeSelector from './DivisionTypeSelector'
@@ -24,14 +25,22 @@ import CategorySelector from './CategorySelector'
 import ParticipantSelector from './ParticipantSelector'
 import GroupSelector from './GroupSelector'
 import { useToast } from '@/customHooks/useToast'
+import { Divider } from '../common/divider'
 
 type LocationState = {
     scanResult?: ScanResult & { totalAmount: number }
+    attachments?: ExpenseAttachment[]
 }
 
 export default function CreateExpense() {
-
     const location = useLocation()
+    const locationState = location.state as LocationState
+
+    const [attachments, setAttachments] = useState<ExpenseAttachment[]>(
+        locationState?.attachments || []
+    )
+
+    const attachmentInputRef = useRef<HTMLInputElement>(null)
 
     const [expense, setExpense] = useState<Expense>(() => {
         const scanResult = (location.state as LocationState)?.scanResult
@@ -112,6 +121,32 @@ export default function CreateExpense() {
             showToast(mensaje, 'error')
             console.error(error)
         }
+    }
+
+    const handleAddAttachments = (
+        event: React.ChangeEvent<HTMLInputElement>
+    ) => {
+        const files = Array.from(event.target.files || [])
+
+        const newAttachments = files.map(file => ({
+            id: crypto.randomUUID(),
+            file,
+            preview: URL.createObjectURL(file)
+        }))
+
+        setAttachments(prev => [...prev, ...newAttachments])
+    }
+
+    const handleRemoveAttachment = (id: string) => {
+        setAttachments(prev => {
+            const attachment = prev.find(a => a.id === id)
+
+            if (attachment) {
+                URL.revokeObjectURL(attachment.preview)
+            }
+
+            return prev.filter(a => a.id !== id)
+        })
     }
 
     // Si se pasa la id de grupo usamos esa misma (crear gasto dentro de groupDetail)
@@ -274,6 +309,7 @@ export default function CreateExpense() {
                             />
                         )}
 
+                        {/* Descripción */}
                         <FieldWrapper label="Descripción" instruction="¿En qué se gastó?">
                             <div className="flex items-center gap-3 rounded-xl border border-border bg-background/70 px-3 py-2.5">
                                 <Receipt className="h-4 w-4 text-muted-foreground shrink-0" />
@@ -287,8 +323,102 @@ export default function CreateExpense() {
                             </div>
                         </FieldWrapper>
 
+                        {/* Imágenes */}
+                        <FieldWrapper
+                            label="Comprobantes"
+                            instruction="Agregá fotos o tickets del gasto"
+                        >
+                            <div className="space-y-4">
+
+                                <div className="grid grid-cols-3 gap-3">
+                                    {attachments.map((attachment) => (
+                                        <div
+                                            key={attachment.id}
+                                            className="
+                        relative
+                        aspect-square
+                        overflow-hidden
+                        rounded-2xl
+                        border
+                        border-blue-100
+                        bg-white
+                        shadow-sm
+                    "
+                                        >
+                                            <img
+                                                src={attachment.preview}
+                                                alt="attachment"
+                                                className="
+                            h-full
+                            w-full
+                            object-cover
+                        "
+                                            />
+
+                                            <button
+                                                type="button"
+                                                onClick={() => handleRemoveAttachment(attachment.id)}
+                                                className="
+                            absolute
+                            right-2
+                            top-2
+                            flex
+                            h-7
+                            w-7
+                            items-center
+                            justify-center
+                            rounded-full
+                            bg-white/90
+                            shadow-md
+                            backdrop-blur
+                            transition
+                            hover:scale-105
+                        "
+                                            >
+                                                <X className="h-4 w-4 text-red-500" />
+                                            </button>
+                                        </div>
+                                    ))}
+
+                                    {/* BOTÓN AGREGAR */}
+                                    <button
+                                        type="button"
+                                        onClick={() => attachmentInputRef.current?.click()}
+                                        className="
+                    flex
+                    aspect-square
+                    items-center
+                    justify-center
+                    rounded-2xl
+                    border-2
+                    border-dashed
+                    border-blue-200
+                    bg-blue-50/70
+                    transition-all
+                    hover:bg-blue-100
+                    active:scale-[0.98]
+                "
+                                    >
+                                        <Plus className="h-8 w-8 text-blue-500" />
+                                    </button>
+                                </div>
+
+                                <input
+                                    ref={attachmentInputRef}
+                                    type="file"
+                                    multiple
+                                    accept="image/*,application/pdf"
+                                    className="hidden"
+                                    onChange={handleAddAttachments}
+                                />
+                            </div>
+                        </FieldWrapper>
+
+                        {/* Ítems */}
                         <CreateExpenseItem items={expense.items} onChange={handleItemsChange} />
 
+
+                        {/* Categorías */}
                         <CategorySelector
                             label="Categoría"
                             instruction="Elegí un tipo de gasto"
