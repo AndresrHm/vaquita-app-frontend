@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input'
 import { formatCurrency } from '@/utils/formatCurrency'
 import { useToast } from '@/customHooks/useToast'
 import { pagarDeudaGrupoAUsuario, pagarDeudaGlobalAUsuario } from '@/service/groupsService'
+import { useNetwork } from '@/customHooks/useNetwork'
 
 interface PayDebtModalProps {
   grupoId?: number
@@ -25,6 +26,7 @@ export default function PayDebtModal({
   const [monto, setMonto] = useState(totalMonto.toFixed(2))
   const [error, setError] = useState<string | null>(null)
   const { showToast } = useToast()
+  const isOnline = useNetwork()
 
   useEffect(() => {
     if (open) {
@@ -77,7 +79,7 @@ export default function PayDebtModal({
 
   return (
     <>
-      <Button variant="secondary" size="sm" onClick={() => setOpen(true)}>
+      <Button disabled={!isOnline} variant="secondary" size="sm" onClick={() => setOpen(true)}>
         Pagar
       </Button>
       <Modal

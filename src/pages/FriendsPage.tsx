@@ -2,13 +2,16 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '@/customHooks/useToast'
 import { getMensajeError } from '@/utils/getMensajeError'
-import { Search, Check, X } from 'lucide-react'
+import { Search, Check, X, WifiOff } from 'lucide-react' // Sumamos un iconito para el offline
 import PageTitle from '@/components/common/pageTitle'
 import ColumnContainer from '@/components/common/columnContainer'
 import FriendCard from '@/components/friendsPage/FriendCard'
 
 import { usuarioService } from '@/service/usuarioService'
 import type { SolicitudAmistadFront, UsuarioBusquedaDTO } from '@/domain/usuario'
+
+// 1. IMPORTAMOS EL HOOK
+import { useNetwork } from '@/customHooks/useNetwork'
 
 function getInitials(name: string) {
   return name
@@ -22,7 +25,9 @@ function getInitials(name: string) {
 export default function FriendsPage() {
   const { showToast } = useToast()
   const navigate = useNavigate()
-  // Solo lo usamos para filtrar que no nos aparezcamos en la lista de "Agregar amigos"
+  // 2. ACTIVAMOS EL RADAR
+  const isOnline = useNetwork()
+  
   const currentUserId = Number(localStorage.getItem('id'))
 
   const [friends, setFriends] = useState<{ id: string; name: string; role: string; due: number; imageUrl: string }[]>([])
@@ -40,12 +45,14 @@ export default function FriendsPage() {
     loadFriends()
     usuarioService.obtenerSolicitudesPendientes()
       .then(setSolicitudes)
-      .catch((err) => showToast(getMensajeError(err), 'error'))
-  }, [])
+      .catch((err) => {
+        if (isOnline) showToast(getMensajeError(err), 'error')
+      })
+  }, [isOnline]) // Recargamos si vuelve el internet
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current)
-    if (usernameSearch.trim().length < 2) {
+    if (usernameSearch.trim().length < 2 || !isOnline) { // Frenamos la búsqueda si estamos offline
       setUsernameResults([])
       return
     }
@@ -57,24 +64,24 @@ export default function FriendsPage() {
         .finally(() => setSearchLoading(false))
     }, 400)
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
-  }, [usernameSearch])
+  }, [usernameSearch, isOnline])
 
   const loadFriends = () => {
     usuarioService.obtenerAmigos()
       .then((data) => {
         setFriends(data.map((u) => ({ id: String(u.id), name: u.nombre, role: 'Amigo', due: u.monto, imageUrl: '' })))
       })
-      .catch((err) => showToast(getMensajeError(err), 'error'))
+      .catch((err) => {
+        if (isOnline) showToast(getMensajeError(err), 'error')
+      })
   }
 
   const filteredFriends = friends.filter((f) =>
     f.name.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
-  const friendIds = new Set(friends.map((f) => Number(f.id)))
-
   function handleAceptar(solicitud: SolicitudAmistadFront) {
-    // 🔴 REFACTOR: Ya no mandamos userId, solo el ID de la solicitud y si aceptamos
+    if (!isOnline) return // Bloqueo extra por las dudas
     usuarioService.responderSolicitudAmistad(solicitud.id, true)
       .then(() => {
         setSolicitudes((prev) => prev.filter((s) => s.id !== solicitud.id))
@@ -87,7 +94,7 @@ export default function FriendsPage() {
   }
 
   function handleRechazar(solicitud: SolicitudAmistadFront) {
-    // 🔴 REFACTOR: Mismo caso que aceptar
+    if (!isOnline) return
     usuarioService.responderSolicitudAmistad(solicitud.id, false)
       .then(() => {
         setSolicitudes((prev) => prev.filter((s) => s.id !== solicitud.id))
@@ -96,7 +103,7 @@ export default function FriendsPage() {
   }
 
   function handleEnviarSolicitud(receptorId: number) {
-    // 🔴 REFACTOR: Solo mandamos el ID del receptor, el emisor va en el token
+    if (!isOnline) return
     usuarioService.enviarSolicitudAmistad(receptorId)
       .then(() => {
         setSentIds((prev) => new Set(prev).add(receptorId))
@@ -118,15 +125,26 @@ export default function FriendsPage() {
               placeholder="Buscar amigos"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
+              disabled={!isOnline && friends.length === 0} // Si no hay red ni amigos, al pedo buscar
+              className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground disabled:opacity-50"
             />
           </label>
         </div>
 
-        {/* Lista de amigos */}
+        {/* Lista de amigos (CON CARTEL OFFLINE) */}
         <div className="max-h-[30vh] space-y-3 overflow-y-auto pr-1">
-          {filteredFriends.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No tenés amigos aún.</p>
+          {!isOnline && friends.length === 0 ? (
+            <div className="flex flex-col items-center justify-center rounded-xl border-2 border-red-300/50 bg-red-50/50 p-6 text-center shadow-sm dark:border-red-900/50 dark:bg-red-950/20">
+              <WifiOff className="mb-2 h-6 w-6 text-red-500/70" />
+              <p className="text-sm font-semibold text-red-600 dark:text-red-400">
+                ¡Ups! No hay conexión
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground font-medium">
+                No pudimos cargar tus amigos y no hay datos guardados.
+              </p>
+            </div>
+          ) : filteredFriends.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-4">No tenés amigos aún.</p>
           ) : (
             filteredFriends.map((f) => <FriendCard key={f.id} friend={f} onPagoExitoso={loadFriends} />)
           )}
@@ -160,14 +178,16 @@ export default function FriendsPage() {
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleAceptar(s)}
-                      className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground hover:opacity-90"
+                      disabled={!isOnline}
+                      className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
                       aria-label="Aceptar"
                     >
                       <Check className="h-4 w-4" />
                     </button>
                     <button
                       onClick={() => handleRechazar(s)}
-                      className="flex h-8 w-8 items-center justify-center rounded-full border border-border bg-muted text-muted-foreground hover:opacity-90"
+                      disabled={!isOnline}
+                      className="flex h-8 w-8 items-center justify-center rounded-full border border-border bg-muted text-muted-foreground hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
                       aria-label="Rechazar"
                     >
                       <X className="h-4 w-4" />
@@ -179,21 +199,23 @@ export default function FriendsPage() {
           )}
         </div>
 
-        {/* Agregar amigo por username */}
+        {/* Agregar amigo por username (BLOQUEADO SI ESTAMOS OFFLINE) */}
         <div className="rounded-2xl border border-border bg-background/70 p-4 shadow-sm">
           <h2 className="text-sm font-semibold text-foreground">Agregar amigo</h2>
-          <div className="mt-3 flex items-center gap-2 rounded-xl border border-border bg-background px-3 py-2">
+          <div className={`mt-3 flex items-center gap-2 rounded-xl border px-3 py-2 ${!isOnline ? 'bg-muted/50 border-border/50 cursor-not-allowed' : 'border-border bg-background'}`}>
             <span className="text-sm text-muted-foreground select-none">@</span>
             <input
               type="text"
-              placeholder="nombre de usuario"
+              placeholder={isOnline ? "nombre de usuario" : "Conectate para buscar amigos"}
               value={usernameSearch}
               onChange={(e) => setUsernameSearch(e.target.value)}
-              className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
+              disabled={!isOnline}
+              className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground disabled:opacity-50 disabled:cursor-not-allowed"
             />
             {searchLoading && <div className="h-4 w-4 animate-spin rounded-full border-2 border-border border-t-foreground" />}
           </div>
-          {usernameResults.length > 0 && (
+          {/* ... (El resto del render de usernameResults queda igual) ... */}
+          {usernameResults.length > 0 && isOnline && (
             <div className="mt-3 space-y-2">
               {usernameResults.map((u) => (
                 <div key={u.id} className="flex items-center justify-between gap-3">
@@ -212,8 +234,8 @@ export default function FriendsPage() {
                   </button>
                   <button
                     onClick={() => handleEnviarSolicitud(u.id)}
-                    disabled={sentIds.has(u.id)}
-                    className="rounded-xl border border-border bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground disabled:opacity-50"
+                    disabled={sentIds.has(u.id) || !isOnline}
+                    className="rounded-xl border border-border bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {sentIds.has(u.id) ? 'Enviada' : 'Agregar'}
                   </button>
