@@ -25,8 +25,10 @@ import CategorySelector from './CategorySelector'
 import ParticipantSelector from './ParticipantSelector'
 import GroupSelector from './GroupSelector'
 import { useToast } from '@/customHooks/useToast'
+import { useNetwork } from '@/customHooks/useNetwork'
 import ExpenseAttachmentsField from './ExpenseAttachmentsField'
 import { attachmentService } from '@/service/attachmentService'
+
 
 type LocationState = {
     scanResult?: ScanResult & { totalAmount: number }
@@ -88,6 +90,7 @@ export default function CreateExpense() {
 
     const navigate = useNavigate()
     const { showToast } = useToast()
+    const isOnline = useNetwork()
 
     const actualizarExpense = (cambios: Partial<Expense>) => {
         const expenseClon = new Expense()
@@ -395,7 +398,7 @@ export default function CreateExpense() {
                                 console.log(expense)
                                 crearExpense()
                             }}
-                            disabled={!expense.valido()}
+                            disabled={!isOnline || !expense.valido()}
                             className="w-full h-12 rounded-2xl text-md font-bold shadow-lg shadow-primary/20 transition-all active:scale-[0.98]"
                         >
                             Cargar Gasto

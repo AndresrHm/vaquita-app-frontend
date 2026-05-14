@@ -83,8 +83,28 @@ export const usuarioService = {
     // --- MÓDULO AMIGOS ---
 
     async obtenerAmigos(): Promise<UsuarioConBalanceDTO[]> {
-        const { data } = await api.get<UsuarioConBalanceDTO[]>(`${API_URL}/me/amigos`)
-        return data
+        const cacheKey = 'cache_amigos_usuario'
+
+        try {
+            const { data } = await api.get<UsuarioConBalanceDTO[]>(`${API_URL}/me/amigos`)
+            
+            // Si hay señal, actualizamos la lista de amigos y sus balances en la mochila
+            localStorage.setItem(cacheKey, JSON.stringify(data))
+            
+            return data
+        } catch (error: any) {
+            // Si el subte te dejó sin señal, buscamos la última foto que sacamos de tus amigos
+            if (!navigator.onLine || error.message === 'Network Error') {
+                const cacheGuardado = localStorage.getItem(cacheKey)
+                
+                if (cacheGuardado) {
+                    return JSON.parse(cacheGuardado)
+                }
+            }
+            
+            // Si no es un tema de red, dejamos que el error siga su curso
+            throw error
+        }
     },
 
     async obtenerSolicitudesPendientes(): Promise<SolicitudAmistadFront[]> {

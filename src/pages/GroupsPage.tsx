@@ -13,16 +13,22 @@ import { formatCurrency } from '@/utils/formatCurrency'
 import { useToast } from '@/customHooks/useToast'
 import { getMensajeError } from '@/utils/getMensajeError'
 
+// 1. IMPORTAMOS TU HOOK
+import { useNetwork } from '@/customHooks/useNetwork' 
+
 const PAGE_SIZE = 5
 
 export default function GroupsPage() {
   const { showToast } = useToast()
+  
+  // 2. ACTIVAMOS EL RADAR
+  const isOnline = useNetwork()
 
   const [groups, setGroups] = useState<GrupoCardDTO[]>([])
   const [page, setPage] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
   const [loading, setLoading] = useState(false)
-  const [debt, setDebt] = useState(0)
+  const [debt, setDebt] = useState<number | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [filter, setFilter] = useState('all')
   const requestIdRef = useRef(0)
@@ -45,11 +51,9 @@ export default function GroupsPage() {
       setTotalPages(res.totalPages)
       setPage(pageToFetch)
 
-      // ✅ RESET si volvió a funcionar
       errorShownRef.current = false
 
     } catch (error: unknown) {
-      // ✅ SOLO mostrar 1 vez
       if (!errorShownRef.current) {
         const mensaje = getMensajeError(error)
         showToast(mensaje, 'error')
@@ -78,11 +82,12 @@ export default function GroupsPage() {
   const getDebt = async () => {
     try {
       const debtFetch = await expenseService.getUserDebt()
-
       setDebt(debtFetch)
     } catch (error: unknown) {
       const mensaje = getMensajeError(error)
-      showToast(mensaje, 'error')
+      // Si estamos offline, no queremos que salten 80 toasts de error de red, 
+      // así que podés atajarlo acá o dejarlo como está.
+      if (isOnline) showToast(mensaje, 'error') 
     }
   }
 
@@ -101,33 +106,60 @@ export default function GroupsPage() {
       <PageTitle>
         <div className="pl-2.5 pt-2">
           <h2 className="text-xl font-semibold text-foreground">
-            {debt > 0 ? 'Tenés deuda' : 'Estás al día'}
+            {/* 1. Verificamos si es null (no sabemos el saldo todavía) */}
+            {debt === null 
+              ? 'Saldo desconocido' 
+              : debt > 0 
+                ? 'Tenés deuda' 
+                : 'Estás al día'}
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            {debt > 0 ? `Debés ${formatCurrency(debt)}` : 'No debés nada, ¡genial!'}
+            {/* 2. Mostramos el mensaje acorde al estado */}
+            {debt === null 
+              ? 'Conectate para actualizar tu estado.' 
+              : debt > 0 
+                ? `Debés ${formatCurrency(debt)}` 
+                : 'No debés nada, ¡genial!'}
           </p>
         </div>
         <GroupsSearch onSearchChange={handleSearchChange} onFilterChange={handleFilterChange} />
-      </PageTitle>
+    </PageTitle>
 
       <ColumnContainer>
         {groups.length === 0 && !loading ? (
-          // Empty state
-          <div className="flex items-center justify-center min-h-[180px] w-full">
-            <div className="text-center rounded-xl border-2 border-dashed bg-card p-8 shadow-sm max-w-sm w-full">
-              <p className="text-sm text-muted-foreground">
-                Todavía no tenés grupos...
-              </p>
-
-              <p className="mt-1 text-sm font-medium">
-                ¡Probá crear uno!
-              </p>
-
-              <div className="mt-4 flex justify-center">
-                <CreateGroupButton fixed={false} />
+          // 3. SEPARAMOS LOS CAMINOS: OFFLINE VS VACÍO REAL
+          !isOnline ? (
+            // A. ESTADO DE ERROR DE RED
+            <div className="flex items-center justify-center min-h-[180px] w-full">
+              <div className="text-center rounded-xl border-2 border-red-300/50 bg-red-50/50 p-8 shadow-sm max-w-sm w-full dark:border-red-900/50 dark:bg-red-950/20">
+                <p className="text-lg font-semibold text-red-600 dark:text-red-400">
+                  ¡Ups! No hay conexión
+                </p>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  No pudimos cargar tus grupos.
+                </p>
+                <p className="mt-1 text-sm text-muted-foreground font-medium">
+                  Conectate a internet e intentá de nuevo.
+                </p>
               </div>
             </div>
-          </div>
+          ) : (
+            // B. ESTADO VACÍO ORIGINAL
+            <div className="flex items-center justify-center min-h-[180px] w-full">
+              <div className="text-center rounded-xl border-2 border-dashed bg-card p-8 shadow-sm max-w-sm w-full">
+                <p className="text-sm text-muted-foreground">
+                  Todavía no tenés grupos...
+                </p>
+                <p className="mt-1 text-sm font-medium">
+                  ¡Probá crear uno!
+                </p>
+                <div className="mt-4 flex justify-center">
+                  {/* Le pasamos la prop disabled al botón por si acaso */}
+                  <CreateGroupButton fixed={false} />
+                </div>
+              </div>
+            </div>
+          )
         ) : (
           <>
             {/* Lista */}

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import PageTitle from '@/components/common/pageTitle'
 import Card from '@/components/common/card'
 import ColumnContainer from '@/components/common/columnContainer'
+import { useNetwork } from '@/customHooks/useNetwork'
 
 export default function AccountPage() {
   const navigate = useNavigate()
@@ -14,6 +15,7 @@ export default function AccountPage() {
   const userEmail = window.localStorage.getItem('user_email') || 'email@ejemplo.com'
   // 👇 Traemos la imagen que guardamos en el login o al editar el perfil
   const userImage = window.localStorage.getItem('user_image') || ''
+  const isOnline = useNetwork()
 
   const handleLogout = () => {
     window.localStorage.removeItem('token')
@@ -64,20 +66,32 @@ export default function AccountPage() {
         <h2 className="text-sm font-semibold text-foreground">Gestión de Cuenta</h2>
         <div className="mt-3 space-y-2 mb-4">
           <Card
-            className="rounded-xl border border-border px-3 py-2 cursor-pointer hover:bg-muted/50 transition-colors"
+            className={`rounded-xl border border-border px-3 py-2 transition-colors ${
+              isOnline 
+                ? 'cursor-pointer hover:bg-muted/50' 
+                : 'opacity-50 cursor-not-allowed'
+            }`}
             role="button"
-            tabIndex={0}
-            onClick={() => navigate('/account/settings')}
+            tabIndex={isOnline ? 0 : -1} // Si no hay internet, lo sacamos del foco del teclado
+            onClick={() => {
+              if (isOnline) navigate('/account/settings')
+            }}
           >
             <div className="text-xs font-medium text-foreground">Ajustes de perfil</div>
             <div className="mt-1 text-xs text-muted-foreground">Cambiar tu nombre, email o foto</div>
           </Card>
 
           <Card
-            className="rounded-xl border border-border px-3 py-2 cursor-pointer hover:bg-muted/50 transition-colors"
+            className={`rounded-xl border border-border px-3 py-2 transition-colors ${
+              isOnline 
+                ? 'cursor-pointer hover:bg-muted/50' 
+                : 'opacity-50 cursor-not-allowed'
+            }`}
             role="button"
-            tabIndex={0}
-            onClick={() => navigate('/account/password')}
+            tabIndex={isOnline ? 0 : -1}
+            onClick={() => {
+              if (isOnline) navigate('/account/password')
+            }}
           >
             <div className="text-xs font-medium text-foreground">Cambiar contraseña</div>
             <div className="mt-1 text-xs text-muted-foreground">Actualizá tu clave de acceso</div>

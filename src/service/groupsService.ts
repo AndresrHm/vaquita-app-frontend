@@ -26,15 +26,38 @@ export async function obtenerGrupos(
   const searchTerm = search?.trim()
   const filterTerm = filter?.trim()
 
-  const { data } = await api.get<GroupDetailPageResponse<GrupoCardDTO>>('/grupo', {
-    params: {
-      page,
-      size: finalSize,
-      search: searchTerm || undefined,
-      filter: filterTerm || undefined,
-    },
-  })
-  return data
+  // 1. Creamos una llave única para el caché basada en lo que el usuario pidió
+  // Ej: "cache_grupos_p0_s5_search_none_filter_all"
+  const cacheKey = `cache_grupos_p${page}_s${finalSize}_search_${searchTerm || 'none'}_filter_${filterTerm || 'none'}`
+
+  try {
+    // 2. Intentamos buscar la data fresca al backend
+    const { data } = await api.get<GroupDetailPageResponse<GrupoCardDTO>>('/grupo', {
+      params: {
+        page,
+        size: finalSize,
+        search: searchTerm || undefined,
+        filter: filterTerm || undefined,
+      },
+    })
+
+    // 3. ¡Anduvo! Guardamos esta página específica en la mochila
+    localStorage.setItem(cacheKey, JSON.stringify(data))
+
+    return data
+  } catch (error: any) {
+    // 4. Si se corta la red, buscamos la página guardada con esa misma llave
+    if (!navigator.onLine || error.message === 'Network Error') {
+      const cacheGuardado = localStorage.getItem(cacheKey)
+      
+      if (cacheGuardado) {
+        return JSON.parse(cacheGuardado)
+      }
+    }
+
+    // Si explota por otra cosa o no hay caché, dejamos que el error suba a tu GroupsPage
+    throw error
+  }
 }
 
 export async function crearGrupo(dto: GrupoCreacionDTO): Promise<GrupoDTO> {

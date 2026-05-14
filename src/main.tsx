@@ -2,6 +2,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { Navigate, createBrowserRouter, RouterProvider } from 'react-router-dom'
+import { BannerOffline } from '@/components/common/BannerOffline'
 import './index.css'
 
 import MainLayout from '@/layouts/MainLayout'
@@ -24,6 +25,7 @@ import ToastProvider from '@/customHooks/ToastProvider'
 import ChangePasswordPage from './pages/ChangePasswordPage'
 import ProtectedRoute from '@/components/common/ProtectedRoute'
 import NotFoundPage from '@/pages/NotFoundPage.tsx'
+
 
 const storedTheme = localStorage.getItem('theme')
 const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -65,6 +67,7 @@ const router = createBrowserRouter([
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ToastProvider>
+      <BannerOffline/>
       <RouterProvider router={router} />
     </ToastProvider>
   </React.StrictMode>,
