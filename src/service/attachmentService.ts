@@ -101,6 +101,18 @@ class AttachmentService {
             )
         )
     }
+
+    async getAttachments(expenseId: number) {
+        const response = await api.get(`/api/expenses/${expenseId}/attachments`)
+        return response.data as Array<{
+            id: string
+            filename: string
+            mimeType: string
+            fileSizeBytes: number
+            downloadUrl: string
+            createdAt: string
+        }>
+    }
 }
 
 export const attachmentService = new AttachmentService()
