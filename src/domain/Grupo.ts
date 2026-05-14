@@ -95,6 +95,7 @@ export type GrupoGastoItemDTO = {
   currency: string
   paymentType: string
   imageUrl: string
+  tieneTicket: boolean
 }
 
 export type GrupoGastosPorMesDTO = {

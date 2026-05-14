@@ -79,7 +79,7 @@ export default function GroupsScanPage() {
     try {
       const compressedImage = await compressImage(attachments[0].file)
 
-      const data = await scanMock(compressedImage)
+      const data = await scan(compressedImage)
 
       setEditableResult({
         ...data,

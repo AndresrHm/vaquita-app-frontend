@@ -229,12 +229,13 @@ export default function GroupDetailPage() {
                                 month: m.month,
                                 expenses: m.expenses.map((e) => ({
                                     id: String(e.id),
-                                    date: { day: e.day },
+                                    date: { day: e.day, month: m.month, year: yearGroup.year },
                                     title: e.title,
                                     amount: e.amount,
                                     currency: e.currency,
                                     paymentType: e.paymentType as Expense['paymentType'],
                                     imageUrl: e.imageUrl,
+                                    tieneTicket: e.tieneTicket,
                                 })),
                             }))
 
