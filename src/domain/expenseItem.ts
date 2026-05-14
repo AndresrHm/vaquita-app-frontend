@@ -5,10 +5,15 @@ export class ExpenseItem {
     public nombre = '',
     public cantidad = 1,
     public precioUnitario = 0,
-  ) {}
+  ) { }
 
   total(): number {
-    return this.cantidad * this.precioUnitario
+
+    const totalEnCentavos =
+      Math.round(this.precioUnitario * 100) *
+      this.cantidad
+
+    return totalEnCentavos / 100
   }
 
   toDTO(): ExpenseItemDTO {
