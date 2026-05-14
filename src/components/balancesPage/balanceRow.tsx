@@ -45,7 +45,7 @@ export function BalanceRow({
       </div>
       <div className="flex items-center gap-2">
         <div className={`shrink-0 text-sm font-medium ${amountColor}`}>{amount}</div>
-        {showPayButton && grupoId !== undefined && totalMonto !== undefined && acreedorId !== undefined && acreedorNombre ? (
+        {showPayButton && totalMonto !== undefined && acreedorId !== undefined && acreedorNombre ? (
           <PayDebtModal
             grupoId={grupoId}
             acreedorId={acreedorId}

@@ -9,11 +9,14 @@ import type { UsuarioInfoDTO } from '@/domain/usuario'
 import ColumnContainer from '@/components/common/columnContainer'
 import Modal from '@/components/common/modal'
 import { Button } from '@/components/ui/button'
-import ExpensesList, { type ExpensesByMonth } from '@/components/groupsPage/ExpensesList'
-import { type Expense } from '@/components/groupsPage/ExpenseItem'
-import type { GrupoGastosPorAnioDTO } from '@/domain/Grupo'
+import MoneyBadge from '@/components/moneyBadge/moneyBadge'
+import PayDebtModal from '@/components/balancesPage/PayDebtModal'
+import { SectionCard } from '@/components/balancesPage/sectionCard'
+import { BalanceRow } from '@/components/balancesPage/balanceRow'
+import { Divider } from '@/components/common/divider'
+import { formatCurrency } from '@/utils/formatCurrency'
 
-type Tab = 'gastos' | 'grupos'
+type Tab = 'balances' | 'grupos'
 
 function getInitials(name: string) {
   return name
@@ -22,21 +25,6 @@ function getInitials(name: string) {
     .slice(0, 2)
     .map((part) => part[0]?.toUpperCase() ?? '')
     .join('')
-}
-
-function toExpensesByMonth(yearGroup: GrupoGastosPorAnioDTO): ExpensesByMonth {
-  return yearGroup.months.map((m) => ({
-    month: m.month,
-    expenses: m.expenses.map((e) => ({
-      id: String(e.id),
-      date: { day: e.day },
-      title: e.title,
-      amount: e.amount,
-      currency: e.currency,
-      paymentType: e.paymentType as Expense['paymentType'],
-      imageUrl: e.imageUrl,
-    })),
-  }))
 }
 
 export default function UserProfilePage() {
@@ -49,17 +37,20 @@ export default function UserProfilePage() {
   const [loading, setLoading] = useState(false)
   const [confirmRemove, setConfirmRemove] = useState(false)
   const { showToast } = useToast()
-  const [activeTab, setActiveTab] = useState<Tab>('gastos')
+  const [activeTab, setActiveTab] = useState<Tab>('balances')
 
   useOnInit(() => {
     if (!targetId || !currentUserId) return
     usuarioService.obtenerUsuarioInfo(targetId)
       .then(setInfo)
-      .catch((err) => {
-        const mensaje = getMensajeError(err)
-        showToast(mensaje, 'error')
-      })
+      .catch((err) => showToast(getMensajeError(err), 'error'))
   }, [targetId])
+
+  function refreshInfo() {
+    usuarioService.obtenerUsuarioInfo(targetId)
+      .then(setInfo)
+      .catch(() => {})
+  }
 
   function handleFriendButtonClick() {
     if (!info || info.solicitudPendiente) return
@@ -69,13 +60,12 @@ export default function UserProfilePage() {
     } else {
       setLoading(true)
       usuarioService.enviarSolicitudAmistad(targetId)
-          .then(() => setInfo({ ...info, solicitudPendiente: true }))
-          .catch((err) => {
-            setInfo({ ...info })
-            const mensaje = getMensajeError(err)
-            showToast(mensaje, 'error')
-          })
-          .finally(() => setLoading(false))
+        .then(() => setInfo({ ...info, solicitudPendiente: true }))
+        .catch((err) => {
+          setInfo({ ...info })
+          showToast(getMensajeError(err), 'error')
+        })
+        .finally(() => setLoading(false))
     }
   }
 
@@ -87,8 +77,7 @@ export default function UserProfilePage() {
       .then(() => setInfo({ ...info, esAmigo: false }))
       .catch((err) => {
         setInfo({ ...info })
-        const mensaje = getMensajeError(err)
-        showToast(mensaje, 'error')
+        showToast(getMensajeError(err), 'error')
       })
       .finally(() => setLoading(false))
   }
@@ -111,8 +100,15 @@ export default function UserProfilePage() {
     )
   }
 
+  const owedToMe = info.balances.filter((b) => b.acreedorId === currentUserId)
+  const iOwe = info.balances.filter((b) => b.deudorId === currentUserId)
+  const totalOwedToMe = owedToMe.reduce((acc, b) => acc + b.monto, 0)
+  const totalIOwe = iOwe.reduce((acc, b) => acc + b.monto, 0)
+  const netAmount = totalIOwe - totalOwedToMe
+  const headerAmount = netAmount
+
   const tabs: { key: Tab; label: string }[] = [
-    { key: 'gastos', label: 'Gastos' },
+    { key: 'balances', label: 'Balance' },
     { key: 'grupos', label: `Grupos${info.gruposCompartidos.length > 0 ? ` (${info.gruposCompartidos.length})` : ''}` },
   ]
 
@@ -197,22 +193,78 @@ export default function UserProfilePage() {
             ))}
           </div>
 
-          {/* Tab: Gastos */}
-          {activeTab === 'gastos' && (
-            <div className="px-4 py-4">
-              {info.gastosPendientes.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No hay gastos en común con esta persona.</p>
-              ) : (
-                <div className="space-y-6">
-                  {info.gastosPendientes.map((yearGroup) => (
-                    <div key={yearGroup.year}>
-                      <h2 className="rounded-md bg-muted/80 px-3 py-1 text-lg font-semibold text-muted-foreground">
-                        {yearGroup.year}
-                      </h2>
-                      <ExpensesList data={toExpensesByMonth(yearGroup)} />
-                    </div>
-                  ))}
+          {/* Tab: Balance */}
+          {activeTab === 'balances' && (
+            <div className="px-4 py-4 space-y-4">
+              {/* Summary card */}
+              <div className="rounded-2xl border border-border bg-background/70 px-4 py-3 shadow-sm flex items-center justify-between gap-3">
+                <div>
+                  <div className="text-xs text-muted-foreground">
+                    {netAmount > 0 ? 'Debés' : netAmount < 0 ? 'Te deben' : 'Sin deudas'}
+                  </div>
+                  <div
+                    className="mt-1 text-xl font-semibold"
+                    style={{ color: netAmount > 0 ? 'var(--danger)' : netAmount < 0 ? 'var(--success)' : undefined }}
+                  >
+                    {formatCurrency(Math.abs(netAmount))}
+                  </div>
                 </div>
+                {netAmount > 0 && (
+                  <PayDebtModal
+                    acreedorId={targetId}
+                    acreedorNombre={info.nombre}
+                    totalMonto={netAmount}
+                    onPagoExitoso={refreshInfo}
+                  />
+                )}
+              </div>
+
+              {info.balances.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-border bg-background/50 px-4 py-8 text-center">
+                  <p className="text-sm text-muted-foreground">No hay deudas pendientes con esta persona 🎉</p>
+                </div>
+              ) : (
+                <>
+                  {owedToMe.length > 0 && (
+                    <SectionCard title="Lo que te deben">
+                      {owedToMe.map((b, i) => (
+                        <div key={`owed-${b.deudorId}-${b.grupoId}`}>
+                          {i > 0 && <Divider />}
+                          <BalanceRow
+                            avatarNombre={b.deudorNombre}
+                            label={b.deudorNombre}
+                            sublabel={b.grupoNombre}
+                            amount={`+${formatCurrency(b.monto)}`}
+                            variant="success"
+                          />
+                        </div>
+                      ))}
+                    </SectionCard>
+                  )}
+
+                  {iOwe.length > 0 && (
+                    <SectionCard title="Lo que debés">
+                      {iOwe.map((b, i) => (
+                        <div key={`iowe-${b.acreedorId}-${b.grupoId}`}>
+                          {i > 0 && <Divider />}
+                          <BalanceRow
+                            avatarNombre={b.acreedorNombre}
+                            label={<>A <span className="font-medium">{b.acreedorNombre}</span></>}
+                            sublabel={b.grupoNombre}
+                            amount={`-${formatCurrency(b.monto)}`}
+                            variant="danger"
+                            showPayButton
+                            grupoId={b.grupoId}
+                            totalMonto={b.monto}
+                            acreedorId={b.acreedorId}
+                            acreedorNombre={b.acreedorNombre}
+                            onPagoExitoso={refreshInfo}
+                          />
+                        </div>
+                      ))}
+                    </SectionCard>
+                  )}
+                </>
               )}
             </div>
           )}

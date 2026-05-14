@@ -159,3 +159,13 @@ export type BalanceDTO = {
   acreedorNombre: string,
   monto: number
 }
+
+export type BalanceConGrupoDTO = {
+  deudorId: number,
+  deudorNombre: string,
+  acreedorId: number,
+  acreedorNombre: string,
+  monto: number,
+  grupoId: number,
+  grupoNombre: string,
+}
