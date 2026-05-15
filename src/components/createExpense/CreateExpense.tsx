@@ -28,6 +28,7 @@ import { useToast } from '@/customHooks/useToast'
 import { useNetwork } from '@/customHooks/useNetwork'
 import ExpenseAttachmentsField from './ExpenseAttachmentsField'
 import { attachmentService } from '@/service/attachmentService'
+import ButtonSkeleton from '../common/ButtonSkeleton'
 
 
 type LocationState = {
@@ -80,6 +81,7 @@ export default function CreateExpense() {
     const [isGroupsOpen, setIsGroupsOpen] = useState(false)
     const [isCategoryOpen, setIsCategoryOpen] = useState(false)
     const [isLoadingParticipants, setIsLoadingParticipants] = useState(false)
+    const [isLoading, setIsLoading] = useState(false)
     const { groupId } = useParams()
     const [selectedGroupId, setSelectedGroupId] = useState<number | undefined>(
         groupId ? Number(groupId) : undefined // Si llega la id por props la usamos directamente (nuevo gasto desde groupDetail)
@@ -393,16 +395,25 @@ export default function CreateExpense() {
                     </div>
 
                     <div className="pt-4">
-                        <Button
-                            onClick={() => {
-                                console.log(expense)
-                                crearExpense()
-                            }}
-                            disabled={!isOnline || !expense.valido()}
-                            className="w-full h-12 rounded-2xl text-md font-bold shadow-lg shadow-primary/20 transition-all active:scale-[0.98]"
-                        >
-                            Cargar Gasto
-                        </Button>
+                        {isLoading ? (
+                            <ButtonSkeleton className="w-full h-12 rounded-2xl" />
+                        ) : (
+                            <Button
+                                onClick={async () => {
+                                    setIsLoading(true) 
+                                    console.log(expense)
+                                    try {
+                                        await crearExpense()
+                                    } finally {
+                                        setIsLoading(false) 
+                                    }
+                                }}
+                                disabled={!isOnline || !expense.valido()}
+                                className="w-full h-12 rounded-2xl text-md font-bold shadow-lg shadow-primary/20 transition-all active:scale-[0.98]"
+                            >
+                                Cargar Gasto
+                            </Button>
+                        )}
                         <p className="text-center text-[10px] text-muted-foreground mt-4 leading-relaxed px-6 italic">
                             "La vaquita se divide entre todos los miembros del grupo seleccionado automáticamente."
                         </p>

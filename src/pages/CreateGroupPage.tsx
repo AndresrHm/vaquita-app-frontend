@@ -8,6 +8,7 @@ import type { UsuarioConBalanceDTO } from '@/domain/usuario'
 import { useToast } from '@/customHooks/useToast'
 import { getMensajeError } from '@/utils/getMensajeError'
 import { useNetwork } from '@/customHooks/useNetwork'
+import ButtonSkeleton from '@/components/common/ButtonSkeleton'
 
 function getInitials(name: string) {
   return name
@@ -224,9 +225,13 @@ export default function CreateGroupPage() {
           </div>
         )}
 
-        <Button className="w-full rounded-xl" disabled={!isOnline || !isValid || loading} type="submit">
-          {loading ? 'Creando...' : 'Crear grupo'}
-        </Button>
+        {loading ? (
+          <ButtonSkeleton className="rounded-xl" />
+        ) : (
+          <Button className="w-full rounded-xl" disabled={!isOnline || !isValid} type="submit">
+            Crear grupo
+          </Button>
+        )}
       </form>
     </div>
   )
