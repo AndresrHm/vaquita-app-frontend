@@ -17,7 +17,7 @@ export default function Modal({ isOpen, title, description, onClose, children, f
 
   return (
     <div className="fixed inset-0 z-70 bg-black/35 p-3 sm:p-6" onClick={onClose}>
-      <div onClick={(e) => e.stopPropagation()} className="absolute left-1/2 top-1/2 w-full max-w-md -translate-x-1/2 -translate-y-1/2">
+      <div onClick={(e) => e.stopPropagation()} className="absolute left-1/2 top-1/2 w-[92%] max-w-md -translate-x-1/2 -translate-y-1/2">
         <div className="flex max-h-[calc(100dvh-3rem)] w-full flex-col rounded-2xl border border-border bg-background p-4 shadow-xl">
           <div className="mb-4 flex shrink-0 items-start justify-between gap-3">
             <div>

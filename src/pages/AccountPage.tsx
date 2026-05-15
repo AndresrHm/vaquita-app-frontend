@@ -5,15 +5,17 @@ import PageTitle from '@/components/common/pageTitle'
 import Card from '@/components/common/card'
 import ColumnContainer from '@/components/common/columnContainer'
 import { useNetwork } from '@/customHooks/useNetwork'
+import Modal from '@/components/common/modal'
 
 export default function AccountPage() {
   const navigate = useNavigate()
   const [isDarkMode, setIsDarkMode] = useState(() => document.documentElement.classList.contains('dark'))
+  // 👇 Agregamos el estado para controlar el modal
+  const [showLogoutModal, setShowLogoutModal] = useState(false)
 
   const userName = window.localStorage.getItem('user_name') || 'Usuario'
   const userUsername = window.localStorage.getItem('user_username') || ''
   const userEmail = window.localStorage.getItem('user_email') || 'email@ejemplo.com'
-  // 👇 Traemos la imagen que guardamos en el login o al editar el perfil
   const userImage = window.localStorage.getItem('user_image') || ''
   const isOnline = useNetwork()
 
@@ -21,7 +23,7 @@ export default function AccountPage() {
     window.localStorage.removeItem('token')
     window.localStorage.removeItem('user_name')
     window.localStorage.removeItem('user_email')
-    window.localStorage.removeItem('user_image') // Sumamos borrar la imagen
+    window.localStorage.removeItem('user_image')
     navigate('/login')
   }
 
@@ -46,7 +48,6 @@ export default function AccountPage() {
             <div className="mt-1 text-xs text-muted-foreground">{userEmail}</div>
           </div>
 
-          {/* 👇 Lógica para mostrar la foto real o la inicial */}
           {userImage ? (
             <img
               src={userImage}
@@ -62,7 +63,6 @@ export default function AccountPage() {
       </PageTitle>
 
       <ColumnContainer>
-        {/* Nueva sección de Cuenta */}
         <h2 className="text-sm font-semibold text-foreground">Gestión de Cuenta</h2>
         <div className="mt-3 space-y-2 mb-4">
           <Card
@@ -72,7 +72,7 @@ export default function AccountPage() {
                 : 'opacity-50 cursor-not-allowed'
             }`}
             role="button"
-            tabIndex={isOnline ? 0 : -1} // Si no hay internet, lo sacamos del foco del teclado
+            tabIndex={isOnline ? 0 : -1}
             onClick={() => {
               if (isOnline) navigate('/account/settings')
             }}
@@ -122,16 +122,37 @@ export default function AccountPage() {
           </Card>
         </div>
 
-        {/* Botón de cierre de sesión real */}
+        {/* 👇 Modificamos el onClick para que abra el modal */}
         <Button
           className="mt-6 w-full rounded-xl"
           variant="destructive"
           type="button"
-          onClick={handleLogout}
+          onClick={() => setShowLogoutModal(true)}
         >
           Cerrar sesión
         </Button>
       </ColumnContainer>
+
+      {/* 👇 Integramos el componente Modal */}
+      <Modal
+        isOpen={showLogoutModal}
+        title="¿Cerrar sesión?"
+        description="¿Estás segura de que querés salir de tu cuenta? Tendrás que volver a ingresar tus datos la próxima vez."
+        onClose={() => setShowLogoutModal(false)}
+        footer={
+          <>
+            <Button variant="outline" onClick={() => setShowLogoutModal(false)}>
+              Cancelar
+            </Button>
+            <Button variant="destructive" onClick={handleLogout}>
+              Sí, salir
+            </Button>
+          </>
+        }
+      >
+        <></> {/* Children vacío porque la data va en title y description */}
+      </Modal>
+
     </div>
   )
 }
