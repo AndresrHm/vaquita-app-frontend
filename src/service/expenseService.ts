@@ -25,7 +25,7 @@ class ExpenseService {
                 const deudaGuardada = localStorage.getItem('cache_deuda_usuario');
                 
                 if (deudaGuardada) {
-                return Number(deudaGuardada); // Lo devolvemos como número
+                return Number(deudaGuardada) // Lo devolvemos como número
                 }
             }
             throw error;

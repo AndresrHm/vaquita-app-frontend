@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/dialog'
 
 const INITIAL_ITEM = new ExpenseItem('', 1, 0)
+const MAX_ITEM_NAME_LENGTH = 20
 
 interface CreateExpenseItemProps {
     items: ExpenseItem[]
@@ -83,27 +84,29 @@ export default function CreateExpenseItem({ items, onChange }: CreateExpenseItem
             {/* LISTA */}
             {items.length > 0 ? (
                 <div className="mt-4 space-y-2">
-                    {items.map((currentItem, index) => (
-                        <div
-                            key={`${currentItem.nombre}-${index}`}
-                            onClick={() => openEdit(index)}
-                            className="cursor-pointer rounded-xl border border-border bg-background/70 px-3 py-2 hover:bg-muted transition"
-                        >
-                            <div className="flex items-center justify-between gap-3 mb-1">
-                                <div className="text-sm font-medium text-foreground">
-                                    {currentItem.nombre}
+                    {items.map((currentItem, index) => {
+                        return (
+                            <div
+                                key={`${currentItem.nombre}-${index}`}
+                                onClick={() => openEdit(index)}
+                                className="cursor-pointer rounded-xl border border-border bg-background/70 px-3 py-2 hover:bg-muted transition"
+                            >
+                                <div className="flex items-center justify-between gap-3 mb-1">
+                                    <div className="text-sm font-medium text-foreground">
+                                        {currentItem.nombre || 'Ítem sin nombre'}
+                                    </div>
+                                </div>
+
+                                <div className="flex flex-wrap justify-between gap-2 text-xs text-muted-foreground">
+                                    <span>Cantidad: {currentItem.cantidad}</span>
+                                    <span>Precio u.: ${currentItem.precioUnitario.toFixed(2)}</span>
+                                    <span className="font-medium text-primary">
+                                        Subtotal: ${currentItem.total().toFixed(2)}
+                                    </span>
                                 </div>
                             </div>
-
-                            <div className="flex flex-wrap justify-between gap-2 text-xs text-muted-foreground">
-                                <span>Cantidad: {currentItem.cantidad}</span>
-                                <span>Precio u.: ${currentItem.precioUnitario.toFixed(2)}</span>
-                                <span className="font-medium text-primary">
-                                    Subtotal: ${currentItem.total().toFixed(2)}
-                                </span>
-                            </div>
-                        </div>
-                    ))}
+                        )
+                    })}
                 </div>
             ) : (
                 <p className="mt-3 text-sm text-muted-foreground">

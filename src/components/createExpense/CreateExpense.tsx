@@ -1,6 +1,6 @@
 /* eslint-disable no-undef */
 import { useRef, useState } from 'react'
-import { Receipt, Calendar } from 'lucide-react'
+import { Receipt, Calendar, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { CATEGORIES } from '@/components/createExpense/categories'
 import CreateExpenseItem from '@/components/createExpense/CreateExpenseItem'
@@ -30,7 +30,6 @@ import ExpenseAttachmentsField from './ExpenseAttachmentsField'
 import { attachmentService } from '@/service/attachmentService'
 import ButtonSkeleton from '../common/ButtonSkeleton'
 
-
 type LocationState = {
     scanResult?: ScanResult & { totalAmount: number }
     attachments?: ExpenseAttachment[]
@@ -44,7 +43,15 @@ export default function CreateExpense() {
         locationState?.attachments || []
     )
 
-    const attachmentInputRef = useRef<HTMLInputElement>(null)
+    const [useItemTotal, setUseItemTotal] = useState<boolean>(() => {
+        return Boolean(locationState?.scanResult?.items?.length)
+    })
+
+    const [manualTotalInput, setManualTotalInput] = useState<string>(() => {
+        const scanResult = locationState?.scanResult
+        if (scanResult?.items?.length) return ''
+        return scanResult?.totalAmount?.toString() ?? '0'
+    })
 
     const [expense, setExpense] = useState<Expense>(() => {
         const scanResult = (location.state as LocationState)?.scanResult
@@ -60,6 +67,7 @@ export default function CreateExpense() {
 
             const items = convertirItems(scanResult.items)
             newExpense.items = items
+            newExpense.useItemsTotal = items.length > 0
 
             const totalEnCentavos = items.reduce((acc, item) => {
                 return acc + Math.round(item.total() * 100)
@@ -84,7 +92,7 @@ export default function CreateExpense() {
     const [isLoading, setIsLoading] = useState(false)
     const { groupId } = useParams()
     const [selectedGroupId, setSelectedGroupId] = useState<number | undefined>(
-        groupId ? Number(groupId) : undefined // Si llega la id por props la usamos directamente (nuevo gasto desde groupDetail)
+        groupId ? Number(groupId) : undefined
     )
     const effectiveGroupId = (groupId ?? selectedGroupId) as number | undefined
     const [groupNameState, setGroupNameState] = useState<string | undefined>()
@@ -110,14 +118,45 @@ export default function CreateExpense() {
     }
 
     const handleItemsChange = (items: ExpenseItem[]) => {
-
-        const totalEnCentavos = items.reduce((acc, item) => {
-            return acc + Math.round(item.total() * 100)
-        }, 0)
-
         actualizarExpense({
             items
         })
+    }
+
+    const handleManualTotalChange = (value: string) => {
+        const normalized = value.replace(',', '.')
+        setManualTotalInput(value)
+
+        if (normalized.trim() === '') {
+            actualizarExpense({ _total: 0 })
+            return
+        }
+
+        const parsed = Number(normalized)
+        if (!Number.isNaN(parsed)) {
+            actualizarExpense({ _total: parsed })
+        }
+    }
+
+    const handleUseItemTotalChange = (value: boolean) => {
+        if (!value) {
+            actualizarExpense({
+                _total: expense.total,
+                useItemsTotal: false,
+            })
+            setManualTotalInput(expense.total.toString())
+        } else {
+            const itemsTotal = expense.items.reduce(
+                (acc, item) => acc + Math.round(item.total() * 100),
+                0
+            ) / 100
+            actualizarExpense({
+                _total: itemsTotal,
+                useItemsTotal: true
+            })
+        }
+
+        setUseItemTotal(value)
     }
 
     const obtenerGrupos = async () => {
@@ -157,7 +196,6 @@ export default function CreateExpense() {
         })
     }
 
-    // Si se pasa la id de grupo usamos esa misma (crear gasto dentro de groupDetail)
     useOnInit(() => {
         if (groupId) {
             const id = Number(groupId)
@@ -220,11 +258,8 @@ export default function CreateExpense() {
     }
 
     const crearExpense = async () => {
-
         const expenseParaValidar = Expense.clone(expense)
-
         expenseParaValidar.validar()
-
         setExpense(expenseParaValidar)
 
         if (!expenseParaValidar.valido()) {
@@ -232,26 +267,17 @@ export default function CreateExpense() {
         }
 
         try {
+            const createdExpense = await expenseService.createExpense(expense)
 
-            // 1. CREAR GASTO
-            const createdExpense =
-                await expenseService.createExpense(expense)
-
-            // 2. SUBIR ATTACHMENTS
             if (attachments.length > 0) {
-
                 await attachmentService.uploadAttachments(
                     createdExpense.id,
                     attachments
                 )
             }
 
-            showToast(
-                '¡Gasto creado con éxito!',
-                'success'
-            )
+            showToast('¡Gasto creado con éxito!', 'success')
 
-            // 3. NAVIGATION
             if (groupId) {
                 navigate(`/groups/${groupId}`)
             } else {
@@ -259,18 +285,9 @@ export default function CreateExpense() {
             }
 
         } catch (error: unknown) {
-
-            const mensaje =
-                error instanceof Error
-                    ? error.message
-                    : 'Error creando gasto'
-
+            const mensaje = error instanceof Error ? error.message : 'Error creando gasto'
             showToast(mensaje, 'error')
-
-            console.error(
-                'Error creando gasto:',
-                mensaje
-            )
+            console.error('Error creando gasto:', mensaje)
         }
     }
 
@@ -285,18 +302,72 @@ export default function CreateExpense() {
         }
     }
 
+    const topLevelErrors = expense.errors
+
     return (
         <div className="flex flex-col space-y-4">
             <PageTitle title='Nuevo gasto' subtitle='Registrá un movimiento rápido' onBack={() => window.history.back()} />
             <ColumnContainer>
-                <div className="space-y-4 pt-2">
+                <div className="space-y-4 pt-2 overflow-hidden">
                     <div className="rounded-2xl border border-border bg-card/70 p-6 shadow-sm backdrop-blur-xl flex flex-col items-center">
-                        <span className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wider">Monto total</span>
-                        <div className="flex items-center gap-1 w-full max-w-md">
-                            <span className="text-3xl font-bold text-primary">$</span>
-                            <div className="text-4xl font-bold text-center justify-center">
-                                {expense.total.toFixed(2)}
+                        <span className="text-xs font-medium text-muted-foreground mb-4 uppercase tracking-wider">Monto total</span>
+                        
+                        {!useItemTotal ? (
+                            <div className="flex items-center justify-center gap-2 w-full max-w-md rounded-2xl border border-primary/30 bg-primary/10 px-4 py-4">
+                                <span className="text-3xl font-bold text-primary">$</span>
+                                <input
+                                    type="number"
+                                    inputMode="decimal"
+                                    pattern="[0-9]*[.,]?[0-9]*"
+                                    value={manualTotalInput}
+                                    onChange={(event) => handleManualTotalChange(event.target.value)}
+                                    placeholder="0.00"
+                                    className="w-full bg-transparent text-4xl font-bold text-center text-foreground outline-none"
+                                />
                             </div>
+                        ) : (
+                            <div className="flex items-center justify-center gap-1 w-full max-w-md rounded-2xl bg-muted/50 px-4 py-4 cursor-not-allowed">
+                                <span className="text-3xl font-bold text-muted-foreground">$</span>
+                                <div className="text-4xl font-bold text-center text-muted-foreground">
+                                    {expense.total.toFixed(2)}
+                                </div>
+                            </div>
+                        )}
+
+                        {!useItemTotal && (
+                            <p className="mt-3 text-xs text-muted-foreground">El total manual debe coincidir con la suma de los ítems.</p>
+                        )}
+
+                        {useItemTotal && expense.items.length === 0 && (
+                            <p className="mt-3 text-sm text-muted-foreground">Agregá ítems para calcular el total automáticamente.</p>
+                        )}
+                    </div>
+
+                    <div className="rounded-2xl border border-border bg-card/70 p-4 shadow-sm backdrop-blur-xl">
+                        <div className="text-sm font-semibold text-foreground mb-3">Cómo calcular el total</div>
+                        <div className="grid grid-cols-2 gap-2">
+                            <button
+                                type="button"
+                                onClick={() => handleUseItemTotalChange(false)}
+                                className={`rounded-xl px-4 py-3 text-sm font-semibold transition-all ${
+                                    !useItemTotal
+                                        ? 'border-2 border-primary bg-primary/10 text-foreground shadow-sm'
+                                        : 'border border-border bg-background/70 text-muted-foreground hover:bg-muted/50'
+                                }`}
+                            >
+                                📝 Manualmente
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => handleUseItemTotalChange(true)}
+                                className={`rounded-xl px-4 py-3 text-sm font-semibold transition-all ${
+                                    useItemTotal
+                                        ? 'border-2 border-primary bg-primary/10 text-foreground shadow-sm'
+                                        : 'border border-border bg-background/70 text-muted-foreground hover:bg-muted/50'
+                                }`}
+                            >
+                                📊 Por ítems
+                            </button>
                         </div>
                     </div>
 
@@ -308,7 +379,7 @@ export default function CreateExpense() {
                             isOpen={isGroupsOpen}
                             onToggleOpen={() => setIsGroupsOpen(!isGroupsOpen)}
                             onSelect={(id) => cambiarGrupo(id)}
-                            disabled={!!groupId} // Si viene por URL, está deshabilitado
+                            disabled={!!groupId}
                         />
 
                         <ParticipantSelector
@@ -322,7 +393,6 @@ export default function CreateExpense() {
                             onToggleParticipant={handleToggleParticipant}
                         />
 
-                        {/* Selector de Tipo de División */}
                         <span className='space-y-2'>
                             <FieldWrapper label="Método de división">
                                 <DivisionTypeSelector
@@ -334,7 +404,6 @@ export default function CreateExpense() {
                                 />
                             </FieldWrapper>
 
-                            {/* Sección Dinámica para Asignaciones */}
                             {(divisionType === TipoDivision.PARTES_EXACTAS || divisionType === TipoDivision.PORCENTUAL || divisionType === TipoDivision.PARTES_IGUALES || divisionType === TipoDivision.ALEATORIO) && (
                                 <AllocationSummary
                                     participants={participants}
@@ -345,7 +414,6 @@ export default function CreateExpense() {
                             )}
                         </span>
 
-                        {/* Descripción */}
                         <FieldWrapper label="Descripción" instruction="¿En qué se gastó?">
                             <div className="flex items-center gap-3 rounded-xl border border-border bg-background/70 px-3 py-2.5">
                                 <Receipt className="h-4 w-4 text-muted-foreground shrink-0" />
@@ -359,18 +427,14 @@ export default function CreateExpense() {
                             </div>
                         </FieldWrapper>
 
-                        {/* Comprobantes */}
                         <ExpenseAttachmentsField
                             attachments={attachments}
                             onAdd={handleAddAttachments}
                             onRemove={handleRemoveAttachment}
                         />
 
-                        {/* Ítems */}
                         <CreateExpenseItem items={expense.items} onChange={handleItemsChange} />
 
-
-                        {/* Categorías */}
                         <CategorySelector
                             label="Categoría"
                             instruction="Elegí un tipo de gasto"
@@ -394,18 +458,19 @@ export default function CreateExpense() {
                         </FieldWrapper>
                     </div>
 
-                    <div className="pt-4">
+                    {/* SECCIÓN FINAL DE ACCIONES Y ERRORES */}
+                    <div className="pt-4 space-y-3">
                         {isLoading ? (
                             <ButtonSkeleton className="w-full h-12 rounded-2xl" />
                         ) : (
                             <Button
                                 onClick={async () => {
-                                    setIsLoading(true) 
+                                    setIsLoading(true)
                                     console.log(expense)
                                     try {
                                         await crearExpense()
                                     } finally {
-                                        setIsLoading(false) 
+                                        setIsLoading(false)
                                     }
                                 }}
                                 disabled={!isOnline || !expense.valido()}
@@ -414,6 +479,19 @@ export default function CreateExpense() {
                                 Cargar Gasto
                             </Button>
                         )}
+
+                        {/* Listado dinámico de errores de negocio remanentes */}
+                        {topLevelErrors.length > 0 && (
+                            <div className="rounded-2xl border border-border bg-background/70 p-4 text-sm space-y-3">
+                                {topLevelErrors.map((error) => (
+                                    <div key={error.nombre} className="flex items-start gap-3 text-red-600 dark:text-red-400">
+                                        <AlertTriangle className="h-5 w-5 shrink-0" />
+                                        <span className="font-medium">{error.mensaje}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
                         <p className="text-center text-[10px] text-muted-foreground mt-4 leading-relaxed px-6 italic">
                             "La vaquita se divide entre todos los miembros del grupo seleccionado automáticamente."
                         </p>
@@ -428,61 +506,29 @@ export default function CreateExpense() {
 // HELPER FUNCTIONS
 // ═════════════════════════════════════════════════════════════════════════════════
 
-/**
- * Mapea la categoría del escaneo (food, transport, etc) a las categorías de tu app
- */
 function mapearCategoria(scanCategory?: string): string {
     if (!scanCategory) return 'OTROS'
-
     const normalized = scanCategory.toLowerCase()
-
     const mapping: Record<string, string> = {
-        // comida
-        'food': 'COMIDA',
-        'comida': 'COMIDA',
-
-        // bebida
-        'drink': 'BEBIDA',
-        'bebida': 'BEBIDA',
-
-        // transporte
-        'transport': 'TRANSPORTE',
-        'transporte': 'TRANSPORTE',
-
-        // supermercado
-        'grocery': 'SUPERMERCADO',
-        'supermarket': 'SUPERMERCADO',
-        'supermercado': 'SUPERMERCADO',
-
-        // entretenimiento
-        'entertainment': 'ENTRETENIMIENTO',
-        'ocio': 'ENTRETENIMIENTO',
-
-        // hogar
-        'home': 'HOGAR',
-        'hogar': 'HOGAR',
-
-        // otros
-        'other': 'OTROS',
-        'otros': 'OTROS',
+        'food': 'COMIDA', 'comida': 'COMIDA',
+        'drink': 'BEBIDA', 'bebida': 'BEBIDA',
+        'transport': 'TRANSPORTE', 'transporte': 'TRANSPORTE',
+        'grocery': 'SUPERMERCADO', 'supermarket': 'SUPERMERCADO', 'supermercado': 'SUPERMERCADO',
+        'entertainment': 'ENTRETENIMIENTO', 'ocio': 'ENTRETENIMIENTO',
+        'home': 'HOGAR', 'hogar': 'HOGAR',
+        'other': 'OTROS', 'otros': 'OTROS',
     }
-
     return mapping[normalized] || 'OTROS'
 }
 
-/**
- * Convierte items del escaneo a ExpenseItem si lo necesitas
- */
 function convertirItems(scanItems?: LineItem[]): ExpenseItem[] {
     if (!scanItems?.length) return []
-
     return scanItems.map(item => {
         const cantidad = item.quantity ?? 1
-
         return new ExpenseItem(
             item.name,
             cantidad,
-            item.price // ← NO dividir
+            item.price
         )
     })
 }

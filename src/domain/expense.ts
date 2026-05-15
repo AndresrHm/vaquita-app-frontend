@@ -55,23 +55,22 @@ export class Expense extends Validable {
         public items: ExpenseItem[] = [],
         public tipoDivision: TipoDivision = TipoDivision.PARTES_IGUALES,
         public allocations: ExpenseAllocation[] = [],
+        public useItemsTotal = false,
     ) {
         super()
     }
 
     get total(): number {
+        if (this.useItemsTotal && this.items.length > 0) {
+            const totalEnCentavos = this.items.reduce(
+                (acc, item) => acc + Math.round(item.total() * 100),
+                0
+            )
 
-        if (this.items.length === 0) {
-            return Number(this._total.toFixed(2))
+            return Number((totalEnCentavos / 100).toFixed(2))
         }
 
-        const totalEnCentavos = this.items.reduce(
-            (acc, item) =>
-                acc + Math.round(item.total() * 100),
-            0
-        )
-
-        return Number((totalEnCentavos / 100).toFixed(2))
+        return Number(this._total.toFixed(2))
     }
 
     set total(value: number) {
@@ -116,15 +115,17 @@ export class Expense extends Validable {
                 this.agregarError(new InputError('items', 'Cada ítem debe tener nombre, cantidad y precio unitario válidos'))
             }
 
-            const sumaItemsEnCentavos = this.items.reduce(
-                (acc, item) => acc + Math.round(item.total() * 100),
-                0
-            )
+            if (!this.useItemsTotal) {
+                const sumaItemsEnCentavos = this.items.reduce(
+                    (acc, item) => acc + Math.round(item.total() * 100),
+                    0
+                )
 
-            const totalEnCentavos = Math.round(this.total * 100)
+                const totalEnCentavos = Math.round(this.total * 100)
 
-            if (sumaItemsEnCentavos !== totalEnCentavos) {
-                this.agregarError(new InputError('itemsTotal', 'La suma de los valores de los ítems debe ser igual al total'))
+                if (sumaItemsEnCentavos !== totalEnCentavos) {
+                    this.agregarError(new InputError('itemsTotal', 'El total manual debe coincidir con la suma de los ítems'))
+                }
             }
 
             const invalidProductName = this.items.find(
@@ -157,19 +158,12 @@ export class Expense extends Validable {
             asignacionesMap[alloc.participantId] = alloc.total
         })
 
-        const totalEnCentavos = this.items.reduce(
-            (acc, item) => acc + Math.round(item.total() * 100),
-            0
-        )
-
-        const totalSeguro = totalEnCentavos / 100
-
         const result: ExpenseJSON = {
             grupoID: this.groupId,
             pagadorID: this.pagadorId,
             participantesIDs: this.participantIds,
             descripcion: this.description,
-            monto: totalSeguro,
+            monto: this.total,
             categoria: this.category,
             fecha: this.date,
             items: this.items.map((item) => item.toDTO()),
@@ -204,12 +198,13 @@ export class Expense extends Validable {
             expense.pagadorId,
             expense.participantIds,
             expense.description,
-            expense.total,
+            expense._total,
             expense.category,
             expense.date,
             expense.items.map((item) => new ExpenseItem(item.nombre, item.cantidad, item.precioUnitario)),
             expense.tipoDivision,
             expense.allocations.map((allocation) => new ExpenseAllocation(allocation.participantId, allocation.total)),
+            expense.useItemsTotal,
         )
     }
 }
