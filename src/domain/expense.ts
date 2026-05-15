@@ -40,7 +40,7 @@ export type ExpenseFilteredJSON = {
 
 const DEFAULT_CATEGORY = 'OTROS'
 const MAX_CHARACTERS_DESCRIPTION = 50
-const MAX_CHARACTERS_PRODUCT_NAME = 20
+const MAX_CHARACTERS_PRODUCT_NAME = 50
 
 export class Expense extends Validable {
     id: number = 0
