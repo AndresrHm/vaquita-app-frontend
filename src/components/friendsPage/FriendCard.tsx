@@ -1,6 +1,5 @@
 import { useNavigate } from 'react-router-dom'
 import MoneyBadge from '@/components/moneyBadge/moneyBadge'
-import PayDebtModal from '@/components/balancesPage/PayDebtModal'
 
 type Friend = {
     id: string
@@ -19,17 +18,12 @@ function getInitials(name: string) {
         .join('')
 }
 
-export default function FriendCard({ friend, onPagoExitoso }: { friend: Friend, onPagoExitoso?: () => void }) {
+export default function FriendCard({ friend }: { friend: Friend, onPagoExitoso?: () => void }) {
     const navigate = useNavigate()
-
-    const handlePagoExitoso = () => {
-        // Recargar la lista de amigos para actualizar balances
-        onPagoExitoso?.()
-    }
 
     return (
         <div
-            className="rounded-2xl border border-border bg-background/70 p-4 shadow-sm cursor-pointer hover:bg-muted/30 transition-colors"
+            className="rounded-2xl border border-border bg-card/70 p-4 shadow-sm cursor-pointer hover:bg-muted/30 transition-colors"
             onClick={() => navigate(`/friends/${friend.id}`)}
         >
             <div className="flex items-center justify-between gap-3">
@@ -50,18 +44,8 @@ export default function FriendCard({ friend, onPagoExitoso }: { friend: Friend, 
                         <div className="mt-1 text-xs text-muted-foreground">{friend.role}</div>
                     </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-col items-center gap-2">
                     <MoneyBadge amount={friend.due} />
-                    {friend.due > 0 && (
-                        <div onClick={(e) => e.stopPropagation()}>
-                            <PayDebtModal
-                                acreedorId={Number(friend.id)}
-                                acreedorNombre={friend.name}
-                                totalMonto={Math.abs(friend.due)}
-                                onPagoExitoso={handlePagoExitoso}
-                            />
-                        </div>
-                    )}
                 </div>
             </div>
         </div>

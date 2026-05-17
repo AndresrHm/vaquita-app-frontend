@@ -27,8 +27,6 @@ export default function FriendsPage() {
   const navigate = useNavigate()
   // 2. ACTIVAMOS EL RADAR
   const isOnline = useNetwork()
-  
-  const currentUserId = Number(localStorage.getItem('id'))
 
   const [friends, setFriends] = useState<{ id: string; name: string; role: string; due: number; imageUrl: string }[]>([])
   const [searchQuery, setSearchQuery] = useState('')
@@ -113,7 +111,7 @@ export default function FriendsPage() {
 
   return (
     <div className="space-y-4">
-      <PageTitle title="Amigos" subtitle="Agregá y organizá participantes." />
+      <PageTitle title="Amigos" subtitle="Agregá y consultá deudas con amigos!" />
 
       <ColumnContainer>
         {/* Buscar entre mis amigos */}
@@ -132,22 +130,43 @@ export default function FriendsPage() {
         </div>
 
         {/* Lista de amigos (CON CARTEL OFFLINE) */}
-        <div className="max-h-[30vh] space-y-3 overflow-y-auto pr-1">
-          {!isOnline && friends.length === 0 ? (
-            <div className="flex flex-col items-center justify-center rounded-xl border-2 border-red-300/50 bg-red-50/50 p-6 text-center shadow-sm dark:border-red-900/50 dark:bg-red-950/20">
-              <WifiOff className="mb-2 h-6 w-6 text-red-500/70" />
-              <p className="text-sm font-semibold text-red-600 dark:text-red-400">
-                ¡Ups! No hay conexión
+        <div className="relative overflow-hidden rounded-2xl border border-border bg-background/70 pt-1 pd-1">
+
+          {/* Fade superior */}
+          <div className="pointer-events-none absolute top-0 left-0 right-0 z-10 h-4 bg-linear-to-b from-background via-background/80 to-transparent" />
+
+          {/* Lista */}
+          <div className="max-h-[40vh] overflow-y-auto space-y-3 px-1 py-2 pr-2 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
+
+            {!isOnline && friends.length === 0 ? (
+              <div className="flex flex-col items-center justify-center rounded-xl border-2 border-red-300/50 bg-red-50/50 p-6 text-center shadow-sm dark:border-red-900/50 dark:bg-red-950/20">
+                <WifiOff className="mb-2 h-6 w-6 text-red-500/70" />
+
+                <p className="text-sm font-semibold text-red-600 dark:text-red-400">
+                  ¡Ups! No hay conexión
+                </p>
+
+                <p className="mt-1 text-xs font-medium text-muted-foreground">
+                  No pudimos cargar tus amigos y no hay datos guardados.
+                </p>
+              </div>
+            ) : filteredFriends.length === 0 ? (
+              <p className="py-4 text-center text-sm text-muted-foreground">
+                No tenés amigos aún.
               </p>
-              <p className="mt-1 text-xs text-muted-foreground font-medium">
-                No pudimos cargar tus amigos y no hay datos guardados.
-              </p>
-            </div>
-          ) : filteredFriends.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-4">No tenés amigos aún.</p>
-          ) : (
-            filteredFriends.map((f) => <FriendCard key={f.id} friend={f} onPagoExitoso={loadFriends} />)
-          )}
+            ) : (
+              filteredFriends.map((f) => (
+                <FriendCard
+                  key={f.id}
+                  friend={f}
+                  onPagoExitoso={loadFriends}
+                />
+              ))
+            )}
+          </div>
+
+          {/* Fade inferior */}
+          <div className="pointer-events-none absolute bottom-0 left-0 right-0 z-10 h-5 bg-linear-to-t from-background via-background/90 to-transparent" />
         </div>
 
         {/* Solicitudes pendientes */}
@@ -206,7 +225,7 @@ export default function FriendsPage() {
             <span className="text-sm text-muted-foreground select-none">@</span>
             <input
               type="text"
-              placeholder={isOnline ? "nombre de usuario" : "Conectate para buscar amigos"}
+              placeholder={isOnline ? 'nombre de usuario' : 'Conectate para buscar amigos'}
               value={usernameSearch}
               onChange={(e) => setUsernameSearch(e.target.value)}
               disabled={!isOnline}
