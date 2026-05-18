@@ -111,7 +111,7 @@ export default function ActivityList({ searchText, tipo, desde, hasta, size = 6 
         justify-between
         border-t
         border-border
-        bg-background/95
+        bg-bg/70
         px-2
         pt-4
         pb-1

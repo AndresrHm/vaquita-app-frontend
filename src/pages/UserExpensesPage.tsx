@@ -200,9 +200,22 @@ export default function UserExpensesPage() {
       </PageTitle>
 
       <ColumnContainer>
-        <SearchCard searchTerm={searchTerm} onSearchChange={handleSearchChange} />
-        <SortCard sortBy={sortBy} onSortChange={handleSortChange} />
-        <FiltersTriggerCard activeFiltersCount={activeFiltersCount} onOpen={openFiltersModal} />
+        <div className="flex items-center gap-2 overflow-x-hidden">
+          <SearchCard
+            searchTerm={searchTerm}
+            onSearchChange={handleSearchChange}
+          >
+            <SortCard
+              sortBy={sortBy}
+              onSortChange={handleSortChange}
+            />
+
+            <FiltersTriggerCard
+              activeFiltersCount={activeFiltersCount}
+              onOpen={openFiltersModal}
+            />
+          </SearchCard>
+        </div>
 
         <ExpensesResultsCard
           loading={loading}
