@@ -1,8 +1,9 @@
+/* eslint-disable no-undef */
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { Filter, Search, X } from 'lucide-react'
 import type { TipoActividad } from '@/domain/enums/tipoActividad'
-import { TipoActividad as TipoActividadEnum } from '@/domain/enums/tipoActividad'
+import { TipoActividad as TipoActividadEnum, TipoActividadLabels } from '@/domain/enums/tipoActividad'
 
 interface ActivityFiltersProps {
     onFilterChange: (filters: ActivityFiltersState) => void
@@ -169,7 +170,7 @@ export default function ActivityFilters({ onFilterChange }: ActivityFiltersProps
                                             >
                                                 {checked ? <span className="h-2 w-2 rounded-full bg-primary-foreground block" /> : null}
                                             </span>
-                                            <span className="flex-1">{tipo}</span>
+                                            <span className="flex-1">{TipoActividadLabels[tipo]}</span>
                                         </button>
                                     )
                                 })}
