@@ -39,13 +39,12 @@ export default function AccountPage() {
   return (
     <div className="space-y-4">
       <PageTitle title="Cuenta" subtitle="Tu perfil">
-        <div className="mt-4 flex items-start justify-between gap-4">
+        <div className="mt-0 flex items-start justify-between gap-4">
           <div>
             <div className="text-sm font-semibold text-foreground">{userName}</div>
             {userUsername && (
               <div className="text-xs text-muted-foreground">@{userUsername}</div>
             )}
-            <div className="mt-1 text-xs text-muted-foreground">{userEmail}</div>
           </div>
 
           {userImage ? (
@@ -63,14 +62,13 @@ export default function AccountPage() {
       </PageTitle>
 
       <ColumnContainer>
-        <h2 className="text-sm font-semibold text-foreground">Gestión de Cuenta</h2>
+        <h2 className="text-sm font-semibold text-foreground pl-1">Gestión de Cuenta</h2>
         <div className="mt-3 space-y-2 mb-4">
           <Card
-            className={`rounded-xl border border-border px-3 py-2 transition-colors ${
-              isOnline 
-                ? 'cursor-pointer hover:bg-muted/50' 
-                : 'opacity-50 cursor-not-allowed'
-            }`}
+            className={`rounded-xl border border-border px-3 py-2 transition-colors ${isOnline
+              ? 'cursor-pointer hover:bg-muted/50'
+              : 'opacity-50 cursor-not-allowed'
+              }`}
             role="button"
             tabIndex={isOnline ? 0 : -1}
             onClick={() => {
@@ -82,11 +80,10 @@ export default function AccountPage() {
           </Card>
 
           <Card
-            className={`rounded-xl border border-border px-3 py-2 transition-colors ${
-              isOnline 
-                ? 'cursor-pointer hover:bg-muted/50' 
-                : 'opacity-50 cursor-not-allowed'
-            }`}
+            className={`rounded-xl border border-border px-3 py-2 transition-colors ${isOnline
+              ? 'cursor-pointer hover:bg-muted/50'
+              : 'opacity-50 cursor-not-allowed'
+              }`}
             role="button"
             tabIndex={isOnline ? 0 : -1}
             onClick={() => {
@@ -98,7 +95,7 @@ export default function AccountPage() {
           </Card>
         </div>
 
-        <h2 className="text-sm font-semibold text-foreground">Preferencias</h2>
+        <h2 className="text-sm font-semibold text-foreground pl-1">Preferencias</h2>
         <div className="mt-3 space-y-2">
           <Card
             className="rounded-xl border border-border px-3 py-2 cursor-pointer hover:bg-muted/50 transition-colors"

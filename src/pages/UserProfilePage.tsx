@@ -15,6 +15,7 @@ import { SectionCard } from '@/components/balancesPage/sectionCard'
 import { BalanceRow } from '@/components/balancesPage/balanceRow'
 import { Divider } from '@/components/common/divider'
 import { formatCurrency } from '@/utils/formatCurrency'
+import PageTitle from '@/components/common/pageTitle'
 
 type Tab = 'balances' | 'grupos'
 
@@ -49,7 +50,7 @@ export default function UserProfilePage() {
   function refreshInfo() {
     usuarioService.obtenerUsuarioInfo(targetId)
       .then(setInfo)
-      .catch(() => {})
+      .catch(() => { })
   }
 
   function handleFriendButtonClick() {
@@ -115,16 +116,11 @@ export default function UserProfilePage() {
   return (
     <div className="space-y-4">
       {/* Back header */}
-      <div className="flex items-center gap-3 pt-4">
-        <button
-          onClick={() => navigate(-1)}
-          className="flex h-8 w-8 items-center justify-center rounded-full border border-border bg-background/70 text-muted-foreground hover:text-foreground"
-          aria-label="Volver"
-        >
-          <ArrowLeft className="h-4 w-4" />
-        </button>
-        <span className="text-sm font-medium text-muted-foreground">Perfil</span>
-      </div>
+      <PageTitle
+        title="Perfil de amigo"
+        onBack={() => { window.history.back() }}
+      >
+      </PageTitle>
 
       <ColumnContainer>
         {/* Avatar + name */}
