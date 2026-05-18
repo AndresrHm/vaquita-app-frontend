@@ -37,17 +37,17 @@ function toMonthNumber(month?: string | number): number | null {
     if (!month && month !== 0) return null
     if (typeof month === 'number') return month
     const m = month.toString().toLowerCase()
-    const spanish = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre']
-    const english = ['january','february','march','april','may','june','july','august','september','october','november','december']
+    const spanish = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
+    const english = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december']
 
     // numeric string
     const asNumber = Number(m)
     if (!Number.isNaN(asNumber) && asNumber > 0 && asNumber <= 12) return asNumber
 
-    const idxES = spanish.findIndex(s => s === m || s.startsWith(m.slice(0,3)))
+    const idxES = spanish.findIndex(s => s === m || s.startsWith(m.slice(0, 3)))
     if (idxES >= 0) return idxES + 1
 
-    const idxEN = english.findIndex(s => s === m || s.startsWith(m.slice(0,3)))
+    const idxEN = english.findIndex(s => s === m || s.startsWith(m.slice(0, 3)))
     if (idxEN >= 0) return idxEN + 1
 
     return null
@@ -86,7 +86,7 @@ function formatUploadedAt(value: string) {
 
 export default function ExpenseDetailModal({ isOpen, expense, onClose }: ExpenseDetailModalProps) {
     const [showTicket, setShowTicket] = useState(false)
-    const [attachments, setAttachments] = useState<null | Array<{id:string;filename:string;mimeType:string;downloadUrl:string;createdAt:string}>>(null)
+    const [attachments, setAttachments] = useState<null | Array<{ id: string; filename: string; mimeType: string; downloadUrl: string; createdAt: string }>>(null)
     const [loadingAttachments, setLoadingAttachments] = useState(false)
     const hasTicketUrl = Boolean(expense?.tieneTicket)
     const ticketAttachments = attachments ?? []
@@ -102,6 +102,15 @@ export default function ExpenseDetailModal({ isOpen, expense, onClose }: Expense
             <div className="space-y-4">
                 {/* Items detalle (mock) */}
                 <div>
+                    {/* Monto */}
+                    <div className="rounded-lg bg-muted/80 p-4">
+                        <p className="text-xs font-medium text-muted-foreground mb-2">Monto</p>
+                        <p className="text-2xl font-bold text-foreground">
+                            {expense.currency} {expense.amount.toLocaleString('es-AR')}
+                        </p>
+                    </div>
+
+                    {/* Ítems */}
                     <button
                         type="button"
                         onClick={async () => {
@@ -119,7 +128,7 @@ export default function ExpenseDetailModal({ isOpen, expense, onClose }: Expense
                                 }
                             }
                         }}
-                        className="w-full flex items-center justify-between gap-3 rounded-lg border border-border/50 bg-muted/10 px-3 py-2 text-sm font-medium text-foreground hover:bg-muted/20 transition"
+                        className="w-full flex items-center justify-between gap-3 rounded-lg border border-border/50 bg-muted/10 px-3 py-2 mt-4 text-sm font-medium text-foreground hover:bg-muted/20 transition"
                     >
                         <span>Detalle de items</span>
                         <span className="text-xs text-muted-foreground">{showItems ? 'Ocultar' : 'Ver'}</span>
@@ -152,14 +161,6 @@ export default function ExpenseDetailModal({ isOpen, expense, onClose }: Expense
                         </div>
                     )}
                 </div>
-                {/* Monto */}
-                <div className="rounded-lg bg-muted/40 p-4">
-                    <p className="text-xs font-medium text-muted-foreground mb-2">Monto</p>
-                    <p className="text-2xl font-bold text-foreground">
-                        {expense.currency} {expense.amount.toLocaleString('es-AR')}
-                    </p>
-                </div>
-
                 {/* Fecha y tipo de pago */}
                 <div className="grid grid-cols-2 gap-3">
                     <div className="rounded-lg border border-border/50 p-3">
