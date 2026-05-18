@@ -5,7 +5,7 @@ export enum TipoActividad {
     GASTO_ELIMINADO = 'GASTO_ELIMINADO',
     PAGO_REALIZADO = 'PAGO_REALIZADO',
     PAGO_RECIBIDO = 'PAGO_RECIBIDO',
-    // Agregar más tipos según corresponda
+    GASTO_DEUDA = 'GASTO_DEUDA',
 }
 
 // activityLabels.ts
@@ -16,4 +16,5 @@ export const TipoActividadLabels: Record<TipoActividad, string> = {
     [TipoActividad.GASTO_ELIMINADO]: 'Gasto eliminado',
     [TipoActividad.PAGO_REALIZADO]: 'Pago realizado',
     [TipoActividad.PAGO_RECIBIDO]: 'Pago recibido',
+    [TipoActividad.GASTO_DEUDA]: 'Deuda generada',
 }

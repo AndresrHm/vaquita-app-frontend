@@ -1,136 +1,83 @@
-import type { ActividadDTO, ActividadMetadata } from '@/domain/actividadDTO'
-import { TipoActividad } from '@/domain/enums/tipoActividad'
 import Card from '@/components/common/card'
+import { type ActividadDTO } from '@/domain/actividadDTO'
+import { activityMeta } from './activityMeta'
 
 interface ActivityCardProps {
     actividad: ActividadDTO
 }
 
-const parseMetadata = (metadata: string): ActividadMetadata => {
-    try {
-        return JSON.parse(metadata)
-    } catch {
-        return {}
-    }
-}
-
 const getTimeAgo = (fecha: string): string => {
     const now = new Date()
-    const fecha_date = new Date(fecha)
-    const diffMs = now.getTime() - fecha_date.getTime()
-    const diffSecs = Math.floor(diffMs / 1000)
-    const diffMins = Math.floor(diffSecs / 60)
-    const diffHours = Math.floor(diffMins / 60)
-    const diffDays = Math.floor(diffHours / 24)
+    const fechaDate = new Date(fecha)
 
-    if (diffSecs < 60) return 'hace unos segundos'
-    if (diffMins < 60) return `hace ${diffMins}m`
-    if (diffHours < 24) return `hace ${diffHours}h`
-    if (diffDays === 1) return 'Ayer'
-    if (diffDays < 7) return `hace ${diffDays}d`
-    return fecha_date.toLocaleDateString('es-ES')
+    const diffMs = now.getTime() - fechaDate.getTime()
+
+    const mins = Math.floor(diffMs / 1000 / 60)
+    const hours = Math.floor(mins / 60)
+    const days = Math.floor(hours / 24)
+
+    if (mins < 1) return 'Ahora'
+    if (mins < 60) return `Hace ${mins}m`
+    if (hours < 24) return `Hace ${hours}h`
+    if (days === 1) return 'Ayer'
+    if (days < 7) return `Hace ${days}d`
+
+    return fechaDate.toLocaleDateString('es-AR')
 }
 
-// Componentes específicos por tipo de actividad
-const ActivityCardGrupo = ({ actividad }: ActivityCardProps) => {
-    const metadata = parseMetadata(actividad.metadata)
-
-    return (
-        <Card>
-            <div className="flex items-center justify-between gap-3">
-                <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-sm font-semibold text-blue-600">
-                            👥
-                        </div>
-                        <div>
-                            <div className="text-sm font-semibold text-foreground">
-                                {metadata.grupoNombre ? `Grupo: ${metadata.grupoNombre}` : 'Te agregaron a un grupo'}
-                            </div>
-                            <div className="mt-1 text-xs text-muted-foreground">{actividad.descripcion}</div>
-                        </div>
-                    </div>
-                </div>
-                <div className="whitespace-nowrap text-xs text-muted-foreground">{getTimeAgo(actividad.fecha)}</div>
-            </div>
-        </Card>
-    )
-}
-
-const ActivityCardGasto = ({ actividad }: ActivityCardProps) => {
-    const metadata = parseMetadata(actividad.metadata)
-    const isCreated = actividad.tipo === TipoActividad.GASTO_CREADO
-    const icon = isCreated ? '➕' : actividad.tipo === TipoActividad.GASTO_ELIMINADO ? '🗑️' : '✏️'
-
-    return (
-        <Card>
-            <div className="flex items-center justify-between gap-3">
-                <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-100 text-sm">
-                            {icon}
-                        </div>
-                        <div>
-                            <div className="text-sm font-semibold text-foreground">{actividad.descripcion}</div>
-                            {metadata.categoria && (
-                                <div className="mt-1 text-xs text-muted-foreground">Categoría: {metadata.categoria}</div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-                <div className="whitespace-nowrap text-xs text-muted-foreground">{getTimeAgo(actividad.fecha)}</div>
-            </div>
-        </Card>
-    )
-}
-
-const ActivityCardPago = ({ actividad }: ActivityCardProps) => {
-    const isPago = actividad.tipo === TipoActividad.PAGO_REALIZADO
-    const icon = isPago ? '💳' : '💰'
-
-    return (
-        <Card>
-            <div className="flex items-center justify-between gap-3">
-                <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100 text-sm">
-                            {icon}
-                        </div>
-                        <div>
-                            <div className="text-sm font-semibold text-foreground">{actividad.descripcion}</div>
-                            <div className="mt-1 text-xs text-muted-foreground">Pago registrado en el sistema</div>
-                        </div>
-                    </div>
-                </div>
-                <div className="whitespace-nowrap text-xs text-muted-foreground">{getTimeAgo(actividad.fecha)}</div>
-            </div>
-        </Card>
-    )
-}
-
-// Componente selector de tipo de actividad
 export default function ActivityCard({ actividad }: ActivityCardProps) {
-    switch (actividad.tipo) {
-        case TipoActividad.INGRESO_GRUPO:
-            return <ActivityCardGrupo actividad={actividad} />
-        case TipoActividad.GASTO_CREADO:
-        case TipoActividad.GASTO_ACTUALIZADO:
-        case TipoActividad.GASTO_ELIMINADO:
-            return <ActivityCardGasto actividad={actividad} />
-        case TipoActividad.PAGO_REALIZADO:
-        case TipoActividad.PAGO_RECIBIDO:
-            return <ActivityCardPago actividad={actividad} />
-        default:
-            return (
-                <Card>
-                    <div className="flex items-center justify-between gap-3">
-                        <div>
-                            <div className="text-sm font-semibold text-foreground">{actividad.descripcion}</div>
-                            <div className="mt-1 text-xs text-muted-foreground">Tipo: {actividad.tipo}</div>
+    const meta = activityMeta[actividad.tipo]
+
+    // Esto es para debugear un error
+    // if (!meta) {
+    //     console.error('Tipo de actividad sin metadata:', actividad.tipo)
+
+    //     return (
+    //         <Card>
+    //             <div className="p-4 text-sm text-red-500">
+    //                 Tipo desconocido: {String(actividad.tipo)}
+    //             </div>
+    //         </Card>
+    //     )
+    // }
+
+    if (!meta) return null
+
+    const Icon = meta.icon
+
+    return (
+        <Card>
+            <div className="flex items-start gap-4 p-1">
+                <div
+                    className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${meta.color}`}
+                >
+                    <Icon className="h-5 w-5" />
+                </div>
+
+                <div className="min-w-0 flex-1">
+                    <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                            <h3 className="truncate text-sm font-semibold text-foreground">
+                                {meta.title}
+                            </h3>
+
+                            <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
+                                {actividad.descripcion}
+                            </p>
                         </div>
-                        <div className="text-xs text-muted-foreground">{getTimeAgo(actividad.fecha)}</div>
+
+                        <div className="flex flex-col items-end gap-2 pt-1">
+                            <span className="whitespace-nowrap text-[11px] text-muted-foreground">
+                                {getTimeAgo(actividad.fecha)}
+                            </span>
+
+                            <span className="rounded-full bg-muted px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
+                                {meta.badge}
+                            </span>
+                        </div>
                     </div>
-                </Card>
-            )
-    }
+                </div>
+            </div>
+        </Card>
+    )
 }

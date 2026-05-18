@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { TipoActividad } from './enums/tipoActividad'
 
 export type ActividadDTO = {

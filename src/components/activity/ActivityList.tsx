@@ -74,35 +74,66 @@ export default function ActivityList({ searchText, tipo, desde, hasta, size = 6 
 
     if (actividades.length === 0) {
         return (
-            <div className="flex items-center justify-center py-8">
-                <div className="text-sm text-muted-foreground">No hay actividades para mostrar</div>
+            <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-12 text-center">
+                <div className="text-sm font-medium text-foreground">
+                    No hay actividades
+                </div>
+
+                <div className="mt-1 text-sm text-muted-foreground">
+                    Las nuevas actividades aparecerán acá
+                </div>
             </div>
         )
     }
 
     return (
-        <div className="space-y-3">
-            {actividades.map((actividad) => (
-                <ActivityCard key={actividad.id} actividad={actividad} />
-            ))}
+        <div className="flex h-full flex-col">
+            {/* LISTA SCROLLEABLE */}
+            <div className="flex-1 space-y-2 overflow-y-auto pr-1 pb-4">
+                {actividades.map((actividad) => (
+                    <ActivityCard
+                        key={actividad.id}
+                        actividad={actividad}
+                    />
+                ))}
+            </div>
 
-            {/* Paginación */}
+            {/* PAGINACIÓN FIJA */}
             {pageInfo && pageInfo.totalPages > 1 && (
-                <div className="flex items-center justify-between gap-2 border-t border-border pt-4 mt-4">
+                <div
+                    className="
+        sticky
+        bottom-0
+        mt-3
+        flex
+        shrink-0
+        items-center
+        justify-between
+        border-t
+        border-border
+        bg-background/95
+        px-2
+        pt-4
+        pb-1
+        backdrop-blur
+    "
+                >
                     <button
                         onClick={() => setPage((p) => Math.max(0, p - 1))}
                         disabled={page === 0}
-                        className="rounded px-3 py-1 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-secondary"
+                        className="rounded px-3 py-1 text-sm font-medium transition hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-50"
                     >
                         Anterior
                     </button>
+
                     <div className="text-xs text-muted-foreground">
                         Página {pageInfo.page + 1} de {pageInfo.totalPages}
                     </div>
+
                     <button
                         onClick={() => setPage((p) => p + 1)}
                         disabled={!pageInfo.hasNext}
-                        className="rounded px-3 py-1 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-secondary"
+                        className="rounded px-3 py-1 text-sm font-medium transition hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-50"
                     >
                         Siguiente
                     </button>

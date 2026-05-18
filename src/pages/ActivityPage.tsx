@@ -8,6 +8,7 @@ import type { ActivityFiltersState } from '@/components/activity/ActivityFilters
 
 // 1. Importamos tu hook
 import { useNetwork } from '@/customHooks/useNetwork'
+import Card from '@/components/common/card'
 
 export default function ActivityPage() {
     // 2. Activamos el radar
@@ -36,14 +37,17 @@ export default function ActivityPage() {
                     <ActivityFilters onFilterChange={handleFilterChange} />
                 </div>
 
-                <div className="max-h-[52vh] overflow-y-auto pr-1">
-                    <ActivityList
-                        searchText={filters.searchText}
-                        tipo={filters.tipo}
-                        desde={filters.desde}
-                        hasta={filters.hasta}
-                    />
-                </div>
+                <Card interactive={false}>
+
+                    <div className="h-[52vh]">
+                        <ActivityList
+                            searchText={filters.searchText}
+                            tipo={filters.tipo}
+                            desde={filters.desde}
+                            hasta={filters.hasta}
+                        />
+                    </div>
+                </Card>
             </ColumnContainer>
         </div>
     )
