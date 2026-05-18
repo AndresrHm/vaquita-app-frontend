@@ -311,7 +311,7 @@ export default function CreateExpense() {
                 <div className="space-y-4 pt-2 overflow-hidden">
                     <div className="rounded-2xl border border-border bg-card/70 p-6 shadow-sm backdrop-blur-xl flex flex-col items-center">
                         <span className="text-xs font-medium text-muted-foreground mb-4 uppercase tracking-wider">Monto total</span>
-                        
+
                         {!useItemTotal ? (
                             <div className="flex items-center justify-center gap-2 w-full max-w-md rounded-2xl border border-primary/30 bg-primary/10 px-4 py-4">
                                 <span className="text-3xl font-bold text-primary">$</span>
@@ -349,22 +349,20 @@ export default function CreateExpense() {
                             <button
                                 type="button"
                                 onClick={() => handleUseItemTotalChange(false)}
-                                className={`rounded-xl px-4 py-3 text-sm font-semibold transition-all ${
-                                    !useItemTotal
-                                        ? 'border-2 border-primary bg-primary/10 text-foreground shadow-sm'
-                                        : 'border border-border bg-background/70 text-muted-foreground hover:bg-muted/50'
-                                }`}
+                                className={`rounded-xl px-4 py-3 text-sm font-semibold transition-all ${!useItemTotal
+                                    ? 'border-2 border-primary bg-primary/10 text-foreground shadow-sm'
+                                    : 'border border-border bg-background/70 text-muted-foreground hover:bg-muted/50'
+                                    }`}
                             >
                                 📝 Manualmente
                             </button>
                             <button
                                 type="button"
                                 onClick={() => handleUseItemTotalChange(true)}
-                                className={`rounded-xl px-4 py-3 text-sm font-semibold transition-all ${
-                                    useItemTotal
-                                        ? 'border-2 border-primary bg-primary/10 text-foreground shadow-sm'
-                                        : 'border border-border bg-background/70 text-muted-foreground hover:bg-muted/50'
-                                }`}
+                                className={`rounded-xl px-4 py-3 text-sm font-semibold transition-all ${useItemTotal
+                                    ? 'border-2 border-primary bg-primary/10 text-foreground shadow-sm'
+                                    : 'border border-border bg-background/70 text-muted-foreground hover:bg-muted/50'
+                                    }`}
                             >
                                 📊 Por ítems
                             </button>
@@ -415,15 +413,22 @@ export default function CreateExpense() {
                         </span>
 
                         <FieldWrapper label="Descripción" instruction="¿En qué se gastó?">
-                            <div className="flex items-center gap-3 rounded-xl border border-border bg-background/70 px-3 py-2.5">
-                                <Receipt className="h-4 w-4 text-muted-foreground shrink-0" />
-                                <input
-                                    type="text"
-                                    value={expense.description}
-                                    placeholder="¿En qué se gastó?"
-                                    onChange={(event) => actualizarExpense({ description: event.target.value })}
-                                    className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground/50"
-                                />
+                            <div className="flex items-start gap-3 rounded-xl border border-border bg-background/70 px-3 py-2.5">                                <textarea
+                                value={expense.description}
+                                placeholder="¿En qué se gastó?"
+                                onChange={(event) => actualizarExpense({ description: event.target.value })}
+                                rows={3}
+                                className="
+                                        min-h-20
+                                        w-full
+                                        resize-y
+                                        bg-transparent
+                                        text-sm
+                                        text-foreground
+                                        outline-none
+                                        placeholder:text-muted-foreground/50
+                                    "
+                            />
                             </div>
                         </FieldWrapper>
 
