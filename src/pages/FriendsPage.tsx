@@ -111,7 +111,7 @@ export default function FriendsPage() {
 
   return (
     <div className="space-y-4">
-      <PageTitle title="Amigos" subtitle="Agregá y consultá deudas con amigos!" />
+      <PageTitle title="Amigos" subtitle="Agregá amigos y consultá deudas!" />
 
       <ColumnContainer>
         {/* Buscar entre mis amigos */}
@@ -136,7 +136,7 @@ export default function FriendsPage() {
           <div className="pointer-events-none absolute top-0 left-0 right-0 z-10 h-4 bg-linear-to-b from-background via-background/80 to-transparent" />
 
           {/* Lista */}
-          <div className="max-h-[40vh] overflow-y-auto space-y-3 px-1 py-2 pr-2 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
+          <div className="min-h-[22.5vh] max-h-[26vh] overflow-y-auto space-y-3 px-1 py-3 pb-2 pr-1 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
 
             {!isOnline && friends.length === 0 ? (
               <div className="flex flex-col items-center justify-center rounded-xl border-2 border-red-300/50 bg-red-50/50 p-6 text-center shadow-sm dark:border-red-900/50 dark:bg-red-950/20">

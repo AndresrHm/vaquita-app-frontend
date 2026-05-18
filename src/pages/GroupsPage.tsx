@@ -14,13 +14,13 @@ import { useToast } from '@/customHooks/useToast'
 import { getMensajeError } from '@/utils/getMensajeError'
 
 // 1. IMPORTAMOS TU HOOK
-import { useNetwork } from '@/customHooks/useNetwork' 
+import { useNetwork } from '@/customHooks/useNetwork'
 
 const PAGE_SIZE = 5
 
 export default function GroupsPage() {
   const { showToast } = useToast()
-  
+
   // 2. ACTIVAMOS EL RADAR
   const isOnline = useNetwork()
 
@@ -87,7 +87,7 @@ export default function GroupsPage() {
       const mensaje = getMensajeError(error)
       // Si estamos offline, no queremos que salten 80 toasts de error de red, 
       // así que podés atajarlo acá o dejarlo como está.
-      if (isOnline) showToast(mensaje, 'error') 
+      if (isOnline) showToast(mensaje, 'error')
     }
   }
 
@@ -107,30 +107,30 @@ export default function GroupsPage() {
         <div className="pl-2.5 pt-2">
           <h2 className="text-xl font-semibold text-foreground">
             {/* 1. Verificamos si es null (no sabemos el saldo todavía) */}
-            {debt === null 
-              ? 'Saldo desconocido' 
-              : debt > 0 
-                ? 'Tenés deuda' 
+            {debt === null
+              ? 'Saldo desconocido'
+              : debt > 0
+                ? 'Tenés deuda'
                 : 'Estás al día'}
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
             {/* 2. Mostramos el mensaje acorde al estado */}
-            {debt === null 
-              ? 'Conectate para actualizar tu estado.' 
-              : debt > 0 
-                ? `Debés ${formatCurrency(debt)}` 
+            {debt === null
+              ? 'Conectate para actualizar tu estado.'
+              : debt > 0
+                ? `Debés ${formatCurrency(debt)}`
                 : 'No debés nada, ¡genial!'}
           </p>
         </div>
         <GroupsSearch onSearchChange={handleSearchChange} onFilterChange={handleFilterChange} />
-    </PageTitle>
+      </PageTitle>
 
       <ColumnContainer>
         {groups.length === 0 && !loading ? (
           // 3. SEPARAMOS LOS CAMINOS: OFFLINE VS VACÍO REAL
           !isOnline ? (
             // A. ESTADO DE ERROR DE RED
-            <div className="flex items-center justify-center min-h-[180px] w-full">
+            <div className="flex items-center justify-center min-h-45 w-full">
               <div className="text-center rounded-xl border-2 border-red-300/50 bg-red-50/50 p-8 shadow-sm max-w-sm w-full dark:border-red-900/50 dark:bg-red-950/20">
                 <p className="text-lg font-semibold text-red-600 dark:text-red-400">
                   ¡Ups! No hay conexión
@@ -145,7 +145,7 @@ export default function GroupsPage() {
             </div>
           ) : (
             // B. ESTADO VACÍO ORIGINAL
-            <div className="flex items-center justify-center min-h-[180px] w-full">
+            <div className="flex items-center justify-center min-h-45 w-full">
               <div className="text-center rounded-xl border-2 border-dashed bg-card p-8 shadow-sm max-w-sm w-full">
                 <p className="text-sm text-muted-foreground">
                   Todavía no tenés grupos...
