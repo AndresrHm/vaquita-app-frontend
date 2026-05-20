@@ -11,9 +11,9 @@ export enum TipoActividad {
 
 export const TipoActividadLabel: Record<TipoActividad, string> = {
     [TipoActividad.MIS_DEUDAS]: 'Mis deudas',
-    [TipoActividad.MIS_DEUDAS_SALDADAS]: 'Mis deudas saldadas',
+    [TipoActividad.MIS_DEUDAS_SALDADAS]: 'Deudas saldadas',
     [TipoActividad.MIS_PAGOS]: 'Mis pagos',
-    [TipoActividad.COBROS_RECIBIDOS]: 'Deuda saldada',
+    [TipoActividad.COBROS_RECIBIDOS]: 'Cobros recibidos',
     [TipoActividad.INGRESO_GRUPO]: 'Ingreso a grupo',
     [TipoActividad.EGRESO_GRUPO]: 'Egreso de grupo',
     [TipoActividad.CUENTA_CREADA]: 'Cuenta creada',
