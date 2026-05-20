@@ -2,14 +2,42 @@ import {
     Receipt,
     Pencil,
     Trash2,
-    CreditCard,
+    CheckCircle2,
     Users,
-    Wallet,
+    UserMinus,
+    UserPlus,
 } from 'lucide-react'
-
 import { TipoActividad } from '@/domain/enums/tipoActividad'
 
 export const activityMeta = {
+    [TipoActividad.MIS_DEUDAS]: {
+        title: 'Nueva deuda',
+        icon: Receipt,
+        color: 'bg-red-500/10 text-red-600',
+        badge: 'Gasto',
+    },
+
+    [TipoActividad.MIS_DEUDAS_SALDADAS]: {
+        title: 'Deuda saldada',
+        icon: CheckCircle2,
+        color: 'bg-emerald-500/10 text-emerald-600',
+        badge: 'Pago',
+    },
+
+    [TipoActividad.MIS_PAGOS]: {
+        title: 'Pago registrado',
+        icon: Receipt, // O el que prefieras usar para representar que alguien te debe
+        color: 'bg-orange-500/10 text-orange-600',
+        badge: 'Gasto',
+    },
+
+    [TipoActividad.COBROS_RECIBIDOS]: {
+        title: 'Cobro recibido',
+        icon: CheckCircle2,
+        color: 'bg-cyan-500/10 text-cyan-600',
+        badge: 'Pago',
+    },
+
     [TipoActividad.INGRESO_GRUPO]: {
         title: 'Ingreso al grupo',
         icon: Users,
@@ -17,45 +45,17 @@ export const activityMeta = {
         badge: 'Grupo',
     },
 
-    [TipoActividad.GASTO_CREADO]: {
-        title: 'Gasto creado',
-        icon: Receipt,
-        color: 'bg-orange-500/10 text-orange-600',
-        badge: 'Gasto',
-    },
-
-    [TipoActividad.GASTO_ACTUALIZADO]: {
-        title: 'Gasto actualizado',
-        icon: Pencil,
+    [TipoActividad.EGRESO_GRUPO]: {
+        title: 'Egreso de grupo',
+        icon: UserMinus,
         color: 'bg-amber-500/10 text-amber-600',
-        badge: 'Gasto',
+        badge: 'Grupo',
     },
 
-    [TipoActividad.GASTO_ELIMINADO]: {
-        title: 'Gasto eliminado',
-        icon: Trash2,
-        color: 'bg-red-500/10 text-red-600',
-        badge: 'Gasto',
-    },
-
-    [TipoActividad.PAGO_REALIZADO]: {
-        title: 'Pago realizado',
-        icon: CreditCard,
-        color: 'bg-emerald-500/10 text-emerald-600',
-        badge: 'Pago',
-    },
-
-    [TipoActividad.PAGO_RECIBIDO]: {
-        title: 'Pago recibido',
-        icon: Wallet,
-        color: 'bg-cyan-500/10 text-cyan-600',
-        badge: 'Pago',
-    },
-
-    [TipoActividad.GASTO_DEUDA]: {
-        title: 'Nueva deuda',
-        icon: Receipt,
-        color: 'bg-red-500/10 text-red-600',
-        badge: 'Deuda',
+    [TipoActividad.CUENTA_CREADA]: {
+        title: 'Cuenta creada',
+        icon: UserPlus,
+        color: 'bg-purple-500/10 text-purple-600',
+        badge: 'Sistema',
     },
 }

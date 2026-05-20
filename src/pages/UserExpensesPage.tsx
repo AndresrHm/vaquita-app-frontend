@@ -1,12 +1,13 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ChangeEvent } from 'react'
 import { ArrowLeft } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 import ColumnContainer from '@/components/common/columnContainer'
 import PageTitle from '@/components/common/pageTitle'
-import { categoryLabelById, INITIAL_FILTERS, MIN_SEARCH_CHARACTERS, PAGE_SIZE, SEARCH_DEBOUNCE_MS } from '@/components/userExpensesPage/constants'
+import { categoryLabelById, INITIAL_FILTERS, MIN_SEARCH_CHARACTERS, PAGE_SIZE } from '@/components/userExpensesPage/constants'
 import ExpensesResultsCard from '@/components/userExpensesPage/ExpensesResultsCard'
+import { debounce, SEARCH_DEBOUNCE_MS } from '@/lib/utils'
 import FiltersTriggerCard from '@/components/userExpensesPage/FiltersTriggerCard'
 import SearchCard from '@/components/userExpensesPage/SearchCard'
 import SortCard from '@/components/userExpensesPage/SortCard'
@@ -65,25 +66,17 @@ export default function UserExpensesPage() {
     setIsFilterModalOpen(true)
   }
 
+  const debouncedSearchTermRef = useRef(
+    debounce((value: string) => {
+      setDebouncedSearchTerm(value)
+    }, SEARCH_DEBOUNCE_MS),
+  )
+
   useEffect(() => {
-    const normalizedSearch = searchTerm.trim()
-
-    if (normalizedSearch.length === 0) {
-      setDebouncedSearchTerm('')
-      return
+    return () => {
+      debouncedSearchTermRef.current.cancel()
     }
-
-    if (normalizedSearch.length < MIN_SEARCH_CHARACTERS) {
-      setDebouncedSearchTerm('')
-      return
-    }
-
-    const timeoutId = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm)
-    }, SEARCH_DEBOUNCE_MS)
-
-    return () => clearTimeout(timeoutId)
-  }, [searchTerm])
+  }, [])
 
   useEffect(() => {
     if (!userId) {
@@ -179,8 +172,19 @@ export default function UserExpensesPage() {
   const hasInvalidFilters = hasInvalidAmountRange || hasInvalidDateRange
 
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(event.target.value)
+    const value = event.target.value
+    setSearchTerm(value)
     setPage(0)
+
+    const normalizedSearch = value.trim()
+
+    if (normalizedSearch.length === 0 || normalizedSearch.length < MIN_SEARCH_CHARACTERS) {
+      debouncedSearchTermRef.current.cancel()
+      setDebouncedSearchTerm('')
+      return
+    }
+
+    debouncedSearchTermRef.current(value)
   }
 
   const handleSortChange = (event: ChangeEvent<HTMLSelectElement>) => {

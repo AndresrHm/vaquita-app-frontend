@@ -1,20 +1,20 @@
 export enum TipoActividad {
+    MIS_DEUDAS = 'MIS_DEUDAS',
+    MIS_DEUDAS_SALDADAS = 'MIS_DEUDAS_SALDADAS',
+    MIS_PAGOS = 'MIS_PAGOS',
+    COBROS_RECIBIDOS = 'COBROS_RECIBIDOS',
     INGRESO_GRUPO = 'INGRESO_GRUPO',
-    GASTO_CREADO = 'GASTO_CREADO',
-    GASTO_ACTUALIZADO = 'GASTO_ACTUALIZADO',
-    GASTO_ELIMINADO = 'GASTO_ELIMINADO',
-    PAGO_REALIZADO = 'PAGO_REALIZADO',
-    PAGO_RECIBIDO = 'PAGO_RECIBIDO',
-    GASTO_DEUDA = 'GASTO_DEUDA',
+    EGRESO_GRUPO = 'EGRESO_GRUPO',
+    CUENTA_CREADA = 'CUENTA_CREADA',
+    // Agregar más tipos según corresponda
 }
 
-// activityLabels.ts
-export const TipoActividadLabels: Record<TipoActividad, string> = {
-    [TipoActividad.INGRESO_GRUPO]: 'Ingreso al grupo',
-    [TipoActividad.GASTO_CREADO]: 'Gasto creado',
-    [TipoActividad.GASTO_ACTUALIZADO]: 'Gasto actualizado',
-    [TipoActividad.GASTO_ELIMINADO]: 'Gasto eliminado',
-    [TipoActividad.PAGO_REALIZADO]: 'Pago realizado',
-    [TipoActividad.PAGO_RECIBIDO]: 'Pago recibido',
-    [TipoActividad.GASTO_DEUDA]: 'Deuda generada',
+export const TipoActividadLabel: Record<TipoActividad, string> = {
+    [TipoActividad.MIS_DEUDAS]: 'Mis deudas',
+    [TipoActividad.MIS_DEUDAS_SALDADAS]: 'Deudas saldadas',
+    [TipoActividad.MIS_PAGOS]: 'Mis pagos',
+    [TipoActividad.COBROS_RECIBIDOS]: 'Cobros recibidos',
+    [TipoActividad.INGRESO_GRUPO]: 'Ingreso a grupo',
+    [TipoActividad.EGRESO_GRUPO]: 'Egreso de grupo',
+    [TipoActividad.CUENTA_CREADA]: 'Cuenta creada',
 }

@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ChevronLeft, Search, Check } from 'lucide-react'
+import { debounce, SEARCH_DEBOUNCE_MS } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { crearGrupo } from '@/service/groupsService'
 import { usuarioService } from '@/service/usuarioService'
@@ -26,12 +27,25 @@ export default function CreateGroupPage() {
   const [description, setDescription] = useState('')
   const [imageUrl, setImageUrl] = useState('')
   const [search, setSearch] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [status, setStatus] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [friends, setFriends] = useState<UsuarioConBalanceDTO[]>([])
   const isOnline = useNetwork()
+
+  const debouncedSearchRef = useRef(
+    debounce((value: string) => {
+      setDebouncedSearch(value)
+    }, SEARCH_DEBOUNCE_MS),
+  )
+
+  useEffect(() => {
+    return () => {
+      debouncedSearchRef.current.cancel()
+    }
+  }, [])
 
   useEffect(() => {
     const userId = Number(window.localStorage.getItem('id'))
@@ -43,10 +57,10 @@ export default function CreateGroupPage() {
   }, [])
 
   const filteredFriends = useMemo(() => {
-    const q = search.trim().toLowerCase()
+    const q = debouncedSearch.trim().toLowerCase()
     if (!q) return friends
     return friends.filter((f) => f.nombre.toLowerCase().includes(q))
-  }, [search, friends])
+  }, [debouncedSearch, friends])
 
   const isValid = groupName.trim().length >= 2
 
@@ -163,7 +177,16 @@ export default function CreateGroupPage() {
             <input
               type="text"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value
+                setSearch(value)
+                if (!value.trim()) {
+                  debouncedSearchRef.current.cancel()
+                  setDebouncedSearch('')
+                  return
+                }
+                debouncedSearchRef.current(value)
+              }}
               placeholder="Buscar amigos"
               className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
             />

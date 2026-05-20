@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '@/customHooks/useToast'
 import { getMensajeError } from '@/utils/getMensajeError'
-import { Search, Check, X, WifiOff } from 'lucide-react' // Sumamos un iconito para el offline
+import { Search, Check, X, WifiOff } from 'lucide-react'
+import { debounce, SEARCH_DEBOUNCE_MS } from '@/lib/utils'
 import PageTitle from '@/components/common/pageTitle'
 import ColumnContainer from '@/components/common/columnContainer'
 import FriendCard from '@/components/friendsPage/FriendCard'
@@ -10,7 +11,6 @@ import FriendCard from '@/components/friendsPage/FriendCard'
 import { usuarioService } from '@/service/usuarioService'
 import type { SolicitudAmistadFront, UsuarioBusquedaDTO } from '@/domain/usuario'
 
-// 1. IMPORTAMOS EL HOOK
 import { useNetwork } from '@/customHooks/useNetwork'
 
 function getInitials(name: string) {
@@ -25,11 +25,11 @@ function getInitials(name: string) {
 export default function FriendsPage() {
   const { showToast } = useToast()
   const navigate = useNavigate()
-  // 2. ACTIVAMOS EL RADAR
   const isOnline = useNetwork()
 
   const [friends, setFriends] = useState<{ id: string; name: string; role: string; due: number; imageUrl: string }[]>([])
   const [searchQuery, setSearchQuery] = useState('')
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('')
 
   const [solicitudes, setSolicitudes] = useState<SolicitudAmistadFront[]>([])
 
@@ -38,6 +38,16 @@ export default function FriendsPage() {
   const [usernameResults, setUsernameResults] = useState<UsuarioBusquedaDTO[]>([])
   const [searchLoading, setSearchLoading] = useState(false)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const debouncedUsernameFetchRef = useRef(debounce((value: string) => {
+    setSearchLoading(true)
+    usuarioService.buscarPorUsername(value.trim())
+      .then(setUsernameResults)
+      .catch((err) => showToast(getMensajeError(err), 'error'))
+      .finally(() => setSearchLoading(false))
+  }, SEARCH_DEBOUNCE_MS))
+  const debouncedSearchQueryRef = useRef(debounce((value: string) => {
+    setDebouncedSearchQuery(value)
+  }, SEARCH_DEBOUNCE_MS))
 
   useEffect(() => {
     loadFriends()
@@ -75,7 +85,7 @@ export default function FriendsPage() {
   }
 
   const filteredFriends = friends.filter((f) =>
-    f.name.toLowerCase().includes(searchQuery.toLowerCase())
+    f.name.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
   )
 
   function handleAceptar(solicitud: SolicitudAmistadFront) {
@@ -122,7 +132,16 @@ export default function FriendsPage() {
               type="text"
               placeholder="Buscar amigos"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value
+                setSearchQuery(value)
+                if (value.trim().length === 0) {
+                  debouncedSearchQueryRef.current.cancel()
+                  setDebouncedSearchQuery('')
+                  return
+                }
+                debouncedSearchQueryRef.current(value)
+              }}
               disabled={!isOnline && friends.length === 0} // Si no hay red ni amigos, al pedo buscar
               className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground disabled:opacity-50"
             />
@@ -227,7 +246,17 @@ export default function FriendsPage() {
               type="text"
               placeholder={isOnline ? 'nombre de usuario' : 'Conectate para buscar amigos'}
               value={usernameSearch}
-              onChange={(e) => setUsernameSearch(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value
+                setUsernameSearch(value)
+                if (value.trim().length < 2) {
+                  debouncedUsernameFetchRef.current.cancel()
+                  setUsernameResults([])
+                  setSearchLoading(false)
+                  return
+                }
+                debouncedUsernameFetchRef.current(value)
+              }}
               disabled={!isOnline}
               className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground disabled:opacity-50 disabled:cursor-not-allowed"
             />
