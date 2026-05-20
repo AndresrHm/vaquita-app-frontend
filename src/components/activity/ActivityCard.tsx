@@ -35,6 +35,7 @@ const getTimeAgo = (fecha: string): string => {
     return fechaDate.toLocaleDateString('es-AR')
 }
 
+<<<<<<< Updated upstream
 export default function ActivityCard({ actividad }: ActivityCardProps) {
     // Forzamos la clave del objeto para asegurarnos de que machee con el enum de Kotlin
     const meta = activityMeta[actividad.tipo as keyof typeof activityMeta]
@@ -47,58 +48,275 @@ export default function ActivityCard({ actividad }: ActivityCardProps) {
                     <div>
                         <p className="font-medium text-foreground">{actividad.descripcion}</p>
                         <p className="mt-0.5 text-[10px]">Tipo sin mapear: {String(actividad.tipo)}</p>
-                    </div>
-                    <span className="whitespace-nowrap">{getTimeAgo(actividad.fecha)}</span>
-                </div>
-            </Card>
-        )
+=======
+const getCurrentUserId = (): number | null => {
+    const storedId = typeof globalThis !== 'undefined' && 'localStorage' in globalThis
+        ? globalThis.localStorage.getItem('id')
+        : null
+
+    return storedId ? Number(storedId) : null
+}
+
+const getDisplayName = (metadata: ActividadMetadata, currentUserId: number | null, fallback?: string) => {
+    if (currentUserId !== null && metadata.usuarioId === currentUserId) {
+        return 'Tú'
     }
 
-    // Extraemos el componente del ícono de forma segura
-    const Icon = meta.icon
+    return metadata.usuarioNombre || fallback || 'Un usuario'
+}
 
-    // Construcción plana de títulos y descripciones basados en lógica directa
-    const esGrupo = actividad.tipo === TipoActividad.INGRESO_GRUPO || actividad.tipo === TipoActividad.EGRESO_GRUPO
-    const tituloDinamico = (esGrupo && metadata.grupoNombre) ? `Grupo: ${metadata.grupoNombre}` : meta.title
-
-    const tieneCategoria = metadata.categoria && (
-        actividad.tipo === TipoActividad.MIS_DEUDAS ||
-        actividad.tipo === TipoActividad.MIS_DEUDAS_SALDADAS ||
-        actividad.tipo === TipoActividad.MIS_PAGOS ||
-        actividad.tipo === TipoActividad.COBROS_RECIBIDOS
-    )
-    const descripcionDinamica = tieneCategoria ? `${actividad.descripcion} • Cat: ${metadata.categoria}` : actividad.descripcion
+const ActivityCardGrupoIngreso = ({ actividad }: ActivityCardProps) => {
+    const metadata = parseMetadata(actividad.metadata)
+    const currentUserId = getCurrentUserId()
+    const displayName = getDisplayName(metadata, currentUserId)
+    const isCurrentUser = currentUserId !== null && metadata.usuarioId === currentUserId
 
     return (
         <Card>
-            <div className="flex items-start gap-4 p-1">
-                <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${meta.color || 'bg-muted'}`}>
-                    {/* Render seguro: si por algún motivo no hay componente de ícono válido, evita romper la pantalla */}
-                    {Icon ? <Icon className="h-5 w-5" /> : <span className="text-xs">⚠️</span>}
-                </div>
-
-                <div className="min-w-0 flex-1">
-                    <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                            <h3 className="truncate text-sm font-semibold text-foreground">
-                                {tituloDinamico}
-                            </h3>
-                            <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
-                                {descripcionDinamica}
-                            </p>
+            <div className="flex items-center justify-between gap-3">
+                <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-sm font-semibold text-blue-600">
+                            IN
                         </div>
-
-                        <div className="flex flex-col items-end gap-2 pt-1">
-                            <span className="whitespace-nowrap text-[11px] text-muted-foreground">
-                                {getTimeAgo(actividad.fecha)}
-                            </span>
-                            <span className="rounded-full bg-muted px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
-                                {meta.badge}
-                            </span>
+                        <div>
+                            <div className="text-sm font-semibold text-foreground">
+                                {isCurrentUser ? 'Te uniste al grupo' : `${displayName} se unió al grupo`}
+                            </div>
                         </div>
                     </div>
                 </div>
+                <div className="whitespace-nowrap text-xs text-muted-foreground">{getTimeAgo(actividad.fecha)}</div>
             </div>
         </Card>
     )
 }
+
+const ActivityCardGrupoEgreso = ({ actividad }: ActivityCardProps) => {
+    const metadata = parseMetadata(actividad.metadata)
+    const currentUserId = getCurrentUserId()
+    const displayName = getDisplayName(metadata, currentUserId)
+    const isCurrentUser = currentUserId !== null && metadata.usuarioId === currentUserId
+
+    return (
+        <Card>
+            <div className="flex items-center justify-between gap-3">
+                <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-100 text-sm font-semibold text-red-600">
+                            OUT
+                        </div>
+                        <div>
+                            <div className="text-sm font-semibold text-foreground">
+                                {isCurrentUser ? 'Saliste del grupo' : `${displayName} salió del grupo`}
+                                const getCurrentUserId = (): number | null => {
+                                    const storedId = typeof globalThis !== 'undefined' && 'localStorage' in globalThis
+                                        ? globalThis.localStorage.getItem('id')
+                                        : null
+
+                                    return storedId ? Number(storedId) : null
+                                }
+
+                                const getDisplayName = (metadata: ActividadMetadata, currentUserId: number | null, fallback?: string) => {
+                                    if (currentUserId !== null && metadata.usuarioId === currentUserId) {
+                                        return 'Tú'
+                                    }
+
+                                    return metadata.usuarioNombre || fallback || 'Un usuario'
+                                }
+
+                                const ActivityCardGrupoIngreso = ({ actividad }: ActivityCardProps) => {
+                                    const metadata = parseMetadata(actividad.metadata)
+                                    const currentUserId = getCurrentUserId()
+                                    const displayName = getDisplayName(metadata, currentUserId)
+                                    const isCurrentUser = currentUserId !== null && metadata.usuarioId === currentUserId
+
+                                    return (
+                                        <Card>
+                                            <div className="flex items-center justify-between gap-3">
+                                                <div className="flex-1">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-sm font-semibold text-blue-600">
+                                                            IN
+                                                        </div>
+                                                        <div>
+                                                            <div className="text-sm font-semibold text-foreground">
+                                                                {isCurrentUser ? 'Te uniste al grupo' : `${displayName} se unió al grupo`}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="whitespace-nowrap text-xs text-muted-foreground">{getTimeAgo(actividad.fecha)}</div>
+                                            </div>
+                                        </Card>
+                                    )
+                                }
+
+                                const ActivityCardGrupoEgreso = ({ actividad }: ActivityCardProps) => {
+                                    const metadata = parseMetadata(actividad.metadata)
+                                    const currentUserId = getCurrentUserId()
+                                    const displayName = getDisplayName(metadata, currentUserId)
+                                    const isCurrentUser = currentUserId !== null && metadata.usuarioId === currentUserId
+
+                                    return (
+                                        <Card>
+                                            <div className="flex items-center justify-between gap-3">
+                                                <div className="flex-1">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-100 text-sm font-semibold text-red-600">
+                                                            OUT
+                                                        </div>
+                                                        <div>
+                                                            <div className="text-sm font-semibold text-foreground">
+                                                                {isCurrentUser ? 'Saliste del grupo' : `${displayName} salió del grupo`}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="whitespace-nowrap text-xs text-muted-foreground">{getTimeAgo(actividad.fecha)}</div>
+                                            </div>
+                                        </Card>
+                                    )
+                                }
+
+                                const ActivityCardGasto = ({ actividad }: ActivityCardProps) => {
+                                    const metadata = parseMetadata(actividad.metadata)
+                                    const icon = actividad.tipo === TipoActividad.GASTO_CREADO ? 'C' : actividad.tipo === TipoActividad.GASTO_ELIMINADO ? 'E' : 'A'
+
+                                    return (
+                                        <Card>
+                                            <div className="flex items-center justify-between gap-3">
+                                                <div className="flex-1">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-100 text-sm">
+                                                            {icon}
+                                                        </div>
+                                                        <div>
+                                                            <div className="text-sm font-semibold text-foreground">{actividad.descripcion}</div>
+                                                            {metadata.categoria && (
+                                                                <div className="mt-1 text-xs text-muted-foreground">Categoría: {metadata.categoria}</div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="whitespace-nowrap text-xs text-muted-foreground">{getTimeAgo(actividad.fecha)}</div>
+                                            </div>
+                                        </Card>
+                                    )
+                                }
+
+                                const ActivityCardGastoDeuda = ({ actividad }: ActivityCardProps) => {
+                                    const metadata = parseMetadata(actividad.metadata)
+                                    const currentUserId = getCurrentUserId()
+                                    const isCurrentUser = currentUserId !== null && metadata.usuarioId === currentUserId
+                                    const hasAcreedor = Boolean(metadata.acreedorNombre)
+                                    const title = hasAcreedor
+                                        ? isCurrentUser
+                                            ? `Tienes una deuda con ${metadata.acreedorNombre}`
+                                            : `${getDisplayName(metadata, currentUserId)} tiene una deuda con ${metadata.acreedorNombre}`
+                                        : actividad.descripcion
+
+                                    return (
+                                        <Card>
+                                            <div className="flex items-center justify-between gap-3">
+                                                <div className="flex-1">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-100 text-sm font-semibold text-orange-600">
+                                                            DE
+                                                        </div>
+                                                        <div>
+                                                            <div className="text-sm font-semibold text-foreground">{title}</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="whitespace-nowrap text-xs text-muted-foreground">{getTimeAgo(actividad.fecha)}</div>
+                                            </div>
+                                        </Card>
+                                    )
+                                }
+
+                                const ActivityCardDeudaSaldada = ({ actividad }: ActivityCardProps) => {
+                                    const metadata = parseMetadata(actividad.metadata)
+                                    const currentUserId = getCurrentUserId()
+                                    const isCurrentUser = currentUserId !== null && metadata.usuarioId === currentUserId
+                                    const hasDeudor = Boolean(metadata.deudorNombre)
+                                    const title = hasDeudor
+                                        ? isCurrentUser
+                                            ? `Pagaste a ${metadata.deudorNombre}`
+                                            : `${getDisplayName(metadata, currentUserId)} pagó a ${metadata.deudorNombre}`
+                                        : actividad.descripcion
+
+                                    return (
+                                        <Card>
+                                            <div className="flex items-center justify-between gap-3">
+                                                <div className="flex-1">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100 text-sm font-semibold text-green-600">
+                                                            PS
+                                                        </div>
+                                                        <div>
+                                                            <div className="text-sm font-semibold text-foreground">{title}</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="whitespace-nowrap text-xs text-muted-foreground">{getTimeAgo(actividad.fecha)}</div>
+                                            </div>
+                                        </Card>
+                                    )
+                                }
+
+                                const ActivityCardPago = ({ actividad }: ActivityCardProps) => {
+                                    const isPago = actividad.tipo === TipoActividad.PAGO_REALIZADO
+                                    const icon = isPago ? 'PR' : 'RR'
+
+                                    return (
+                                        <Card>
+                                            <div className="flex items-center justify-between gap-3">
+                                                <div className="flex-1">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100 text-sm font-semibold text-green-600">
+                                                            {icon}
+                                                        </div>
+                                                        <div>
+                                                            <div className="text-sm font-semibold text-foreground">{actividad.descripcion}</div>
+                                                            <div className="mt-1 text-xs text-muted-foreground">Pago registrado en el sistema</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="whitespace-nowrap text-xs text-muted-foreground">{getTimeAgo(actividad.fecha)}</div>
+                                            </div>
+                                        </Card>
+                                    )
+                                }
+
+                                export default function ActivityCard({ actividad }: ActivityCardProps) {
+                                    switch (actividad.tipo) {
+                                        case TipoActividad.INGRESO_GRUPO:
+                                            return <ActivityCardGrupoIngreso actividad={actividad} />
+                                        case TipoActividad.EGRESO_GRUPO:
+                                            return <ActivityCardGrupoEgreso actividad={actividad} />
+                                        case TipoActividad.GASTO_DEUDA:
+                                            return <ActivityCardGastoDeuda actividad={actividad} />
+                                        case TipoActividad.DEUDA_SALDADA:
+                                            return <ActivityCardDeudaSaldada actividad={actividad} />
+                                        case TipoActividad.GASTO_CREADO:
+                                        case TipoActividad.GASTO_ACTUALIZADO:
+                                        case TipoActividad.GASTO_ELIMINADO:
+                                            return <ActivityCardGasto actividad={actividad} />
+                                        case TipoActividad.PAGO_REALIZADO:
+                                        case TipoActividad.PAGO_RECIBIDO:
+                                            return <ActivityCardPago actividad={actividad} />
+                                        default:
+                                            return (
+                                                <Card>
+                                                    <div className="flex items-center justify-between gap-3">
+                                                        <div>
+                                                            <div className="text-sm font-semibold text-foreground">{actividad.descripcion}</div>
+                                                            <div className="mt-1 text-xs text-muted-foreground">Tipo: {actividad.tipo}</div>
+                                                        </div>
+                                                        <div className="text-xs text-muted-foreground">{getTimeAgo(actividad.fecha)}</div>
+                                                    </div>
+                                                </Card>
+                                            )
+                                    }
+                                }

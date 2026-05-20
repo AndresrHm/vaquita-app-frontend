@@ -13,6 +13,8 @@ import {
   type Miembro,
   type BalanceDTO
 } from '@/domain/Grupo'
+import type { ActividadDTO } from '@/domain/actividadDTO'
+import type { PageResponse } from '@/domain/pageResponse'
 
 // ── Endpoints Refactorizados y Protegidos ─────────────────────────────────────
 
@@ -87,6 +89,19 @@ export async function obtenerGastosGrupo(
 
 export async function obtenerBalancesGrupo(grupoId: number): Promise<BalanceDTO[]> {
   const { data } = await api.get<BalanceDTO[]>(`/grupo/${grupoId}/balances`)
+  return data
+}
+
+export async function obtenerActividadesDeGrupo(
+  grupoId: number,
+  page: number = 0,
+  size: number = 10
+): Promise<PageResponse<ActividadDTO>> {
+  const finalSize = size > 0 ? size : 10
+  const { data } = await api.get<PageResponse<ActividadDTO>>(`/grupo/${grupoId}`, {
+    params: { page, size: finalSize },
+  })
+
   return data
 }
 

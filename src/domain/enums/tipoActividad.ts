@@ -6,7 +6,13 @@ export enum TipoActividad {
     INGRESO_GRUPO = 'INGRESO_GRUPO',
     EGRESO_GRUPO = 'EGRESO_GRUPO',
     CUENTA_CREADA = 'CUENTA_CREADA',
-    // Agregar más tipos según corresponda
+    GASTO_CREADO = 'GASTO_CREADO',
+    GASTO_ACTUALIZADO = 'GASTO_ACTUALIZADO',
+    GASTO_ELIMINADO = 'GASTO_ELIMINADO',
+    GASTO_DEUDA = 'GASTO_DEUDA',
+    DEUDA_SALDADA = 'DEUDA_SALDADA',
+    PAGO_REALIZADO = 'PAGO_REALIZADO',
+    PAGO_RECIBIDO = 'PAGO_RECIBIDO',
 }
 
 export const TipoActividadLabel: Record<TipoActividad, string> = {
@@ -17,4 +23,11 @@ export const TipoActividadLabel: Record<TipoActividad, string> = {
     [TipoActividad.INGRESO_GRUPO]: 'Ingreso a grupo',
     [TipoActividad.EGRESO_GRUPO]: 'Egreso de grupo',
     [TipoActividad.CUENTA_CREADA]: 'Cuenta creada',
+    [TipoActividad.GASTO_CREADO]: 'Gasto creado',
+    [TipoActividad.GASTO_ACTUALIZADO]: 'Gasto actualizado',
+    [TipoActividad.GASTO_ELIMINADO]: 'Gasto eliminado',
+    [TipoActividad.GASTO_DEUDA]: 'Gasto de deuda',
+    [TipoActividad.DEUDA_SALDADA]: 'Deuda saldada',
+    [TipoActividad.PAGO_REALIZADO]: 'Pago realizado',
+    [TipoActividad.PAGO_RECIBIDO]: 'Pago recibido',
 }

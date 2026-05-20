@@ -13,6 +13,7 @@ import { BarChart3 } from 'lucide-react'
 import { useToast } from '@/customHooks/useToast'
 import { getMensajeError } from '@/utils/getMensajeError'
 import { AvatarCircle } from '@/components/common/avatarCircle'
+import GroupActivitiesModal from '@/components/groupsPage/GroupActivitiesModal'
 
 const MEMBERS_PAGE_SIZE = 8
 
@@ -29,6 +30,7 @@ export default function GroupDetailPage() {
     const [modoRataActivo, setModoRataActivo] = useState(false)
     const [showGroupInfo, setShowGroupInfo] = useState(false)
     const [visibleMembersCount, setVisibleMembersCount] = useState(MEMBERS_PAGE_SIZE)
+    const [showActivitiesModal, setShowActivitiesModal] = useState(false)
 
     // Gastos del grupo
     const [gastos, setGastos] = useState<GrupoGastosPorAnioDTO[]>([])
@@ -219,6 +221,24 @@ export default function GroupDetailPage() {
                     </span>
                     Ver balances del grupo
                 </button>
+
+                <button
+                    type="button"
+                    onClick={() => setShowActivitiesModal(true)}
+                    className="w-full inline-flex items-center gap-3 rounded-2xl border border-border bg-background/70 px-3 py-2 text-sm font-medium text-foreground shadow-sm hover:bg-muted transition"
+                >
+                    <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                        <BarChart3 className="h-5 w-5" />
+                    </span>
+                    Ver actividades del grupo
+                </button>
+
+                <GroupActivitiesModal
+                    isOpen={showActivitiesModal}
+                    groupId={grupoId}
+                    groupName={groupDetail.nombre}
+                    onClose={() => setShowActivitiesModal(false)}
+                />
 
                 <div className="mt-4 space-y-6">
                     {gastos.length === 0 ? (

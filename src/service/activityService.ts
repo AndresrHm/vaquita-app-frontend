@@ -59,5 +59,33 @@ export const actividadService = {
             return manejarError(error)
         }
     },
+
+    async obtenerActividadesPorGrupo(
+        grupoId: number,
+        page: number = 0,
+        size: number = 10
+    ): Promise<PageResponse<ActividadDTO>> {
+        const finalSize = size > 0 ? size : 10
+
+        try {
+            const { data } = await api.get<PageResponse<ActividadDTO>>(`actividad/grupo/${grupoId}`, {
+                params: { page, size: finalSize },
+                paramsSerializer: {
+                    indexes: null,
+                },
+            })
+
+            console.log(`actividadService.obtenerActividadesPorGrupo - respuesta actividad/grupo/${grupoId}:`, data)
+
+            return data
+        } catch (error: any) {
+            // Si no hay red, delegamos en el manejador general para mantener consistencia
+            if (!navigator.onLine || error.message === 'Network Error') {
+                // Sin caché específico para este endpoint por ahora
+            }
+
+            return manejarError(error)
+        }
+    },
 }
 

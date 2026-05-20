@@ -16,6 +16,7 @@ interface ActivityListProps {
 export default function ActivityList({ searchText, tipo, desde, hasta, size = 6 }: ActivityListProps) {
     const { showToast } = useToast()
     const [actividades, setActividades] = useState<ActividadDTO[]>([])
+    const [rawResponse, setRawResponse] = useState<PageResponse<ActividadDTO> | null>(null)
     const [page, setPage] = useState(0)
     const [pageInfo, setPageInfo] = useState<Omit<PageResponse<ActividadDTO>, 'content'> | null>(null)
     const [isLoading, setIsLoading] = useState(true)
@@ -35,6 +36,11 @@ export default function ActivityList({ searchText, tipo, desde, hasta, size = 6 
                     page,
                     size,
                 })
+
+                console.log('Respuesta completa de actividades:', result)
+                console.log('Contenido de actividades:', result.content)
+
+                setRawResponse(result)
                 setActividades(result.content)
                 setPageInfo({
                     page: result.page,
@@ -98,7 +104,16 @@ export default function ActivityList({ searchText, tipo, desde, hasta, size = 6 
                 ))}
             </div>
 
-            {/* PAGINACIÓN FIJA */}
+            {rawResponse && (
+                <details className="rounded-lg border border-border bg-muted/30 p-3 text-xs">
+                    <summary className="cursor-pointer font-medium text-foreground">JSON crudo de la respuesta</summary>
+                    <pre className="mt-3 overflow-x-auto whitespace-pre-wrap wrap-break-word text-[11px] leading-4 text-muted-foreground">
+                        {JSON.stringify(rawResponse, null, 2)}
+                    </pre>
+                </details>
+            )}
+
+            {/* Paginación */}
             {pageInfo && pageInfo.totalPages > 1 && (
                 <div
                     className="
