@@ -13,9 +13,23 @@ class ExpenseService {
     }
 
     async getUserDebt(): Promise<number> {
-        return getAxiosData(() =>
-            api.get<number>('/gasto/me/deuda')
-        )
+        try {
+            const { data } = await api.get('/gasto/me/deuda');
+            
+            // Guardamos la deuda actualizada
+            localStorage.setItem('cache_deuda_usuario', data.toString());
+            
+            return data;
+        } catch (error: any) {
+            if (!navigator.onLine || error.message === 'Network Error') {
+                const deudaGuardada = localStorage.getItem('cache_deuda_usuario');
+                
+                if (deudaGuardada) {
+                return Number(deudaGuardada) // Lo devolvemos como número
+                }
+            }
+            throw error;
+        }
     }
 
     async getExpensesFiltered(

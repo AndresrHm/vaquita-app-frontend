@@ -4,8 +4,9 @@ import { ArrowLeft, Save, Camera } from 'lucide-react'
 import ColumnContainer from '@/components/common/columnContainer'
 import { usuarioService } from '@/service/usuarioService'
 import type { UsuarioEditarDTO } from '@/domain/usuario'
-import { useToast } from '@/customHooks/useToast' 
+import { useToast } from '@/customHooks/useToast'
 import { getMensajeError } from '@/utils/getMensajeError'
+import PageTitle from '@/components/common/pageTitle'
 
 function getInitials(name: string) {
   return name
@@ -44,7 +45,7 @@ export default function SettingsAccountPage() {
 
     const reader = new FileReader()
     reader.onloadend = () => {
-      setImagenUrl(reader.result as string) 
+      setImagenUrl(reader.result as string)
     }
     reader.readAsDataURL(file)
   }
@@ -59,13 +60,13 @@ export default function SettingsAccountPage() {
     try {
       const dto: UsuarioEditarDTO = { nombre, email, imagenUrl }
       await usuarioService.actualizarPerfil(dto)
-      
+
       window.localStorage.setItem('user_name', nombre)
       window.localStorage.setItem('user_email', email)
       window.localStorage.setItem('user_image', imagenUrl)
 
       showToast('¡Perfil actualizado con éxito!', 'success')
-      
+
       // Opcional: Volver a la página de cuenta después de un segundo
       setTimeout(() => navigate('/account'), 1000)
     } catch (error: unknown) {
@@ -78,20 +79,15 @@ export default function SettingsAccountPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-3 pt-4">
-        <button
-          onClick={() => navigate(-1)}
-          className="flex h-8 w-8 items-center justify-center rounded-full border border-border bg-background/70 text-muted-foreground hover:text-foreground"
-          aria-label="Volver"
-        >
-          <ArrowLeft className="h-4 w-4" />
-        </button>
-        <span className="text-sm font-medium text-muted-foreground">Ajustes de cuenta</span>
-      </div>
+      <PageTitle
+        title="Tu perfil"
+        onBack={() => { window.history.back() }}
+      >
+      </PageTitle>
 
       <ColumnContainer>
         <div className="flex flex-col gap-6 py-6 px-4">
-          
+
           {/* Avatar con selector de imagen local */}
           <div className="flex flex-col items-center gap-3">
             <div className="relative group">
@@ -106,23 +102,23 @@ export default function SettingsAccountPage() {
                   {getInitials(nombre || 'Yo')}
                 </div>
               )}
-              
-              <label 
-                htmlFor="file-upload" 
+
+              <label
+                htmlFor="file-upload"
                 className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity"
               >
                 <Camera className="h-6 w-6 text-white" />
               </label>
             </div>
 
-            <input 
+            <input
               id="file-upload"
-              type="file" 
+              type="file"
               accept="image/*"
               onChange={handleFileChange}
-              className="hidden" 
+              className="hidden"
             />
-            
+
             <span className="text-xs font-medium text-muted-foreground">
               Click en la foto para cambiar
             </span>

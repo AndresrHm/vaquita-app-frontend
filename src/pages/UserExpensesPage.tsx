@@ -194,19 +194,30 @@ export default function UserExpensesPage() {
 
   return (
     <section className="space-y-4">
-      <PageTitle title="Mis gastos" subtitle="Tu historial de gastos">
-        <Button asChild variant="ghost" size="sm" className="rounded-full px-3">
-          <Link to="/account">
-            <ArrowLeft className="h-4 w-4" />
-            Volver
-          </Link>
-        </Button>
+      <PageTitle
+        title="Mis gastos"
+        subtitle="Tu historial de gastos"
+        onBack={() => { window.history.back() }}
+      >
       </PageTitle>
 
       <ColumnContainer>
-        <SearchCard searchTerm={searchTerm} onSearchChange={handleSearchChange} />
-        <SortCard sortBy={sortBy} onSortChange={handleSortChange} />
-        <FiltersTriggerCard activeFiltersCount={activeFiltersCount} onOpen={openFiltersModal} />
+        <div className="flex items-center gap-2 overflow-x-hidden">
+          <SearchCard
+            searchTerm={searchTerm}
+            onSearchChange={handleSearchChange}
+          >
+            <SortCard
+              sortBy={sortBy}
+              onSortChange={handleSortChange}
+            />
+
+            <FiltersTriggerCard
+              activeFiltersCount={activeFiltersCount}
+              onOpen={openFiltersModal}
+            />
+          </SearchCard>
+        </div>
 
         <ExpensesResultsCard
           loading={loading}

@@ -87,6 +87,7 @@ export type ScanToExpenseNavParams = {
     date?: string
     category?: CategoryType
     items?: LineItem[]
+    attachments?: ExpenseAttachment[]
 }
 
 /**
@@ -99,4 +100,11 @@ export type SmartScanPageState = {
     imagePreview: string | null
     errorMsg: string | null
     editableResult: ScanResult | null
+}
+
+// Para las imágenes
+export type ExpenseAttachment = {
+    id: string
+    file: File
+    preview: string
 }

@@ -8,6 +8,8 @@ import { usuarioService } from '@/service/usuarioService'
 import type { UsuarioConBalanceDTO } from '@/domain/usuario'
 import { useToast } from '@/customHooks/useToast'
 import { getMensajeError } from '@/utils/getMensajeError'
+import { useNetwork } from '@/customHooks/useNetwork'
+import ButtonSkeleton from '@/components/common/ButtonSkeleton'
 
 function getInitials(name: string) {
   return name
@@ -31,6 +33,7 @@ export default function CreateGroupPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [friends, setFriends] = useState<UsuarioConBalanceDTO[]>([])
+  const isOnline = useNetwork()
 
   const debouncedSearchRef = useRef(
     debounce((value: string) => {
@@ -245,9 +248,13 @@ export default function CreateGroupPage() {
           </div>
         )}
 
-        <Button className="w-full rounded-xl" disabled={!isValid || loading} type="submit">
-          {loading ? 'Creando...' : 'Crear grupo'}
-        </Button>
+        {loading ? (
+          <ButtonSkeleton className="rounded-xl" />
+        ) : (
+          <Button className="w-full rounded-xl" disabled={!isOnline || !isValid} type="submit">
+            Crear grupo
+          </Button>
+        )}
       </form>
     </div>
   )

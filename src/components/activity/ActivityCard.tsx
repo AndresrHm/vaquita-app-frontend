@@ -1,6 +1,8 @@
-import type { ActividadDTO, ActividadMetadata } from '@/domain/actividadDTO'
-import { TipoActividad, TipoActividadLabel } from '@/domain/enums/tipoActividad'
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import Card from '@/components/common/card'
+import type { ActividadDTO, ActividadMetadata } from '@/domain/actividadDTO'
+import { TipoActividad } from '@/domain/enums/tipoActividad'
+import { activityMeta } from './activityMeta'
 
 interface ActivityCardProps {
     actividad: ActividadDTO
@@ -16,121 +18,87 @@ const parseMetadata = (metadata: string): ActividadMetadata => {
 
 const getTimeAgo = (fecha: string): string => {
     const now = new Date()
-    const fecha_date = new Date(fecha)
-    const diffMs = now.getTime() - fecha_date.getTime()
-    const diffSecs = Math.floor(diffMs / 1000)
-    const diffMins = Math.floor(diffSecs / 60)
-    const diffHours = Math.floor(diffMins / 60)
-    const diffDays = Math.floor(diffHours / 24)
+    const fechaDate = new Date(fecha)
+    const diffMs = now.getTime() - fechaDate.getTime()
 
-    if (diffSecs < 60) return 'hace unos segundos'
-    if (diffMins < 60) return `hace ${diffMins} m`
-    if (diffHours < 24) return `hace ${diffHours} h`
-    if (diffDays === 1) return 'Ayer'
-    if (diffDays < 7) return `hace ${diffDays} d`
-    return fecha_date.toLocaleDateString('es-ES')
+    const secs = Math.floor(diffMs / 1000)
+    const mins = Math.floor(secs / 60)
+    const hours = Math.floor(mins / 60)
+    const days = Math.floor(hours / 24)
+
+    if (secs < 60) return 'Hace unos segundos'
+    if (mins < 60) return `Hace ${mins}m`
+    if (hours < 24) return `Hace ${hours}h`
+    if (days === 1) return 'Ayer'
+    if (days < 7) return `Hace ${days}d`
+
+    return fechaDate.toLocaleDateString('es-AR')
 }
 
-// Componentes específicos por tipo de actividad
-const ActivityCardGrupo = ({ actividad }: ActivityCardProps) => {
-    const metadata = parseMetadata(actividad.metadata)
-
-    return (
-        <Card>
-            <div className="flex items-center justify-between gap-3">
-                <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-sm font-semibold text-blue-600">
-                            👥
-                        </div>
-                        <div>
-                            <div className="text-sm font-semibold text-foreground">
-                                {metadata.grupoNombre ? `Grupo: ${metadata.grupoNombre}` : 'Te agregaron a un grupo'}
-                            </div>
-                            <div className="mt-1 text-xs text-muted-foreground">{actividad.descripcion}</div>
-                        </div>
-                    </div>
-                </div>
-                <div className="whitespace-nowrap text-xs text-muted-foreground">{getTimeAgo(actividad.fecha)}</div>
-            </div>
-        </Card>
-    )
-}
-
-const ActivityCardGasto = ({ actividad }: ActivityCardProps) => {
-    const metadata = parseMetadata(actividad.metadata)
-    const isCreated = actividad.tipo === TipoActividad.MIS_DEUDAS
-    const isDeleted = actividad.tipo === TipoActividad.MIS_PAGOS
-    const icon = isCreated ? '➕' : isDeleted ? '🗑️' : '✏️'
-
-    return (
-        <Card>
-            <div className="flex items-center justify-between gap-3">
-                <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-100 text-sm">
-                            {icon}
-                        </div>
-                        <div>
-                            <div className="text-sm font-semibold text-foreground">{actividad.descripcion}</div>
-                            {metadata.categoria && (
-                                <div className="mt-1 text-xs text-muted-foreground">Categoría: {metadata.categoria}</div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-                <div className="whitespace-nowrap text-xs text-muted-foreground">{getTimeAgo(actividad.fecha)}</div>
-            </div>
-        </Card>
-    )
-}
-
-const ActivityCardCuenta = ({ actividad }: ActivityCardProps) => {
-    return (
-        <Card>
-            <div className="flex items-center justify-between gap-3">
-                <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-sm">
-                            👤
-                        </div>
-                        <div>
-                            <div className="text-sm font-semibold text-foreground">{actividad.descripcion}</div>
-                            <div className="mt-1 text-xs text-muted-foreground">Cuenta registrada en el sistema</div>
-                        </div>
-                    </div>
-                </div>
-                <div className="whitespace-nowrap text-xs text-muted-foreground">{getTimeAgo(actividad.fecha)}</div>
-            </div>
-        </Card>
-    )
-}
-
-// Componente selector de tipo de actividad
 export default function ActivityCard({ actividad }: ActivityCardProps) {
-    switch (actividad.tipo) {
-        case TipoActividad.INGRESO_GRUPO:
-            return <ActivityCardGrupo actividad={actividad} />
-        case TipoActividad.EGRESO_GRUPO:
-            return <ActivityCardGrupo actividad={actividad} />
-        case TipoActividad.MIS_DEUDAS:
-        case TipoActividad.MIS_PAGOS:
-        case TipoActividad.COBROS_RECIBIDOS:
-        case TipoActividad.MIS_DEUDAS_SALDADAS:
-            return <ActivityCardGasto actividad={actividad} />
-        case TipoActividad.CUENTA_CREADA:
-            return <ActivityCardCuenta actividad={actividad} />
-        default:
-            return (
-                <Card>
-                    <div className="flex items-center justify-between gap-3">
-                        <div>
-                            <div className="text-sm font-semibold text-foreground">{actividad.descripcion}</div>
-                            <div className="mt-1 text-xs text-muted-foreground">Tipo: {TipoActividadLabel[actividad.tipo] ?? actividad.tipo}</div>
-                        </div>
-                        <div className="text-xs text-muted-foreground">{getTimeAgo(actividad.fecha)}</div>
+    // Forzamos la clave del objeto para asegurarnos de que machee con el enum de Kotlin
+    const meta = activityMeta[actividad.tipo as keyof typeof activityMeta]
+    const metadata = parseMetadata(actividad.metadata)
+
+    if (!meta) {
+        return (
+            <Card>
+                <div className="flex items-center justify-between p-2 text-xs text-muted-foreground">
+                    <div>
+                        <p className="font-medium text-foreground">{actividad.descripcion}</p>
+                        <p className="mt-0.5 text-[10px]">Tipo sin mapear: {String(actividad.tipo)}</p>
                     </div>
-                </Card>
-            )
+                    <span className="whitespace-nowrap">{getTimeAgo(actividad.fecha)}</span>
+                </div>
+            </Card>
+        )
     }
+
+    // Extraemos el componente del ícono de forma segura
+    const Icon = meta.icon
+
+    // Construcción plana de títulos y descripciones basados en lógica directa
+    const esGrupo = actividad.tipo === TipoActividad.INGRESO_GRUPO || actividad.tipo === TipoActividad.EGRESO_GRUPO
+    const tituloDinamico = (esGrupo && metadata.grupoNombre) ? `Grupo: ${metadata.grupoNombre}` : meta.title
+
+    const tieneCategoria = metadata.categoria && (
+        actividad.tipo === TipoActividad.MIS_DEUDAS ||
+        actividad.tipo === TipoActividad.MIS_DEUDAS_SALDADAS ||
+        actividad.tipo === TipoActividad.MIS_PAGOS ||
+        actividad.tipo === TipoActividad.COBROS_RECIBIDOS
+    )
+    const descripcionDinamica = tieneCategoria ? `${actividad.descripcion} • Cat: ${metadata.categoria}` : actividad.descripcion
+
+    return (
+        <Card>
+            <div className="flex items-start gap-4 p-1">
+                <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${meta.color || 'bg-muted'}`}>
+                    {/* Render seguro: si por algún motivo no hay componente de ícono válido, evita romper la pantalla */}
+                    {Icon ? <Icon className="h-5 w-5" /> : <span className="text-xs">⚠️</span>}
+                </div>
+
+                <div className="min-w-0 flex-1">
+                    <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                            <h3 className="truncate text-sm font-semibold text-foreground">
+                                {tituloDinamico}
+                            </h3>
+                            <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
+                                {descripcionDinamica}
+                            </p>
+                        </div>
+
+                        <div className="flex flex-col items-end gap-2 pt-1">
+                            <span className="whitespace-nowrap text-[11px] text-muted-foreground">
+                                {getTimeAgo(actividad.fecha)}
+                            </span>
+                            <span className="rounded-full bg-muted px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
+                                {meta.badge}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </Card>
+    )
 }

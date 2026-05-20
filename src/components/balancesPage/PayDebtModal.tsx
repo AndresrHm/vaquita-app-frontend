@@ -5,6 +5,8 @@ import { Input } from '@/components/ui/input'
 import { formatCurrency } from '@/utils/formatCurrency'
 import { useToast } from '@/customHooks/useToast'
 import { pagarDeudaGrupoAUsuario, pagarDeudaGlobalAUsuario } from '@/service/groupsService'
+import { useNetwork } from '@/customHooks/useNetwork'
+import ButtonSkeleton from '../common/ButtonSkeleton'
 
 interface PayDebtModalProps {
   grupoId?: number
@@ -24,7 +26,9 @@ export default function PayDebtModal({
   const [open, setOpen] = useState(false)
   const [monto, setMonto] = useState(totalMonto.toFixed(2))
   const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
   const { showToast } = useToast()
+  const isOnline = useNetwork()
 
   useEffect(() => {
     if (open) {
@@ -60,6 +64,8 @@ export default function PayDebtModal({
       return
     }
 
+    setLoading(true)
+
     try {
       if (grupoId !== undefined) {
         await pagarDeudaGrupoAUsuario(grupoId, acreedorId, parsedMonto)
@@ -72,12 +78,14 @@ export default function PayDebtModal({
     } catch (err) {
       console.error('Error al pagar deuda', err)
       showToast('No se pudo procesar el pago. Intentá de nuevo.', 'error')
+    } finally {
+      setLoading(false)
     }
   }
 
   return (
     <>
-      <Button variant="secondary" size="sm" onClick={() => setOpen(true)}>
+      <Button disabled={!isOnline} variant="secondary" size="sm" onClick={() => setOpen(true)}>
         Pagar
       </Button>
       <Modal
@@ -87,12 +95,19 @@ export default function PayDebtModal({
         onClose={() => setOpen(false)}
         footer={
           <>
-            <Button variant="ghost" onClick={() => setOpen(false)} type="button">
+            {/* Bloqueamos también el botón de cancelar si ya se está enviando el pago */}
+            <Button variant="ghost" onClick={() => setOpen(false)} type="button" disabled={loading}>
               Cancelar
             </Button>
-            <Button onClick={handleSubmit} type="button" disabled={isSubmitDisabled}>
-              Confirmar pago
-            </Button>
+            
+            {/* 👇 Acá metemos la magia del Skeleton */}
+            {loading ? (
+              <ButtonSkeleton className="w-32" /> // w-32 es más o menos el ancho del botón "Confirmar pago"
+            ) : (
+              <Button onClick={handleSubmit} type="button" disabled={isSubmitDisabled}>
+                Confirmar pago
+              </Button>
+            )}
           </>
         }
       >

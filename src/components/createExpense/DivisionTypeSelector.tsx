@@ -9,6 +9,8 @@ export default function DivisionTypeSelector({ value, onChange }: Props) {
   const options = [
     { id: TipoDivision.PARTES_IGUALES, label: 'Partes Iguales' },
     { id: TipoDivision.PARTES_EXACTAS, label: 'Partes Exactas' },
+    { id: TipoDivision.PORCENTUAL, label: 'Porcentual' },
+    { id: TipoDivision.ALEATORIO, label: 'Aleatorio' },
   ]
 
   return (

@@ -20,26 +20,44 @@ interface ObtenerActividadesParams {
 
 export const actividadService = {
     async obtenerActividades(params: ObtenerActividadesParams = {}): Promise<PageResponse<ActividadDTO>> {
-        try {
-            const searchText = params.searchText?.trim()
-            const requestParams = {
-                searchText: searchText || undefined,
-                tipo: params.tipo ?? undefined,
-                desde: params.desde ?? undefined,
-                hasta: params.hasta ?? undefined,
-                page: params.page ?? 0,
-                size: params.size ?? 6,
-            }
+        const searchText = params.searchText?.trim()
+        const requestParams = {
+            searchText: searchText || undefined,
+            tipo: params.tipo ?? undefined,
+            desde: params.desde ?? undefined,
+            hasta: params.hasta ?? undefined,
+            page: params.page ?? 0,
+            size: params.size ?? 6,
+        }
 
+        // 1. Armamos una llave única combinando tooooodos los filtros posibles
+        const cacheKey = `cache_actv_p${requestParams.page}_s${requestParams.size}_txt_${requestParams.searchText || 'all'}_tipo_${requestParams.tipo || 'all'}_d_${requestParams.desde || 'all'}_h_${requestParams.hasta || 'all'}`
+
+        try {
             const { data } = await api.get<PageResponse<ActividadDTO>>('/actividad/me', {
                 params: requestParams,
                 paramsSerializer: {
                     indexes: null,
                 },
             })
+            
+            // 2. Si la petición sale bien, guardamos esta búsqueda específica
+            localStorage.setItem(cacheKey, JSON.stringify(data))
+            
             return data
         } catch (error: any) {
+            // 3. Si nos quedamos sin internet, buscamos exactamente lo mismo en la mochila
+            if (!navigator.onLine || error.message === 'Network Error') {
+                const cacheGuardado = localStorage.getItem(cacheKey)
+                
+                if (cacheGuardado) {
+                    return JSON.parse(cacheGuardado)
+                }
+            }
+            
+            // 4. Si no es un problema de red o no hay nada cacheado, dejamos que actúe tu manejador normal
             return manejarError(error)
         }
     },
 }
+

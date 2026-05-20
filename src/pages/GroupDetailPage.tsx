@@ -161,9 +161,9 @@ export default function GroupDetailPage() {
                 {showGroupInfo && (
                     <div className="rounded-2xl border border-border bg-muted/20 p-4 space-y-4">
                         <div>
-                            <h2 className="text-sm font-semibold text-foreground">Descripcion</h2>
+                            <h2 className="text-sm font-semibold text-foreground">Descripción</h2>
                             <p className="mt-1 text-sm text-foreground">
-                                {groupDetail.descripcion || 'Sin descripcion'}
+                                {groupDetail.descripcion || 'Sin descripción'}
                             </p>
                         </div>
 
@@ -229,12 +229,13 @@ export default function GroupDetailPage() {
                                 month: m.month,
                                 expenses: m.expenses.map((e) => ({
                                     id: String(e.id),
-                                    date: { day: e.day },
+                                    date: { day: e.day, month: m.month, year: yearGroup.year },
                                     title: e.title,
                                     amount: e.amount,
                                     currency: e.currency,
                                     paymentType: e.paymentType as Expense['paymentType'],
                                     imageUrl: e.imageUrl,
+                                    tieneTicket: e.tieneTicket,
                                 })),
                             }))
 

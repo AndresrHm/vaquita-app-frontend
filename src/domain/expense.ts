@@ -16,7 +16,7 @@ export type ExpenseJSON = {
     fecha: string
     items: ExpenseItemDTO[]
     tipoGasto: TipoDivision
-    asignacionesExactas: ExpenseAllocationDTO[]
+    asignacionesExactas?: ExpenseAllocationDTO[]
 }
 
 export type ExpenseParticipantJSON = {
@@ -39,8 +39,8 @@ export type ExpenseFilteredJSON = {
 }
 
 const DEFAULT_CATEGORY = 'OTROS'
-const MAX_CHARACTERS_DESCRIPTION = 50
-const MAX_CHARACTERS_PRODUCT_NAME = 20
+const MAX_CHARACTERS_DESCRIPTION = 200
+const MAX_CHARACTERS_PRODUCT_NAME = 50
 
 export class Expense extends Validable {
     id: number = 0
@@ -49,14 +49,32 @@ export class Expense extends Validable {
         public pagadorId = 0,
         public participantIds: number[] = [],
         public description = '',
-        public total = 0,
+        public _total = 0,
         public category = DEFAULT_CATEGORY,
         public date = new Date().toISOString().split('T')[0],
         public items: ExpenseItem[] = [],
         public tipoDivision: TipoDivision = TipoDivision.PARTES_IGUALES,
         public allocations: ExpenseAllocation[] = [],
+        public useItemsTotal = false,
     ) {
         super()
+    }
+
+    get total(): number {
+        if (this.useItemsTotal && this.items.length > 0) {
+            const totalEnCentavos = this.items.reduce(
+                (acc, item) => acc + Math.round(item.total() * 100),
+                0
+            )
+
+            return Number((totalEnCentavos / 100).toFixed(2))
+        }
+
+        return Number(this._total.toFixed(2))
+    }
+
+    set total(value: number) {
+        this._total = Number(value.toFixed(2))
     }
 
     validarEspecifico(): void {
@@ -97,8 +115,17 @@ export class Expense extends Validable {
                 this.agregarError(new InputError('items', 'Cada ítem debe tener nombre, cantidad y precio unitario válidos'))
             }
 
-            if (this.total != this.totalItems()) {
-                this.agregarError(new InputError('itemsTotal', 'La suma de los valores de los ítems debe ser igual al total'))
+            if (!this.useItemsTotal) {
+                const sumaItemsEnCentavos = this.items.reduce(
+                    (acc, item) => acc + Math.round(item.total() * 100),
+                    0
+                )
+
+                const totalEnCentavos = Math.round(this.total * 100)
+
+                if (sumaItemsEnCentavos !== totalEnCentavos) {
+                    this.agregarError(new InputError('itemsTotal', 'El total manual debe coincidir con la suma de los ítems'))
+                }
             }
 
             const invalidProductName = this.items.find(
@@ -109,6 +136,20 @@ export class Expense extends Validable {
                 this.agregarError(new InputError('itemsName', `El nombre de un producto no puede superar los ${MAX_CHARACTERS_PRODUCT_NAME} caracteres`))
             }
         }
+
+        if (this.tipoDivision === TipoDivision.PARTES_EXACTAS) {
+            const sumaAsignada = this.allocations.reduce((acc, curr) => acc + curr.total, 0)
+            if (Math.abs(sumaAsignada - this.total) > 0.01) {
+                this.agregarError(new InputError('allocations', 'La suma de las asignaciones exactas debe ser igual al total'))
+            }
+        }
+
+        if (this.tipoDivision === TipoDivision.PORCENTUAL) {
+            const sumaPorcentajes = this.allocations.reduce((acc, curr) => acc + curr.total, 0)
+            if (Math.abs(sumaPorcentajes - 100) > 0.01) {
+                this.agregarError(new InputError('allocations', 'La suma de los porcentajes debe ser 100%'))
+            }
+        }
     }
 
     toJSON(): ExpenseJSON {
@@ -117,7 +158,7 @@ export class Expense extends Validable {
             asignacionesMap[alloc.participantId] = alloc.total
         })
 
-        return {
+        const result: ExpenseJSON = {
             grupoID: this.groupId,
             pagadorID: this.pagadorId,
             participantesIDs: this.participantIds,
@@ -126,9 +167,14 @@ export class Expense extends Validable {
             categoria: this.category,
             fecha: this.date,
             items: this.items.map((item) => item.toDTO()),
-            asignacionesExactas: asignacionesMap as any,
             tipoGasto: this.tipoDivision
         }
+
+        if (this.tipoDivision === TipoDivision.PARTES_EXACTAS || this.tipoDivision === TipoDivision.PORCENTUAL) {
+            result.asignacionesExactas = asignacionesMap as any
+        }
+
+        return result
     }
     /* No se usa (por ahora)
         static fromJSON(json: ExpenseJSON): Expense {
@@ -152,19 +198,13 @@ export class Expense extends Validable {
             expense.pagadorId,
             expense.participantIds,
             expense.description,
-            expense.total,
+            expense._total,
             expense.category,
             expense.date,
             expense.items.map((item) => new ExpenseItem(item.nombre, item.cantidad, item.precioUnitario)),
             expense.tipoDivision,
             expense.allocations.map((allocation) => new ExpenseAllocation(allocation.participantId, allocation.total)),
+            expense.useItemsTotal,
         )
     }
-
-    private totalItems() {
-        var total = 0
-        this.items.forEach(it => total += it.total())
-        return total
-    }
-
 }

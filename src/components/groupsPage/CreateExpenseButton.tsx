@@ -3,7 +3,7 @@ import { PlusCircle } from 'lucide-react'
 
 export default function CreateExpenseButton({ onClick }: { onClick?: () => void }) {
     return (
-        <div className="fixed right-4 bottom-24 z-[60]">
+        <div className="fixed bottom-24 right-4 z-10">
             <button
                 type="button"
                 onClick={onClick}

@@ -95,6 +95,7 @@ export type GrupoGastoItemDTO = {
   currency: string
   paymentType: string
   imageUrl: string
+  tieneTicket: boolean
 }
 
 export type GrupoGastosPorMesDTO = {
@@ -157,4 +158,14 @@ export type BalanceDTO = {
   acreedorId: number,
   acreedorNombre: string,
   monto: number
+}
+
+export type BalanceConGrupoDTO = {
+  deudorId: number,
+  deudorNombre: string,
+  acreedorId: number,
+  acreedorNombre: string,
+  monto: number,
+  grupoId: number,
+  grupoNombre: string,
 }

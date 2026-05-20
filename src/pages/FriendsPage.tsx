@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '@/customHooks/useToast'
 import { getMensajeError } from '@/utils/getMensajeError'
-import { Search, Check, X } from 'lucide-react'
+import { Search, Check, X, WifiOff } from 'lucide-react'
 import { debounce, SEARCH_DEBOUNCE_MS } from '@/lib/utils'
 import PageTitle from '@/components/common/pageTitle'
 import ColumnContainer from '@/components/common/columnContainer'
@@ -10,6 +10,8 @@ import FriendCard from '@/components/friendsPage/FriendCard'
 
 import { usuarioService } from '@/service/usuarioService'
 import type { SolicitudAmistadFront, UsuarioBusquedaDTO } from '@/domain/usuario'
+
+import { useNetwork } from '@/customHooks/useNetwork'
 
 function getInitials(name: string) {
   return name
@@ -23,8 +25,7 @@ function getInitials(name: string) {
 export default function FriendsPage() {
   const { showToast } = useToast()
   const navigate = useNavigate()
-  // Solo lo usamos para filtrar que no nos aparezcamos en la lista de "Agregar amigos"
-  const currentUserId = Number(localStorage.getItem('id'))
+  const isOnline = useNetwork()
 
   const [friends, setFriends] = useState<{ id: string; name: string; role: string; due: number; imageUrl: string }[]>([])
   const [searchQuery, setSearchQuery] = useState('')
@@ -36,6 +37,7 @@ export default function FriendsPage() {
   const [usernameSearch, setUsernameSearch] = useState('')
   const [usernameResults, setUsernameResults] = useState<UsuarioBusquedaDTO[]>([])
   const [searchLoading, setSearchLoading] = useState(false)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const debouncedUsernameFetchRef = useRef(debounce((value: string) => {
     setSearchLoading(true)
     usuarioService.buscarPorUsername(value.trim())
@@ -51,32 +53,43 @@ export default function FriendsPage() {
     loadFriends()
     usuarioService.obtenerSolicitudesPendientes()
       .then(setSolicitudes)
-      .catch((err) => showToast(getMensajeError(err), 'error'))
-  }, [])
+      .catch((err) => {
+        if (isOnline) showToast(getMensajeError(err), 'error')
+      })
+  }, [isOnline]) // Recargamos si vuelve el internet
 
   useEffect(() => {
-    return () => {
-      debouncedUsernameFetchRef.current.cancel()
-      debouncedSearchQueryRef.current.cancel()
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    if (usernameSearch.trim().length < 2 || !isOnline) { // Frenamos la búsqueda si estamos offline
+      setUsernameResults([])
+      return
     }
-  }, [])
+    debounceRef.current = setTimeout(() => {
+      setSearchLoading(true)
+      usuarioService.buscarPorUsername(usernameSearch.trim())
+        .then(setUsernameResults)
+        .catch((err) => showToast(getMensajeError(err), 'error'))
+        .finally(() => setSearchLoading(false))
+    }, 400)
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
+  }, [usernameSearch, isOnline])
 
   const loadFriends = () => {
     usuarioService.obtenerAmigos()
       .then((data) => {
         setFriends(data.map((u) => ({ id: String(u.id), name: u.nombre, role: 'Amigo', due: u.monto, imageUrl: '' })))
       })
-      .catch((err) => showToast(getMensajeError(err), 'error'))
+      .catch((err) => {
+        if (isOnline) showToast(getMensajeError(err), 'error')
+      })
   }
 
   const filteredFriends = friends.filter((f) =>
     f.name.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
   )
 
-  const friendIds = new Set(friends.map((f) => Number(f.id)))
-
   function handleAceptar(solicitud: SolicitudAmistadFront) {
-    // 🔴 REFACTOR: Ya no mandamos userId, solo el ID de la solicitud y si aceptamos
+    if (!isOnline) return // Bloqueo extra por las dudas
     usuarioService.responderSolicitudAmistad(solicitud.id, true)
       .then(() => {
         setSolicitudes((prev) => prev.filter((s) => s.id !== solicitud.id))
@@ -89,7 +102,7 @@ export default function FriendsPage() {
   }
 
   function handleRechazar(solicitud: SolicitudAmistadFront) {
-    // 🔴 REFACTOR: Mismo caso que aceptar
+    if (!isOnline) return
     usuarioService.responderSolicitudAmistad(solicitud.id, false)
       .then(() => {
         setSolicitudes((prev) => prev.filter((s) => s.id !== solicitud.id))
@@ -98,7 +111,7 @@ export default function FriendsPage() {
   }
 
   function handleEnviarSolicitud(receptorId: number) {
-    // 🔴 REFACTOR: Solo mandamos el ID del receptor, el emisor va en el token
+    if (!isOnline) return
     usuarioService.enviarSolicitudAmistad(receptorId)
       .then(() => {
         setSentIds((prev) => new Set(prev).add(receptorId))
@@ -108,7 +121,7 @@ export default function FriendsPage() {
 
   return (
     <div className="space-y-4">
-      <PageTitle title="Amigos" subtitle="Agregá y organizá participantes." />
+      <PageTitle title="Amigos" subtitle="Agregá amigos y consultá deudas!" />
 
       <ColumnContainer>
         {/* Buscar entre mis amigos */}
@@ -129,18 +142,50 @@ export default function FriendsPage() {
                 }
                 debouncedSearchQueryRef.current(value)
               }}
-              className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
+              disabled={!isOnline && friends.length === 0} // Si no hay red ni amigos, al pedo buscar
+              className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground disabled:opacity-50"
             />
           </label>
         </div>
 
-        {/* Lista de amigos */}
-        <div className="max-h-[30vh] space-y-3 overflow-y-auto pr-1">
-          {filteredFriends.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No tenés amigos aún.</p>
-          ) : (
-            filteredFriends.map((f) => <FriendCard key={f.id} friend={f} onPagoExitoso={loadFriends} />)
-          )}
+        {/* Lista de amigos (CON CARTEL OFFLINE) */}
+        <div className="relative overflow-hidden rounded-2xl border border-border bg-background/70 pt-1 pd-1">
+
+          {/* Fade superior */}
+          <div className="pointer-events-none absolute top-0 left-0 right-0 z-10 h-4 bg-linear-to-b from-background via-background/80 to-transparent" />
+
+          {/* Lista */}
+          <div className="min-h-[22.5vh] max-h-[26vh] overflow-y-auto space-y-3 px-1 py-3 pb-2 pr-1 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
+
+            {!isOnline && friends.length === 0 ? (
+              <div className="flex flex-col items-center justify-center rounded-xl border-2 border-red-300/50 bg-red-50/50 p-6 text-center shadow-sm dark:border-red-900/50 dark:bg-red-950/20">
+                <WifiOff className="mb-2 h-6 w-6 text-red-500/70" />
+
+                <p className="text-sm font-semibold text-red-600 dark:text-red-400">
+                  ¡Ups! No hay conexión
+                </p>
+
+                <p className="mt-1 text-xs font-medium text-muted-foreground">
+                  No pudimos cargar tus amigos y no hay datos guardados.
+                </p>
+              </div>
+            ) : filteredFriends.length === 0 ? (
+              <p className="py-4 text-center text-sm text-muted-foreground">
+                No tenés amigos aún.
+              </p>
+            ) : (
+              filteredFriends.map((f) => (
+                <FriendCard
+                  key={f.id}
+                  friend={f}
+                  onPagoExitoso={loadFriends}
+                />
+              ))
+            )}
+          </div>
+
+          {/* Fade inferior */}
+          <div className="pointer-events-none absolute bottom-0 left-0 right-0 z-10 h-5 bg-linear-to-t from-background via-background/90 to-transparent" />
         </div>
 
         {/* Solicitudes pendientes */}
@@ -171,14 +216,16 @@ export default function FriendsPage() {
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleAceptar(s)}
-                      className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground hover:opacity-90"
+                      disabled={!isOnline}
+                      className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
                       aria-label="Aceptar"
                     >
                       <Check className="h-4 w-4" />
                     </button>
                     <button
                       onClick={() => handleRechazar(s)}
-                      className="flex h-8 w-8 items-center justify-center rounded-full border border-border bg-muted text-muted-foreground hover:opacity-90"
+                      disabled={!isOnline}
+                      className="flex h-8 w-8 items-center justify-center rounded-full border border-border bg-muted text-muted-foreground hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
                       aria-label="Rechazar"
                     >
                       <X className="h-4 w-4" />
@@ -190,14 +237,14 @@ export default function FriendsPage() {
           )}
         </div>
 
-        {/* Agregar amigo por username */}
+        {/* Agregar amigo por username (BLOQUEADO SI ESTAMOS OFFLINE) */}
         <div className="rounded-2xl border border-border bg-background/70 p-4 shadow-sm">
           <h2 className="text-sm font-semibold text-foreground">Agregar amigo</h2>
-          <div className="mt-3 flex items-center gap-2 rounded-xl border border-border bg-background px-3 py-2">
+          <div className={`mt-3 flex items-center gap-2 rounded-xl border px-3 py-2 ${!isOnline ? 'bg-muted/50 border-border/50 cursor-not-allowed' : 'border-border bg-background'}`}>
             <span className="text-sm text-muted-foreground select-none">@</span>
             <input
               type="text"
-              placeholder="nombre de usuario"
+              placeholder={isOnline ? 'nombre de usuario' : 'Conectate para buscar amigos'}
               value={usernameSearch}
               onChange={(e) => {
                 const value = e.target.value
@@ -210,11 +257,13 @@ export default function FriendsPage() {
                 }
                 debouncedUsernameFetchRef.current(value)
               }}
-              className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
+              disabled={!isOnline}
+              className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground disabled:opacity-50 disabled:cursor-not-allowed"
             />
             {searchLoading && <div className="h-4 w-4 animate-spin rounded-full border-2 border-border border-t-foreground" />}
           </div>
-          {usernameResults.length > 0 && (
+          {/* ... (El resto del render de usernameResults queda igual) ... */}
+          {usernameResults.length > 0 && isOnline && (
             <div className="mt-3 space-y-2">
               {usernameResults.map((u) => (
                 <div key={u.id} className="flex items-center justify-between gap-3">
@@ -233,8 +282,8 @@ export default function FriendsPage() {
                   </button>
                   <button
                     onClick={() => handleEnviarSolicitud(u.id)}
-                    disabled={sentIds.has(u.id)}
-                    className="rounded-xl border border-border bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground disabled:opacity-50"
+                    disabled={sentIds.has(u.id) || !isOnline}
+                    className="rounded-xl border border-border bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {sentIds.has(u.id) ? 'Enviada' : 'Agregar'}
                   </button>
