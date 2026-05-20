@@ -172,24 +172,40 @@ export default function ActivityFilters({ onFilterChange }: ActivityFiltersProps
                                     <span className="flex-1">Todos</span>
                                 </button>
 
-                                {Object.values(TipoActividadEnum).map((tipo) => {
-                                    const checked = selectedTipo === tipo
-                                    return (
-                                        <button
-                                            key={tipo}
-                                            type="button"
-                                            onClick={() => handleTipoChange(tipo)}
-                                            className="flex items-center gap-3 rounded-md px-2 py-2 hover:bg-muted text-sm text-foreground w-full text-left cursor-pointer active:bg-muted/80 transition"
-                                        >
-                                            <span
-                                                className={`inline-flex h-4 w-4 items-center justify-center rounded-full border ${checked ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-background'}`}
-                                            >
-                                                {checked ? <span className="h-2 w-2 rounded-full bg-primary-foreground block" /> : null}
-                                            </span>
-                                            <span className="flex-1">{TipoActividadLabel[tipo]}</span>
-                                        </button>
-                                    )
-                                })}
+                                {/* Excluir tipos problemáticos del dropdown */}
+                                {(() => {
+                                    const excluded = new Set<TipoActividad>([
+                                        TipoActividadEnum.GASTO_CREADO as unknown as TipoActividad,
+                                        TipoActividadEnum.GASTO_ACTUALIZADO as unknown as TipoActividad,
+                                        TipoActividadEnum.GASTO_ELIMINADO as unknown as TipoActividad,
+                                        TipoActividadEnum.GASTO_DEUDA as unknown as TipoActividad,
+                                        TipoActividadEnum.DEUDA_SALDADA as unknown as TipoActividad,
+                                        TipoActividadEnum.PAGO_REALIZADO as unknown as TipoActividad,
+                                        TipoActividadEnum.PAGO_RECIBIDO as unknown as TipoActividad,
+                                        TipoActividadEnum.MIS_DEUDAS_SALDADAS as unknown as TipoActividad,
+                                    ])
+
+                                    return Object.values(TipoActividadEnum)
+                                        .filter((t) => !excluded.has(t as unknown as TipoActividad))
+                                        .map((tipo) => {
+                                            const checked = selectedTipo === tipo
+                                            return (
+                                                <button
+                                                    key={tipo}
+                                                    type="button"
+                                                    onClick={() => handleTipoChange(tipo)}
+                                                    className="flex items-center gap-3 rounded-md px-2 py-2 hover:bg-muted text-sm text-foreground w-full text-left cursor-pointer active:bg-muted/80 transition"
+                                                >
+                                                    <span
+                                                        className={`inline-flex h-4 w-4 items-center justify-center rounded-full border ${checked ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-background'}`}
+                                                    >
+                                                        {checked ? <span className="h-2 w-2 rounded-full bg-primary-foreground block" /> : null}
+                                                    </span>
+                                                    <span className="flex-1">{TipoActividadLabel[tipo]}</span>
+                                                </button>
+                                            )
+                                        })
+                                })()}
                             </div>
                             {hasFilters && (
                                 <button
