@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/dialog'
 
 const INITIAL_ITEM = new ExpenseItem('', 1, 0)
-const MAX_ITEM_NAME_LENGTH = 20
+const MAX_ITEM_NAME_LENGTH = 50
 
 interface CreateExpenseItemProps {
     items: ExpenseItem[]
