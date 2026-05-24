@@ -64,11 +64,24 @@ const router = createBrowserRouter([
   { path: '*', element: <NotFoundPage /> }
 ])
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <ToastProvider>
-      <BannerOffline/>
-      <RouterProvider router={router} />
-    </ToastProvider>
-  </React.StrictMode>,
-)
+const rootElement = document.getElementById('root')!
+const splashElement = document.getElementById('splash-screen')
+
+const root = ReactDOM.createRoot(rootElement)
+
+setTimeout(() => {
+  if (splashElement) {
+    splashElement.classList.add('fade-out')
+  }
+}, 1500)
+
+setTimeout(() => {
+  root.render(
+    <React.StrictMode>
+      <ToastProvider>
+        <BannerOffline/>
+        <RouterProvider router={router} />
+      </ToastProvider>
+    </React.StrictMode>
+  )
+}, 2000)
