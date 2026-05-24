@@ -2,12 +2,88 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/svg+xml" href="assets/favicon_vaquita.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>vaquita</title>
   </head>
-  <body>
-    <div id="root"></div>
+  <div id="root">
+      <style>
+        html, body {
+          margin: 0;
+          padding: 0;
+          width: 100%;
+          height: 100%;
+          background-color: var(--splash-bg-color);
+        }
+        
+        :root {
+          --splash-bg-color: oklch(0.97 0.01 250); /* #f7f7f9 (fondo base claro) */
+          --splash-text-color: oklch(0.25 0.03 260); /* #3b3d45 (texto foreground) */
+        }
+
+        
+        .dark {
+          --splash-bg-color: oklch(0.20 0.02 255); /* #2d2d31 (fondo oscuro oklch compartido) */
+          --splash-text-color: oklch(0.95 0.01 250); /* #edf1f3 (texto claro oscuro) */
+        }
+
+        .splash-container {
+          display: flex;
+          flex-direction: column;
+          height: 100vh;
+          width: 100vw;
+          align-items: center;
+          justify-content: center;
+          background-color: var(--splash-bg-color);
+          font-family: sans-serif;
+          
+          /* 👇 Agregamos estas dos líneas para controlar la suavidad */
+          opacity: 1;
+          transition: opacity 0.5s ease-in-out; 
+        }
+
+        /* 👇 Esta clase nueva la vamos a activar desde React */
+        .splash-container.fade-out {
+          opacity: 0;
+        }
+
+        .splash-logo {
+          width: 120px;
+          height: 120px;
+          animation: pulse-splash 2s infinite ease-in-out;
+        }
+        .splash-title {
+          margin-top: 20px;
+          font-size: 1.5rem;
+          font-weight: 700;
+          color: var(--splash-text-color);
+        }
+        @keyframes pulse-splash {
+          0%, 100% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.1); opacity: 0.8; }
+        }
+      </style>
+
+      <script>
+        (function() {
+          const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          // Buscamos si guardaron 'theme' en localStorage, sino usamos la del sistema
+          const userStoredPreference = localStorage.getItem('theme'); // Ajustá el nombre de la key ('theme', 'darkMode', etc.) si la llamás distinto
+          const isDark = userStoredPreference === 'dark' || (!userStoredPreference && prefersDark);
+
+          if (isDark) {
+            // Agregamos la clase .dark al <html> para que también la use la app real luego
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+        })();
+      </script>
+
+      <div id="splash-screen" class="splash-container">
+        <img src="assets/favicon_vaquita.png" alt="Cargando La Vaquita..." class="splash-logo" />
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
