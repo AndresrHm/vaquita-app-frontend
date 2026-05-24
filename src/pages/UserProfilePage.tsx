@@ -57,6 +57,21 @@ export default function UserProfilePage() {
     if (!info || info.solicitudPendiente) return
 
     if (info.esAmigo) {
+      const totalIOweNow = info.balances
+        .filter((b) => b.deudorId === currentUserId)
+        .reduce((acc, b) => acc + b.monto, 0)
+      const totalOwedToMeNow = info.balances
+        .filter((b) => b.acreedorId === currentUserId)
+        .reduce((acc, b) => acc + b.monto, 0)
+      const netNow = totalIOweNow - totalOwedToMeNow
+
+      if (netNow > 0) {
+        showToast(
+          `No podés eliminar a ${info.nombre} porque le debés ${formatCurrency(netNow)}. Saldá la deuda primero.`,
+          'error',
+        )
+        return
+      }
       setConfirmRemove(true)
     } else {
       setLoading(true)
@@ -290,8 +305,12 @@ export default function UserProfilePage() {
 
       <Modal
         isOpen={confirmRemove}
-        title="Eliminar amigo"
-        description={`¿Estás seguro de que querés eliminar a ${info.nombre} de tus amigos?`}
+        title={netAmount < 0 ? 'Hay deuda pendiente' : 'Eliminar amigo'}
+        description={
+          netAmount < 0
+            ? `${info.nombre} todavía te debe ${formatCurrency(Math.abs(netAmount))}. Si lo eliminás como amigo perderás el seguimiento de esa deuda. ¿Querés continuar de todas formas?`
+            : `¿Estás seguro de que querés eliminar a ${info.nombre} de tus amigos?`
+        }
         onClose={() => setConfirmRemove(false)}
         footer={
           <>
