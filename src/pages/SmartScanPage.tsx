@@ -128,8 +128,8 @@ export default function GroupsScanPage() {
   return (
     <div className="space-y-4 pb-10">
       <PageTitle
-        title="Escanear con IA"
-        subtitle="Gemini analizará tu ticket para automatizar la carga."
+        title="Escaneo inteligente"
+        subtitle="Nuestra IA automatizará la carga de tu ticket."
       />
 
       {/* ── PANEL DE CARGA ── */}

@@ -1,7 +1,7 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable no-undef */
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ChangeEvent } from 'react'
-import { ArrowLeft } from 'lucide-react'
-import { Link } from 'react-router-dom'
 
 import ColumnContainer from '@/components/common/columnContainer'
 import PageTitle from '@/components/common/pageTitle'
@@ -14,7 +14,6 @@ import SortCard from '@/components/userExpensesPage/SortCard'
 import type { FilterState, SortValue } from '@/components/userExpensesPage/types'
 import UserExpensesFiltersModal from '@/components/userExpensesPage/UserExpensesFiltersModal'
 import { buildRequestFilters, formatDateFromApi, normalizeNumberOrNull } from '@/components/userExpensesPage/utils'
-import { Button } from '@/components/ui/button'
 import type { ExpenseFilteredJSON } from '@/domain/expense'
 import { ExpensesFilterTabs } from '@/domain/expenseItemDTO'
 import { CategoriaGasto } from '@/domain/enums/categoriaGasto'

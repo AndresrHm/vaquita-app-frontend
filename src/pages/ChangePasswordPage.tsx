@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, KeyRound } from 'lucide-react'
+import { ArrowLeft, ChevronLeft, KeyRound } from 'lucide-react'
 import ColumnContainer from '@/components/common/columnContainer'
 import { usuarioService } from '@/service/usuarioService'
-import { useToast } from '@/customHooks/useToast' 
+import { useToast } from '@/customHooks/useToast'
 import { getMensajeError } from '@/utils/getMensajeError'
+import IconNavButton from '@/components/common/IconNavButton'
 
 export default function ChangePasswordPage() {
   const navigate = useNavigate()
@@ -41,9 +42,9 @@ export default function ChangePasswordPage() {
         contrasenaActual,
         contrasenaNueva
       })
-      
+
       showToast('¡Contraseña actualizada con éxito!', 'success')
-      
+
       // Volvemos a la cuenta
       setTimeout(() => navigate('/account'), 1000)
     } catch (error: unknown) {
@@ -56,20 +57,19 @@ export default function ChangePasswordPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-3 pt-4">
-        <button
-          onClick={() => navigate(-1)}
-          className="flex h-8 w-8 items-center justify-center rounded-full border border-border bg-background/70 text-muted-foreground hover:text-foreground"
-          aria-label="Volver"
-        >
-          <ArrowLeft className="h-4 w-4" />
-        </button>
-        <span className="text-sm font-medium text-muted-foreground">Cambiar contraseña</span>
+      {/* Header */}
+      <div className="-mx-4 rounded-b-2xl rounded-t-none border border-border bg-card/70 px-4 py-4 shadow-sm backdrop-blur-xl">
+        <div className="flex items-center gap-3">
+          <IconNavButton ariaLabel="Volver" onClick={() => window.history.back()} icon={<ChevronLeft className="h-5 w-5" />} />
+          <div>
+            <h1 className="text-xl font-semibold text-foreground">Cambiar contraseña</h1>
+          </div>
+        </div>
       </div>
 
       <ColumnContainer>
         <div className="flex flex-col gap-6 py-6 px-4">
-          
+
           <div className="space-y-4 w-full">
             <div className="space-y-1.5">
               <label className="text-sm font-semibold text-foreground">

@@ -12,7 +12,7 @@ type ExpenseCardProps = {
 
 export default function ExpenseCard({ title, group, groupLabel = 'Grupo', category, date, amountToPay }: ExpenseCardProps) {
 	return (
-		<Card className="rounded-xl px-4 py-3" interactive={false}>
+		<Card className="rounded-xl px-4 py-3 bg-card/70" interactive={false}>
 			<div className="flex items-start justify-between gap-4">
 				<div className="min-w-0 space-y-1">
 					<p className="truncate text-sm font-semibold text-foreground">{title}</p>

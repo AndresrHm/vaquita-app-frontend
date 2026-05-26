@@ -1,12 +1,14 @@
+/* eslint-disable no-undef */
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Save, Camera } from 'lucide-react'
+import { ArrowLeft, Save, Camera, ChevronLeft } from 'lucide-react'
 import ColumnContainer from '@/components/common/columnContainer'
 import { usuarioService } from '@/service/usuarioService'
 import type { UsuarioEditarDTO } from '@/domain/usuario'
 import { useToast } from '@/customHooks/useToast'
 import { getMensajeError } from '@/utils/getMensajeError'
 import PageTitle from '@/components/common/pageTitle'
+import IconNavButton from '@/components/common/IconNavButton'
 
 function getInitials(name: string) {
   return name
@@ -79,11 +81,15 @@ export default function SettingsAccountPage() {
 
   return (
     <div className="space-y-4">
-      <PageTitle
-        title="Tu perfil"
-        onBack={() => { window.history.back() }}
-      >
-      </PageTitle>
+      {/* Header */}
+      <div className="-mx-4 rounded-b-2xl rounded-t-none border border-border bg-card/70 px-4 py-4 shadow-sm backdrop-blur-xl">
+        <div className="flex items-center gap-3">
+          <IconNavButton ariaLabel="Volver" onClick={() => window.history.back()} icon={<ChevronLeft className="h-5 w-5" />} />
+          <div>
+            <h1 className="text-xl font-semibold text-foreground">Tu perfil</h1>
+          </div>
+        </div>
+      </div>
 
       <ColumnContainer>
         <div className="flex flex-col gap-6 py-6 px-4">

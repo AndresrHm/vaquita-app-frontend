@@ -15,7 +15,6 @@ export default function AccountPage() {
 
   const userName = window.localStorage.getItem('user_name') || 'Usuario'
   const userUsername = window.localStorage.getItem('user_username') || ''
-  const userEmail = window.localStorage.getItem('user_email') || 'email@ejemplo.com'
   const userImage = window.localStorage.getItem('user_image') || ''
   const isOnline = useNetwork()
 

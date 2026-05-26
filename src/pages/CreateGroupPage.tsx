@@ -10,6 +10,7 @@ import { useToast } from '@/customHooks/useToast'
 import { getMensajeError } from '@/utils/getMensajeError'
 import { useNetwork } from '@/customHooks/useNetwork'
 import ButtonSkeleton from '@/components/common/ButtonSkeleton'
+import IconNavButton from '@/components/common/IconNavButton'
 
 function getInitials(name: string) {
   return name
@@ -103,14 +104,7 @@ export default function CreateGroupPage() {
       {/* Header */}
       <div className="-mx-4 rounded-b-2xl rounded-t-none border border-border bg-card/70 px-4 py-4 shadow-sm backdrop-blur-xl">
         <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="inline-flex items-center justify-center rounded-md p-1.5 text-muted-foreground hover:bg-muted transition cursor-pointer"
-            aria-label="Volver"
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </button>
+          <IconNavButton ariaLabel="Volver" onClick={() => window.history.back()} icon={<ChevronLeft className="h-5 w-5" />} />
           <div>
             <h1 className="text-xl font-semibold text-foreground">Nuevo grupo</h1>
             <p className="text-sm text-muted-foreground">Completá los datos del grupo</p>
