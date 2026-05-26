@@ -4,6 +4,7 @@ import { getMensajeError } from '@/utils/getMensajeError'
 import type { ActividadDTO } from '@/domain/actividadDTO'
 import type { PageResponse } from '@/domain/pageResponse'
 import ActivityCard from './ActivityCard'
+import { AppPagination } from '../common/pagination'
 
 interface ActivityListProps {
     searchText?: string
@@ -16,11 +17,16 @@ interface ActivityListProps {
 export default function ActivityList({ searchText, tipo, desde, hasta, size = 6 }: ActivityListProps) {
     const { showToast } = useToast()
     const [actividades, setActividades] = useState<ActividadDTO[]>([])
-    const [rawResponse, setRawResponse] = useState<PageResponse<ActividadDTO> | null>(null)
     const [page, setPage] = useState(0)
     const [pageInfo, setPageInfo] = useState<Omit<PageResponse<ActividadDTO>, 'content'> | null>(null)
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
+
+    const handlePageChange = (nextPage: number) => {
+        if (isLoading || nextPage === page) return
+
+        setPage(nextPage)
+    }
 
     useEffect(() => {
         const loadActividades = async () => {
@@ -30,17 +36,13 @@ export default function ActivityList({ searchText, tipo, desde, hasta, size = 6 
                 const { actividadService } = await import('@/service/activityService')
                 const result = await actividadService.obtenerActividades({
                     searchText,
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     tipo: tipo as any,
                     desde,
                     hasta,
                     page,
                     size,
                 })
-
-                console.log('Respuesta completa de actividades:', result)
-                console.log('Contenido de actividades:', result.content)
-
-                setRawResponse(result)
                 setActividades(result.content)
                 setPageInfo({
                     page: result.page,
@@ -60,7 +62,7 @@ export default function ActivityList({ searchText, tipo, desde, hasta, size = 6 
         }
 
         loadActividades()
-    }, [searchText, tipo, desde, hasta, page, size])
+    }, [searchText, tipo, desde, hasta, page, size, showToast])
 
     if (isLoading) {
         return (
@@ -104,54 +106,16 @@ export default function ActivityList({ searchText, tipo, desde, hasta, size = 6 
                 ))}
             </div>
 
-            {rawResponse && (
-                <details className="rounded-lg border border-border bg-muted/30 p-3 text-xs">
-                    <summary className="cursor-pointer font-medium text-foreground">JSON crudo de la respuesta</summary>
-                    <pre className="mt-3 overflow-x-auto whitespace-pre-wrap wrap-break-word text-[11px] leading-4 text-muted-foreground">
-                        {JSON.stringify(rawResponse, null, 2)}
-                    </pre>
-                </details>
-            )}
-
-            {/* Paginación */}
+            {/* PAGINACIÓN */}
             {pageInfo && pageInfo.totalPages > 1 && (
-                <div
-                    className="
-        sticky
-        bottom-0
-        mt-3
-        flex
-        shrink-0
-        items-center
-        justify-between
-        border-t
-        border-border
-        bg-bg/70
-        px-2
-        pt-4
-        pb-1
-        backdrop-blur
-    "
-                >
-                    <button
-                        onClick={() => setPage((p) => Math.max(0, p - 1))}
-                        disabled={page === 0}
-                        className="rounded px-3 py-1 text-sm font-medium transition hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                        Anterior
-                    </button>
-
-                    <div className="text-xs text-muted-foreground">
-                        Página {pageInfo.page + 1} de {pageInfo.totalPages}
+                <div className="flex justify-center pt-3">
+                    <div className="max-w-md overflow-x-auto">
+                        <AppPagination
+                            page={page}
+                            totalPages={pageInfo.totalPages}
+                            onPageChange={handlePageChange}
+                        />
                     </div>
-
-                    <button
-                        onClick={() => setPage((p) => p + 1)}
-                        disabled={!pageInfo.hasNext}
-                        className="rounded px-3 py-1 text-sm font-medium transition hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                        Siguiente
-                    </button>
                 </div>
             )}
         </div>
