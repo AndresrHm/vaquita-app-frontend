@@ -1,7 +1,7 @@
 /* eslint-disable no-undef */
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { Navigate, createBrowserRouter, RouterProvider } from 'react-router-dom'
+import { Navigate, createBrowserRouter, RouterProvider, Outlet } from 'react-router-dom'
 import { BannerOffline } from '@/components/common/BannerOffline'
 import './index.css'
 
@@ -25,6 +25,7 @@ import ToastProvider from '@/customHooks/ToastProvider'
 import ChangePasswordPage from './pages/ChangePasswordPage'
 import ProtectedRoute from '@/components/common/ProtectedRoute'
 import NotFoundPage from '@/pages/NotFoundPage.tsx'
+import { SessionTimeoutProvider } from './customHooks/sessionTimeoutProvider'
 
 
 const storedTheme = localStorage.getItem('theme')
@@ -33,35 +34,44 @@ const shouldUseDarkTheme = storedTheme ? storedTheme === 'dark' : systemPrefersD
 document.documentElement.classList.toggle('dark', shouldUseDarkTheme)
 
 const router = createBrowserRouter([
-  { path: '/login', element: <LoginPage /> },
-  { path: '/register', element: <RegisterPage /> },
   {
-    path: '/',
     element: (
-      <ProtectedRoute>
-        <MainLayout />
-      </ProtectedRoute>
+      <SessionTimeoutProvider>
+        <Outlet />
+      </SessionTimeoutProvider>
     ),
     children: [
-      { index: true, element: <Navigate to="/groups" replace /> },
-      { path: 'groups', element: <GroupsPage /> },
-      { path: 'groups/new', element: <CreateGroupPage /> },
-      { path: 'groups/:groupId', element: <GroupDetailPage /> },
-      { path: 'groups/:groupId/settings', element: <GroupSettingsPage /> },
-      { path: 'groups/:groupId/balances', element: <GroupBalancesPage /> },
-      { path: 'groups/:groupId/expense/create', element: <CreateManualExpensePage /> },
-      { path: 'groups/expense/create', element: <CreateManualExpensePage /> },
-      { path: 'groups/scan', element: <GroupsScanPage /> },
-      { path: 'friends', element: <FriendsPage /> },
-      { path: 'friends/:userId', element: <UserProfilePage /> },
-      { path: 'activity', element: <ActivityPage /> },
-      { path: 'account', element: <AccountPage /> },
-      { path: 'account/expenses', element: <UserExpensesPage /> },
-      { path: 'account/settings', element: <SettingsAccountPage />},
-      { path: 'account/password', element: <ChangePasswordPage /> }
+      { path: '/login', element: <LoginPage /> },
+      { path: '/register', element: <RegisterPage /> },
+      {
+        path: '/',
+        element: (
+          <ProtectedRoute>
+            <MainLayout />
+          </ProtectedRoute>
+        ),
+        children: [
+          { index: true, element: <Navigate to="/groups" replace /> },
+          { path: 'groups', element: <GroupsPage /> },
+          { path: 'groups/new', element: <CreateGroupPage /> },
+          { path: 'groups/:groupId', element: <GroupDetailPage /> },
+          { path: 'groups/:groupId/settings', element: <GroupSettingsPage /> },
+          { path: 'groups/:groupId/balances', element: <GroupBalancesPage /> },
+          { path: 'groups/:groupId/expense/create', element: <CreateManualExpensePage /> },
+          { path: 'groups/expense/create', element: <CreateManualExpensePage /> },
+          { path: 'groups/scan', element: <GroupsScanPage /> },
+          { path: 'friends', element: <FriendsPage /> },
+          { path: 'friends/:userId', element: <UserProfilePage /> },
+          { path: 'activity', element: <ActivityPage /> },
+          { path: 'account', element: <AccountPage /> },
+          { path: 'account/expenses', element: <UserExpensesPage /> },
+          { path: 'account/settings', element: <SettingsAccountPage />},
+          { path: 'account/password', element: <ChangePasswordPage /> }
+        ]
+      },
+      { path: '*', element: <NotFoundPage /> }
     ]
-  },
-  { path: '*', element: <NotFoundPage /> }
+  }
 ])
 
 const rootElement = document.getElementById('root')!
