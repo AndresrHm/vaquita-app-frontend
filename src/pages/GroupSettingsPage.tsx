@@ -306,15 +306,15 @@ export default function GroupSettingsPage() {
                                 </form>
                             ) : (
                                 <div className="space-y-3">
-                                    <div className="rounded-md border border-border bg-muted/30 p-3">
+                                    <div className="rounded-xl border border-border bg-card/70 p-3">
                                         <div className="text-sm text-muted-foreground mb-1">Nombre del grupo</div>
                                         <div className="font-medium">{formularioGrupo.nombre || '-'}</div>
                                     </div>
-                                    <div className="rounded-md border border-border bg-muted/30 p-3">
+                                    <div className="rounded-xl border border-border bg-card/70 p-3">
                                         <div className="text-sm text-muted-foreground mb-1">Descripción</div>
                                         <div className="text-sm">{formularioGrupo?.descripcion || '-'}</div>
                                     </div>
-                                    <div className="rounded-md border border-border bg-muted/30 p-3">
+                                    <div className="rounded-xl border border-border bg-card/70 p-3">
                                         <div className="text-sm text-muted-foreground mb-1">Imagen</div>
                                         <img src={!imageError && imageUrl ? imageUrl : fallbackImage} alt="preview" className="w-30 h-20 rounded-md object-cover" />
                                     </div>
@@ -332,7 +332,7 @@ export default function GroupSettingsPage() {
                             </div>
                             <div className="space-y-3">
                                 {miembros?.map((m) => (
-                                    <div key={m.id} className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-3 py-2">
+                                    <div key={m.id} className="flex items-center justify-between rounded-xl border border-border bg-card/70 px-3 py-2">
                                         <button type="button" onClick={() => navigate(`/friends/${m.id}`)} className="flex items-center space-x-3 text-left hover:opacity-75 transition-opacity">
                                             <Avatar src={m.imagenUrl} alt={m.nombre} />
                                             <div>
@@ -365,65 +365,63 @@ export default function GroupSettingsPage() {
                         <Card interactive={false}>
                             <h3 className="text-lg font-semibold mb-3">Moneda y preferencias</h3>
                             <p className="text-xs text-gray-400 pb-2">esto es funcional, pero en el backend aún no está hecho</p>
-                                <div className="space-y-4">
-                                    {contextoUsuario?.esAdmin ? (
-                                        <>
-                                            <div>
-                                                <label className="block text-sm text-muted-foreground mb-1">Moneda por defecto</label>
-                                                <Select value={formularioGrupo?.moneda || ''} onChange={() => { }} disabled>
-                                                    <option value="ARS">ARS — Peso argentino</option>
-                                                    <option value="USD">USD — US Dollar</option>
-                                                    <option value="EUR">EUR — Euro</option>
-                                                </Select>
-                                            </div>
-                                            <div className="flex items-center justify-between">
-                                                <Toggle
-                                                    checked={formularioGrupo.simplificarDeudas}
-                                                    onChange={(v) => updateGroupField('simplificarDeudas', v)}
-                                                    label="Simplificar deudas"
-                                                />
-                                            </div>
-                                            <div className="flex items-center justify-between">
-                                                <Toggle
-                                                    checked={formularioGrupo.notificaciones}
-                                                    onChange={(v) => updateGroupField('notificaciones', v)}
-                                                    label="Notificaciones" />
-                                            </div>
-                                            <div className="flex items-center justify-between">
-                                                <Toggle
-                                                    checked={formularioGrupo.modoRata}
-                                                    onChange={(v) => updateGroupField('modoRata', v)}
-                                                    label="Modo rata 🐀" />
-                                            </div>
-                                        </>
-                                    ) : (
-                                        <div className="space-y-2 text-sm text-muted-foreground">
-                                            <div className="rounded-md border border-border bg-muted/30 p-3">
-                                                <div className="text-xs">Moneda por defecto</div>
-                                                <div className="font-medium">{formularioGrupo?.moneda || '-'}</div>
-                                            </div>
-                                            <div className="rounded-md border border-border bg-muted/30 p-3">
-                                                <div className="text-xs">Simplificar deudas</div>
-                                                <div>{formularioGrupo?.simplificarDeudas ? 'Activado' : 'Desactivado'}</div>
-                                            </div>
-                                            <div className="rounded-md border border-border bg-muted/30 p-3">
-                                                <div className="text-xs">Notificaciones</div>
-                                                <div>{formularioGrupo?.notificaciones ? 'Activado' : 'Desactivado'}</div>
-                                            </div>
-                                            <div className="rounded-md border border-border bg-muted/30 p-3">
-                                                <div className="text-xs">Modo rata</div>
-                                                <div>{formularioGrupo?.modoRata ? 'Activado' : 'Desactivado'}</div>
-                                            </div>
+                            <div className="space-y-4">
+                                {contextoUsuario?.esAdmin ? (
+                                    <>
+                                        <div>
+                                            <label className="block text-sm text-muted-foreground mb-1">Moneda por defecto</label>
+                                            <Select value={formularioGrupo?.moneda || ''} onChange={() => { }} disabled>
+                                                <option value="ARS">ARS — Peso argentino</option>
+                                                <option value="USD">USD — US Dollar</option>
+                                                <option value="EUR">EUR — Euro</option>
+                                            </Select>
                                         </div>
-                                    )}
-                                </div>
+                                        <div className="flex items-center justify-between">
+                                            <Toggle
+                                                checked={formularioGrupo.simplificarDeudas}
+                                                onChange={(v) => updateGroupField('simplificarDeudas', v)}
+                                                label="Simplificar deudas"
+                                            />
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <Toggle
+                                                checked={formularioGrupo.notificaciones}
+                                                onChange={(v) => updateGroupField('notificaciones', v)}
+                                                label="Notificaciones" />
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <Toggle
+                                                checked={formularioGrupo.modoRata}
+                                                onChange={(v) => updateGroupField('modoRata', v)}
+                                                label="Modo rata 🐀" />
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div className="space-y-2 text-sm text-muted-foreground">
+                                        <div className="rounded-xl border border-border bg-card/70 p-3">
+                                            <div className="text-xs">Moneda por defecto</div>
+                                            <div className="font-medium">{formularioGrupo?.moneda || '-'}</div>
+                                        </div>
+                                        <div className="rounded-xl border border-border bg-card/70 p-3">
+                                            <div className="text-xs">Simplificar deudas</div>
+                                            <div>{formularioGrupo?.simplificarDeudas ? 'Activado' : 'Desactivado'}</div>
+                                        </div>
+                                        <div className="rounded-xl border border-border bg-card/70 p-3">
+                                            <div className="text-xs">Notificaciones</div>
+                                            <div>{formularioGrupo?.notificaciones ? 'Activado' : 'Desactivado'}</div>
+                                        </div>
+                                        <div className="rounded-xl border border-border bg-card/70 p-3">
+                                            <div className="text-xs">Modo rata</div>
+                                            <div>{formularioGrupo?.modoRata ? 'Activado' : 'Desactivado'}</div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         </Card>
 
                         {/* Gestión del grupo */}
                         <Card interactive={false}>
                             <h3 className="text-lg font-semibold mb-3">Gestión del grupo</h3>
-                            <p className="text-xs text-gray-400 pb-2">falta realizar las acciones de salir de grupo y eliminar</p>
-                            <p className="text-xs text-gray-400 pb-2">aunque sí funciona el disabled (llega si tiene deudas y si es admin)</p>
                             <div className="space-y-3">
                                 <Button variant="outline" className="w-full justify-start bg-red-50 border-red-200 text-red-500 hover:bg-red-100 py-2.5 text-base" disabled>
                                     <LogOut className="w-6 h-6 mr-3" /> Salir del grupo
