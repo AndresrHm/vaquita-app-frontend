@@ -1,6 +1,7 @@
 import api from './apiToken' 
 import type { ActionResponse } from '@/types/actionResponse'
 import type { Expense, ExpenseFilteredJSON } from '@/domain/expense'
+import type { ExpensesAnalyticsDTO } from '@/domain/expenseAnalytics'
 import { getAxiosData } from './common'
 import { ExpensesFilterTabs, type ExpenseFiltersDTO, type OrderMethodExpenses } from '@/domain/expenseItemDTO'
 import type { PageResponse } from '@/domain/pageResponse'
@@ -63,6 +64,17 @@ class ExpenseService {
             },
         })
         return getAxiosData(obtenerGastosFiltradosQuery)
+    }
+
+    async getMyExpensesAnalytics(desde: string, hasta: string): Promise<ExpensesAnalyticsDTO> {
+        const obtenerAnalyticsQuery = () => api.get<ExpensesAnalyticsDTO>('/gasto/me/analytics', {
+            params: {
+                desde,
+                hasta,
+            },
+        })
+
+        return getAxiosData(obtenerAnalyticsQuery)
     }
 }
 

@@ -4,11 +4,14 @@ import ColumnContainer from '@/components/common/columnContainer'
 import UserExpensesButton from '@/components/accountPage/UserExpensesButton'
 import ActivityFilters from '@/components/activity/ActivityFilters'
 import ActivityList from '@/components/activity/ActivityList'
+import ActivityChartsModal from '@/components/activity/ActivityChartsModal'
 import type { ActivityFiltersState } from '@/components/activity/ActivityFilters'
 
 // 1. Importamos tu hook
 import { useNetwork } from '@/customHooks/useNetwork'
 import Card from '@/components/common/card'
+import ActionButton from '@/components/common/ActionButton'
+import { BarChart3 } from 'lucide-react'
 
 export default function ActivityPage() {
     // 2. Activamos el radar
@@ -20,6 +23,7 @@ export default function ActivityPage() {
         desde: undefined,
         hasta: undefined,
     })
+    const [isChartsModalOpen, setIsChartsModalOpen] = useState(false)
 
     const handleFilterChange = (newFilters: ActivityFiltersState) => {
         setFilters(newFilters)
@@ -48,7 +52,22 @@ export default function ActivityPage() {
                         />
                     </div>
                 </Card>
+
+                <ActionButton
+                    className="w-full justify-start"
+                    icon={<BarChart3 className="h-5 w-5" />}
+                    onClick={() => setIsChartsModalOpen(true)}
+                >
+                    Ver graficos de actividad
+                </ActionButton>
             </ColumnContainer>
+
+            <ActivityChartsModal
+                isOpen={isChartsModalOpen}
+                initialDesde={filters.desde}
+                initialHasta={filters.hasta}
+                onClose={() => setIsChartsModalOpen(false)}
+            />
         </div>
     )
 }

@@ -13,6 +13,7 @@ import {
   type Miembro,
   type BalanceDTO
 } from '@/domain/Grupo'
+import type { GroupAnalyticsDTO } from '@/domain/groupAnalytics'
 import type { ActividadDTO } from '@/domain/actividadDTO'
 import type { PageResponse } from '@/domain/pageResponse'
 
@@ -89,6 +90,21 @@ export async function obtenerGastosGrupo(
 
 export async function obtenerBalancesGrupo(grupoId: number): Promise<BalanceDTO[]> {
   const { data } = await api.get<BalanceDTO[]>(`/grupo/${grupoId}/balances`)
+  return data
+}
+
+export async function obtenerAnalyticsGrupo(
+  grupoId: number,
+  desde: string,
+  hasta: string,
+): Promise<GroupAnalyticsDTO> {
+  const { data } = await api.get<GroupAnalyticsDTO>(`/grupo/${grupoId}/analytics`, {
+    params: {
+      desde,
+      hasta,
+    },
+  })
+
   return data
 }
 
