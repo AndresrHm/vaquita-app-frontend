@@ -2,6 +2,14 @@
 // TYPES & CONSTANTS
 // ══════════════════════════════════════════════════════════════════════════════
 
+import {
+    CURRENCY_LABELS,
+    CURRENCY_SYMBOLS,
+    getCurrencySymbol as getSharedCurrencySymbol,
+    isSupportedCurrency,
+    type SupportedCurrency,
+} from './currency'
+
 /**
  * Estados posibles del flujo de escaneo
  */
@@ -10,7 +18,7 @@ export type ScanState = 'idle' | 'preview' | 'loading' | 'result' | 'error'
 /**
  * Monedas soportadas (sincronizadas con el backend)
  */
-export type Currency = 'ARS' | 'USD' | 'EUR' | 'UYU' | 'BRL' | 'CLP' | 'COP'
+export type Currency = SupportedCurrency
 
 /**
  * Categorías de gastos (sincronizadas con el backend)
@@ -30,35 +38,14 @@ export const CATEGORY_LABELS: Record<CategoryType, string> = {
     other: '📦 Otro',
 }
 
-/**
- * Mapa de monedas con símbolos para mostrar en UI
- */
-export const CURRENCY_SYMBOLS: Record<Currency, string> = {
-    ARS: '$',
-    USD: '$',
-    EUR: '€',
-    UYU: '$',
-    BRL: 'R$',
-    CLP: '$',
-    COP: '$',
-}
-
-export const CURRENCY_LABELS: Record<Currency, string> = {
-    ARS: 'Peso Argentino',
-    USD: 'Dólar Estadounidense',
-    EUR: 'Euro',
-    UYU: 'Peso Uruguayo',
-    BRL: 'Real Brasileño',
-    CLP: 'Peso Chileno',
-    COP: 'Peso Colombiano',
-}
+export { CURRENCY_LABELS, CURRENCY_SYMBOLS }
 
 export function isSupportedScanCurrency(currency?: string): currency is Currency {
-    return !!currency && currency in CURRENCY_SYMBOLS
+    return isSupportedCurrency(currency)
 }
 
 export function getCurrencySymbol(currency?: string): string {
-    return isSupportedScanCurrency(currency) ? CURRENCY_SYMBOLS[currency] : CURRENCY_SYMBOLS.ARS
+    return getSharedCurrencySymbol(currency)
 }
 
 /**

@@ -9,7 +9,7 @@ import ActionButton from '@/components/common/ActionButton'
 import Select from '@/components/ui/select'
 import { useState } from 'react'
 import type { GrupoContextoUsuarioDTO, GrupoSettingsDTO, Miembro } from '@/domain/Grupo'
-import type { SupportedCurrency } from '@/domain/expense'
+import { CURRENCY_LABELS, SUPPORTED_CURRENCIES, type SupportedCurrency } from '@/domain/currency'
 import { useOnInit } from '@/customHooks/hooks'
 import { obtenerGrupoUsuarioContexto, obtenerGrupoSettings, obtenerMiembrosDeGrupoSettings, actualizarGrupoSettings, eliminarMiembro, agregarMiembros, eliminarGrupo } from '@/service/groupsService'
 import { usuarioService } from '@/service/usuarioService'
@@ -102,9 +102,6 @@ export default function GroupSettingsPage() {
     }
 
     const isDirty = JSON.stringify(formularioGrupo) !== JSON.stringify(initialData)
-
-    const SUPPORTED_CURRENCIES: SupportedCurrency[] = ['ARS', 'USD', 'EUR']
-
 
     const validate = () => {
         if (!formularioGrupo.nombre?.trim()) {
@@ -379,7 +376,7 @@ export default function GroupSettingsPage() {
                                                     disabled={!contextoUsuario?.esAdmin}
                                                 >
                                                     {SUPPORTED_CURRENCIES.map((c) => (
-                                                        <option key={c} value={c}>{c} — {c === 'ARS' ? 'Peso argentino' : c === 'USD' ? 'US Dollar' : 'Euro'}</option>
+                                                        <option key={c} value={c}>{c} — {CURRENCY_LABELS[c]}</option>
                                                     ))}
                                                 </Select>
                                             </div>

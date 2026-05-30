@@ -5,8 +5,7 @@ import type { ExpenseItemDTO } from './expenseItemDTO'
 import { ExpenseAllocation } from './expenseAllocation'
 import type { ExpenseAllocationDTO } from './expenseAllocationDTO'
 import { TipoDivision } from './enums/tipoDivision'
-
-export type SupportedCurrency = 'ARS' | 'USD' | 'EUR'
+export type { SupportedCurrency } from './currency'
 
 export type ExpenseJSON = {
     descripcion: string

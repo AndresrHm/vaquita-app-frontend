@@ -17,7 +17,13 @@ import { obtenerGrupoPorId, obtenerGrupoSettings, obtenerGruposDeUsuario } from 
 import { useOnInit } from '@/customHooks/hooks'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import {
+    CURRENCY_LABELS,
     CURRENCY_SYMBOLS,
+    SUPPORTED_CURRENCIES,
+    isSupportedCurrency,
+    type SupportedCurrency,
+} from '@/domain/currency'
+import {
     type ExpenseAttachment,
     type LineItem,
     type ScanResult
@@ -41,18 +47,7 @@ type LocationState = {
     attachments?: ExpenseAttachment[]
 }
 
-const SCAN_CURRENCIES = ['ARS', 'USD', 'EUR', 'UYU', 'BRL', 'CLP', 'COP'] as const
-type ScanCurrency = (typeof SCAN_CURRENCIES)[number]
-
-const CURRENCY_META: Record<ScanCurrency, { label: string; hint: string }> = {
-    ARS: { label: 'Peso Argentino', hint: 'Base local' },
-    USD: { label: 'Dólar Estadounidense', hint: 'Referencia global' },
-    EUR: { label: 'Euro', hint: 'Europa' },
-    UYU: { label: 'Peso Uruguayo', hint: 'Uruguay' },
-    BRL: { label: 'Real Brasileño', hint: 'Brasil' },
-    CLP: { label: 'Peso Chileno', hint: 'Chile' },
-    COP: { label: 'Peso Colombiano', hint: 'Colombia' },
-}
+type ScanCurrency = SupportedCurrency
 
 export default function CreateExpense() {
     const location = useLocation()
@@ -78,7 +73,7 @@ export default function CreateExpense() {
 
     const [expense, setExpense] = useState<Expense>(() => {
         const scanResult = (location.state as LocationState)?.scanResult
-        const initialCurrency = scanResult?.currency ?? null
+        const initialCurrency = resolveCurrencyCode(scanResult?.currency)
 
         const newExpense = new Expense(undefined, Number(localStorage.id))
         newExpense.monedaOriginal = initialCurrency
@@ -415,8 +410,8 @@ export default function CreateExpense() {
                                         }}
                                         className="w-full rounded-xl border border-border bg-background/70 px-3 py-2 text-sm font-semibold text-foreground"
                                     >
-                                        {SCAN_CURRENCIES.map((c) => (
-                                            <option key={c} value={c}>{`${c} - ${CURRENCY_META[c].label}`}</option>
+                                        {SUPPORTED_CURRENCIES.map((c) => (
+                                            <option key={c} value={c}>{`${c} - ${CURRENCY_LABELS[c]}`}</option>
                                         ))}
                                     </select>
 
@@ -658,16 +653,10 @@ function mapearCategoria(scanCategory?: string): string {
     return mapping[normalized] || 'OTROS'
 }
 
-function isSupportedCurrency(
-    currency?: ScanResult['currency']
-): currency is ScanCurrency {
-    return resolveCurrencyCode(currency) === currency
-}
-
 function resolveCurrencyCode(currency?: string): ScanCurrency {
     const normalized = currency?.trim().toUpperCase()
 
-    if (normalized === 'ARS' || normalized === 'USD' || normalized === 'EUR' || normalized === 'UYU' || normalized === 'BRL' || normalized === 'CLP' || normalized === 'COP') {
+    if (isSupportedCurrency(normalized)) {
         return normalized
     }
 
