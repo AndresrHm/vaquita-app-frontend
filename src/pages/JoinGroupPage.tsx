@@ -57,7 +57,6 @@ export default function JoinGroupPage() {
             </Button>
           </div>
         ) : (
-          /* Si no hay error, mostramos la pantalla de bienvenida/confirmación */
           <div className="flex flex-col items-center justify-center space-y-4 py-4">
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
               <UserPlus size={32} />
