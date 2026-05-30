@@ -1,4 +1,4 @@
-import type { Expense } from './expense'
+import type { Expense, SupportedCurrency } from './expense'
 import type { Usuario } from './usuario'
 
 // ---------- Creación de grupo
@@ -131,7 +131,7 @@ export type GrupoSettingsDTO = {
   nombre: string
   descripcion: string
   imagenUrl: string
-  moneda: string
+  moneda: SupportedCurrency
   simplificarDeudas: boolean
   notificaciones: boolean
   modoRata: boolean

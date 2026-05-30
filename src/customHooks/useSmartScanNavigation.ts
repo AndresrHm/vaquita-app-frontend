@@ -24,7 +24,7 @@ export function useSmartScanNavigation() {
                 title: scanResult.title,
                 description: scanResult.description,
                 totalAmount: scanResult.totalAmount,
-                currency: scanResult.currency || 'ARS',
+                currency: scanResult.currency,
                 date: scanResult.date,
                 category: scanResult.category,
                 items: scanResult.items,

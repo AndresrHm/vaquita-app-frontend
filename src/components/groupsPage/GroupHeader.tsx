@@ -1,23 +1,25 @@
-import { ChevronDown, ChevronLeft, ChevronUp, Settings, Users } from 'lucide-react'
+import { ChevronDown, ChevronLeft, ChevronUp, Settings } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import IconNavButton from '@/components/common/IconNavButton'
-import type { GrupoDetalleDTO } from '@/domain/Grupo'
+import type { GrupoDetalleDTO, Miembro } from '@/domain/Grupo'
+import { AvatarCircle } from '@/components/common/avatarCircle'
 
 function GroupMembersCount({ count }: { count: number }) {
     return (
-        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/45 backdrop-blur-sm text-white">
-            <Users className="h-3.5 w-3.5" />
-            <span className="text-xs">{count}</span>
+        <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-black/45 backdrop-blur-sm text-white">
+            <span className="text-sm font-semibold">{count}</span>
         </div>
     )
 }
 
 export default function GroupHeader({
     groupDetail,
+    miembros = [],
     expanded,
     onToggle,
 }: {
     groupDetail: GrupoDetalleDTO | null
+    miembros?: Miembro[]
     expanded: boolean
     onToggle: () => void
 }) {
@@ -55,14 +57,30 @@ export default function GroupHeader({
                     </div>
 
                     {/* Título + integrantes */}
-                    <div className="absolute inset-x-4 bottom-8 space-y-1.5">
-                        <h1 className="text-xl font-semibold text-white drop-shadow-sm leading-tight line-clamp-2">
-                            {groupDetail.nombre}
-                        </h1>
+                    <div className="absolute inset-x-4 bottom-8">
+                        <div className="flex flex-col gap-2">
+                            <h1 className="text-xl font-semibold text-white drop-shadow-sm leading-tight line-clamp-2">
+                                {groupDetail.nombre}
+                            </h1>
 
-                        <GroupMembersCount
-                            count={groupDetail.cantidadIntegrantes ?? 0}
-                        />
+                            <div className="flex items-center gap-3">
+                                <div className="flex -space-x-3 items-center">
+                                    {miembros.slice(0, 5).map((m) => (
+                                        <div key={m.id} className="rounded-full bg-transparent">
+                                            <AvatarCircle nombre={m.nombre} imagenUrl={m.imagenUrl} sizeClass="h-7 w-7" />
+                                        </div>
+                                    ))}
+
+                                    {miembros.length > 5 && (
+                                        <div className="flex items-center justify-center h-7 w-7 rounded-full bg-transparent text-[11px] text-white">
+                                            ...
+                                        </div>
+                                    )}
+                                </div>
+
+                                <GroupMembersCount count={groupDetail.cantidadIntegrantes ?? 0} />
+                            </div>
+                        </div>
                     </div>
 
                     <div className="absolute inset-x-0 -bottom-5 flex justify-center">

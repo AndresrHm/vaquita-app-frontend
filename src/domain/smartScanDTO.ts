@@ -2,6 +2,14 @@
 // TYPES & CONSTANTS
 // ══════════════════════════════════════════════════════════════════════════════
 
+import {
+    CURRENCY_LABELS,
+    CURRENCY_SYMBOLS,
+    getCurrencySymbol as getSharedCurrencySymbol,
+    isSupportedCurrency,
+    type SupportedCurrency,
+} from './currency'
+
 /**
  * Estados posibles del flujo de escaneo
  */
@@ -10,7 +18,7 @@ export type ScanState = 'idle' | 'preview' | 'loading' | 'result' | 'error'
 /**
  * Monedas soportadas (sincronizadas con el backend)
  */
-export type Currency = 'ARS' | 'USD' | 'EUR' | 'UYU' | 'BRL' | 'CLP' | 'COP'
+export type Currency = SupportedCurrency
 
 /**
  * Categorías de gastos (sincronizadas con el backend)
@@ -30,27 +38,14 @@ export const CATEGORY_LABELS: Record<CategoryType, string> = {
     other: '📦 Otro',
 }
 
-/**
- * Mapa de monedas con símbolos para mostrar en UI
- */
-export const CURRENCY_SYMBOLS: Record<Currency, string> = {
-    ARS: '$',
-    USD: '$',
-    EUR: '€',
-    UYU: '$',
-    BRL: 'R$',
-    CLP: '$',
-    COP: '$',
+export { CURRENCY_LABELS, CURRENCY_SYMBOLS }
+
+export function isSupportedScanCurrency(currency?: string): currency is Currency {
+    return isSupportedCurrency(currency)
 }
 
-export const CURRENCY_LABELS: Record<Currency, string> = {
-    ARS: 'Peso Argentino',
-    USD: 'Dólar Estadounidense',
-    EUR: 'Euro',
-    UYU: 'Peso Uruguayo',
-    BRL: 'Real Brasileño',
-    CLP: 'Peso Chileno',
-    COP: 'Peso Colombiano',
+export function getCurrencySymbol(currency?: string): string {
+    return getSharedCurrencySymbol(currency)
 }
 
 /**
@@ -70,11 +65,13 @@ export type ScanResult = {
     title: string
     description?: string // NUEVO: descripción detallada del gasto
     totalAmount: number
-    currency?: Currency // NUEVO: moneda del ticket (default ARS si no viene)
+    currency?: string // moneda detectada por el scan (puede venir libre)
     date?: string // Formato YYYY-MM-DD
     category?: CategoryType
     items?: LineItem[]
 }
+
+export type BackendScanResult = ScanResult
 
 /**
  * Parametros que se pasan al navegar hacia CreateExpense desde SmartScan
@@ -83,7 +80,7 @@ export type ScanToExpenseNavParams = {
     title: string
     description?: string
     totalAmount: number
-    currency?: Currency
+    currency?: string
     date?: string
     category?: CategoryType
     items?: LineItem[]

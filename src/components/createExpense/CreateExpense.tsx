@@ -1,6 +1,6 @@
 /* eslint-disable no-undef */
-import { useRef, useState } from 'react'
-import { Receipt, Calendar, AlertTriangle } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { Calendar, AlertTriangle, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { CATEGORIES } from '@/components/createExpense/categories'
 import CreateExpenseItem from '@/components/createExpense/CreateExpenseItem'
@@ -13,10 +13,21 @@ import PageTitle from '@/components/common/pageTitle'
 import { usuarioService } from '@/service/usuarioService'
 import type { Usuario } from '@/domain/usuario'
 import type { Grupo } from '@/domain/Grupo'
-import { obtenerGrupoPorId, obtenerGruposDeUsuario } from '@/service/groupsService'
+import { obtenerGrupoPorId, obtenerGrupoSettings, obtenerGruposDeUsuario } from '@/service/groupsService'
 import { useOnInit } from '@/customHooks/hooks'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
-import type { ExpenseAttachment, LineItem, ScanResult } from '@/domain/smartScanDTO'
+import {
+    CURRENCY_LABELS,
+    CURRENCY_SYMBOLS,
+    SUPPORTED_CURRENCIES,
+    isSupportedCurrency,
+    type SupportedCurrency,
+} from '@/domain/currency'
+import {
+    type ExpenseAttachment,
+    type LineItem,
+    type ScanResult
+} from '@/domain/smartScanDTO'
 import { TipoDivision } from '@/domain/enums/tipoDivision'
 import { ExpenseAllocation } from '@/domain/expenseAllocation'
 import DivisionTypeSelector from './DivisionTypeSelector'
@@ -28,12 +39,15 @@ import { useToast } from '@/customHooks/useToast'
 import { useNetwork } from '@/customHooks/useNetwork'
 import ExpenseAttachmentsField from './ExpenseAttachmentsField'
 import { attachmentService } from '@/service/attachmentService'
+import { convertCurrency, type CurrencyConversionResult } from '../../service/currencyService'
 import ButtonSkeleton from '../common/ButtonSkeleton'
 
 type LocationState = {
     scanResult?: ScanResult & { totalAmount: number }
     attachments?: ExpenseAttachment[]
 }
+
+type ScanCurrency = SupportedCurrency
 
 export default function CreateExpense() {
     const location = useLocation()
@@ -53,10 +67,16 @@ export default function CreateExpense() {
         return scanResult?.totalAmount?.toString() ?? '0'
     })
 
+    const [currency, setCurrency] = useState<ScanCurrency>(() => {
+        return resolveCurrencyCode(locationState?.scanResult?.currency)
+    })
+
     const [expense, setExpense] = useState<Expense>(() => {
         const scanResult = (location.state as LocationState)?.scanResult
+        const initialCurrency = resolveCurrencyCode(scanResult?.currency)
 
         const newExpense = new Expense(undefined, Number(localStorage.id))
+        newExpense.monedaOriginal = initialCurrency
 
         if (scanResult) {
             newExpense.description = scanResult.description || ''
@@ -97,6 +117,9 @@ export default function CreateExpense() {
     const effectiveGroupId = (groupId ?? selectedGroupId) as number | undefined
     const [groupNameState, setGroupNameState] = useState<string | undefined>()
     const [divisionType, setDivisionType] = useState<TipoDivision>(TipoDivision.PARTES_IGUALES)
+    const [groupCurrency, setGroupCurrency] = useState<string | null>(null)
+    const [conversionPreview, setConversionPreview] = useState<CurrencyConversionResult | null>(null)
+    const [isConvertingCurrency, setIsConvertingCurrency] = useState(false)
 
     const navigate = useNavigate()
     const { showToast } = useToast()
@@ -196,6 +219,44 @@ export default function CreateExpense() {
         })
     }
 
+    useEffect(() => {
+        let cancelled = false
+
+        const sourceCurrency = expense.monedaOriginal?.trim().toUpperCase()
+        const destinationCurrency = groupCurrency?.trim().toUpperCase()
+
+        if (!sourceCurrency || !destinationCurrency || sourceCurrency === destinationCurrency || expense.total <= 0) {
+            setConversionPreview(null)
+            return () => {
+                cancelled = true
+            }
+        }
+
+        const runConversion = async () => {
+            try {
+                setIsConvertingCurrency(true)
+                const result = await convertCurrency(sourceCurrency, destinationCurrency, expense.total)
+                if (!cancelled) {
+                    setConversionPreview(result)
+                }
+            } catch {
+                if (!cancelled) {
+                    setConversionPreview(null)
+                }
+            } finally {
+                if (!cancelled) {
+                    setIsConvertingCurrency(false)
+                }
+            }
+        }
+
+        void runConversion()
+
+        return () => {
+            cancelled = true
+        }
+    }, [expense.total, expense.monedaOriginal, groupCurrency])
+
     useOnInit(() => {
         if (groupId) {
             const id = Number(groupId)
@@ -211,15 +272,21 @@ export default function CreateExpense() {
 
         if (!id) {
             setParticipants([])
+            setGroupCurrency(null)
+            setConversionPreview(null)
             actualizarExpense({ participantIds: [], groupId: undefined })
             return
         }
 
         try {
             setIsLoadingParticipants(true)
-            const participantesBack = await usuarioService.obtenerUsuariosDeGrupo(id)
+            const [participantesBack, grupoSettings] = await Promise.all([
+                usuarioService.obtenerUsuariosDeGrupo(id),
+                obtenerGrupoSettings(id),
+            ])
 
             setParticipants(participantesBack)
+            setGroupCurrency(grupoSettings.moneda)
             const idsValidos = participantesBack
                 .map((p) => p.id)
                 .filter((id): id is number => id !== undefined)
@@ -312,9 +379,54 @@ export default function CreateExpense() {
                     <div className="rounded-2xl border border-border bg-card/70 p-6 shadow-sm backdrop-blur-xl flex flex-col items-center">
                         <span className="text-xs font-medium text-muted-foreground mb-4 uppercase tracking-wider">Monto total</span>
 
+                        <div className="w-full max-w-2xl mb-5 rounded-[1.75rem] border border-border/70 bg-background/70 p-4 shadow-sm">
+                            <div className="mb-4 flex items-center justify-between gap-3">
+                                <div>
+                                    <span className="block text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                                        Moneda original
+                                    </span>
+                                    <p className="mt-1 text-[11px] text-muted-foreground">
+                                        Elegí la moneda que detectó la IA o ajustala manualmente.
+                                    </p>
+                                </div>
+
+                                {locationState?.scanResult?.currency && isSupportedCurrency(locationState.scanResult.currency) && (
+                                    <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
+                                        <Sparkles size={13} /> Detectada por IA
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="w-full max-w-md">
+                                <label className="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-2">Seleccionar moneda</label>
+
+                                <div className="flex items-center gap-3">
+                                    <select
+                                        value={currency}
+                                        onChange={(e) => {
+                                            const v = (e.target.value as ScanCurrency)
+                                            setCurrency(v)
+                                            actualizarExpense({ monedaOriginal: v })
+                                        }}
+                                        className="w-full rounded-xl border border-border bg-background/70 px-3 py-2 text-sm font-semibold text-foreground"
+                                    >
+                                        {SUPPORTED_CURRENCIES.map((c) => (
+                                            <option key={c} value={c}>{`${c} - ${CURRENCY_LABELS[c]}`}</option>
+                                        ))}
+                                    </select>
+
+                                    {locationState?.scanResult?.currency && isSupportedCurrency(locationState.scanResult.currency) && (
+                                        <div className="inline-flex items-center gap-1 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1 text-[11px] font-semibold text-emerald-700">
+                                            <Sparkles size={13} /> IA
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
                         {!useItemTotal ? (
                             <div className="flex items-center justify-center gap-2 w-full max-w-md rounded-2xl border border-primary/30 bg-primary/10 px-4 py-4">
-                                <span className="text-3xl font-bold text-primary">$</span>
+                                <span className="text-3xl font-bold text-primary">{CURRENCY_SYMBOLS[currency]}</span>
                                 <input
                                     type="number"
                                     inputMode="decimal"
@@ -327,7 +439,7 @@ export default function CreateExpense() {
                             </div>
                         ) : (
                             <div className="flex items-center justify-center gap-1 w-full max-w-md rounded-2xl bg-muted/50 px-4 py-4 cursor-not-allowed">
-                                <span className="text-3xl font-bold text-muted-foreground">$</span>
+                                <span className="text-3xl font-bold text-muted-foreground">{CURRENCY_SYMBOLS[currency]}</span>
                                 <div className="text-4xl font-bold text-center text-muted-foreground">
                                     {expense.total.toFixed(2)}
                                 </div>
@@ -336,6 +448,21 @@ export default function CreateExpense() {
 
                         {!useItemTotal && (
                             <p className="mt-3 text-xs text-muted-foreground">El total manual debe coincidir con la suma de los ítems.</p>
+                        )}
+
+                        {isConvertingCurrency && (
+                            <p className="mt-2 text-xs text-muted-foreground">Actualizando conversión para la moneda del grupo...</p>
+                        )}
+
+                        {!isConvertingCurrency && conversionPreview && (
+                            <div className="mt-3 w-full max-w-md rounded-xl border border-primary/20 bg-primary/5 px-3 py-2 text-xs text-foreground">
+                                <p className="font-semibold">
+                                    En el grupo se verá aprox. {conversionPreview.to} {conversionPreview.convertedAmount.toFixed(2)}
+                                </p>
+                                <p className="mt-1 text-muted-foreground">
+                                    Tasa aplicada: {conversionPreview.exchangeRate.toFixed(4)} ({conversionPreview.from} → {conversionPreview.to})
+                                </p>
+                            </div>
                         )}
 
                         {useItemTotal && expense.items.length === 0 && (
@@ -524,6 +651,16 @@ function mapearCategoria(scanCategory?: string): string {
         'other': 'OTROS', 'otros': 'OTROS',
     }
     return mapping[normalized] || 'OTROS'
+}
+
+function resolveCurrencyCode(currency?: string): ScanCurrency {
+    const normalized = currency?.trim().toUpperCase()
+
+    if (isSupportedCurrency(normalized)) {
+        return normalized
+    }
+
+    return 'ARS'
 }
 
 function convertirItems(scanItems?: LineItem[]): ExpenseItem[] {
