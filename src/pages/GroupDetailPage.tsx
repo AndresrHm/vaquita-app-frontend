@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useEffect, useState, type UIEvent } from 'react'
 import ColumnContainer from '@/components/common/columnContainer'
 import { useOnInit } from '@/customHooks/hooks'
-import { obtenerDetalleGrupo, obtenerGastosGrupo, obtenerGrupoSettings, obtenerMiembrosDeGrupoSettings } from '@/service/groupsService'
+import { obtenerDetalleGrupo, obtenerGastosGrupo, obtenerGrupoSettings, obtenerMiembrosDeGrupoSettings, generarTokenInvitacion } from '@/service/groupsService'
 import type { GrupoDetalleDTO, GrupoGastosPorAnioDTO, Miembro } from '@/domain/Grupo'
 import GroupHeader from '@/components/groupsPage/GroupHeader'
 import ExpensesList, { type ExpensesByMonth } from '@/components/groupsPage/ExpensesList'
@@ -15,6 +15,8 @@ import { getMensajeError } from '@/utils/getMensajeError'
 import { AvatarCircle } from '@/components/common/avatarCircle'
 import GroupActivitiesModal from '@/components/groupsPage/GroupActivitiesModal'
 import GroupAnalyticsModal from '@/components/groupsPage/GroupAnalyticsModal'
+import { UserPlus } from 'lucide-react'
+import { InviteModal } from '@/components/groupsPage/InviteModal'
 
 const MEMBERS_PAGE_SIZE = 8
 
@@ -33,6 +35,9 @@ export default function GroupDetailPage() {
     const [visibleMembersCount, setVisibleMembersCount] = useState(MEMBERS_PAGE_SIZE)
     const [showActivitiesModal, setShowActivitiesModal] = useState(false)
     const [showAnalyticsModal, setShowAnalyticsModal] = useState(false)
+    const [isInviteModalOpen, setIsInviteModalOpen] = useState(false)
+    const [inviteToken, setInviteToken] = useState<string>('')
+    const [isGeneratingInvite, setIsGeneratingInvite] = useState(false)
 
     // Gastos del grupo
     const [gastos, setGastos] = useState<GrupoGastosPorAnioDTO[]>([])
@@ -56,6 +61,24 @@ export default function GroupDetailPage() {
             showToast(mensaje, 'error')
         } finally {
             setLoadingGastos(false)
+        }
+    }
+
+    const handleOpenInviteModal = async () => {
+        setIsGeneratingInvite(true)
+        try {
+            // Reemplazá esto por la función real de tu groupsService que le pegue a Axios
+            // Ej: const response = await api.post(`/grupos/${grupoId}/invitacion`)
+            // Y de ahí sacás el token.
+            const response = await generarTokenInvitacion(grupoId) 
+            
+            setInviteToken(response.token)
+            setIsInviteModalOpen(true)
+        } catch (error: unknown) {
+            const mensaje = getMensajeError(error)
+            showToast(mensaje || 'Error al generar el link de invitación', 'error')
+        } finally {
+            setIsGeneratingInvite(false)
         }
     }
 
@@ -226,6 +249,22 @@ export default function GroupDetailPage() {
 
                 <button
                     type="button"
+                    onClick={handleOpenInviteModal}
+                    disabled={isGeneratingInvite}
+                    className="w-full inline-flex items-center gap-3 rounded-2xl border border-border bg-background/70 px-3 py-2 text-sm font-medium text-foreground shadow-sm hover:bg-muted transition disabled:opacity-70"
+                >
+                    <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                        {isGeneratingInvite ? (
+                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
+                        ) : (
+                            <UserPlus className="h-5 w-5" />
+                        )}
+                    </span>
+                    {isGeneratingInvite ? 'Generando link...' : 'Invitar amigos al grupo'}
+                </button>
+
+                <button
+                    type="button"
                     onClick={() => navigate(`/groups/${grupoId}/balances`)}
                     className="w-full inline-flex items-center gap-3 rounded-2xl border border-border bg-background/70 px-3 py-2 text-sm font-medium text-foreground shadow-sm hover:bg-muted transition"
                 >
@@ -258,6 +297,12 @@ export default function GroupDetailPage() {
                     groupId={grupoId}
                     groupName={groupDetail.nombre}
                     onClose={() => setShowAnalyticsModal(false)}
+                />
+
+                <InviteModal 
+                    isOpen={isInviteModalOpen} 
+                    onClose={() => setIsInviteModalOpen(false)} 
+                    inviteToken={inviteToken} 
                 />
 
                 <div className="mt-4 space-y-6">

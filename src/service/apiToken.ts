@@ -45,7 +45,7 @@ api.interceptors.response.use(
       !originalRequest.url.includes('/usuarios/login') &&
       !originalRequest.url.includes('/usuarios/refresh')
     ) {
-      originalRequest._retry = true // Marcamos para no entrar en un bucle infinito
+      originalRequest._retry = true
 
       try {
         const refreshToken = localStorage.getItem('refreshToken')
@@ -54,23 +54,18 @@ api.interceptors.response.use(
           throw new Error('No hay refresh token, imposible salvar la sesión')
         }
 
-        // Le pedimos a nuestro nuevo endpoint las llaves frescas
         const { data } = await axios.post('http://localhost:8080/usuarios/refresh', {
           refreshToken: refreshToken
         })
 
-        // Guardamos las llaves nuevas en el navegador
         localStorage.setItem('accessToken', data.accessToken)
         localStorage.setItem('refreshToken', data.refreshToken)
 
-        // Actualizamos la mochila de la petición original con la llave nueva
         originalRequest.headers.Authorization = `Bearer ${data.accessToken}`
 
-        // Reintentamos la petición que había fallado, pero ahora va a pasar
         return api(originalRequest)
 
       } catch (refreshError) {
-        // VAQUITA-301: Si el refresh falla (porque pasaron 7 días o lo borraron), lo echamos
         limpiarSesion()
         return Promise.reject(refreshError)
       }
@@ -81,8 +76,23 @@ api.interceptors.response.use(
       limpiarSesion()
     }
 
+    // 👇 ACA ENTRA LA MAGIA NUEVA (VAQUITA-237 y VAQUITA-239) 👇
+    if (error.response) {
+      // Si el backend mandó nuestro JSON prolijo con el "message", lo extraemos
+      if (error.response.data && error.response.data.message) {
+        // Pisamos el mensaje genérico de Axios con el nuestro de Spring Boot
+        error.message = error.response.data.message
+      }
+    } else if (error.request) {
+      // Si ni siquiera hay respuesta, es porque el backend está apagado o no hay internet
+      error.message = 'No se pudo conectar con el servidor. Revisá tu conexión.'
+    }
+    // 👆 FIN DE LA MAGIA 👆
+
+    // Rechazamos la promesa para que el frontend (el toast) lo muestre
     return Promise.reject(error)
   }
+
 )
 
 export default api

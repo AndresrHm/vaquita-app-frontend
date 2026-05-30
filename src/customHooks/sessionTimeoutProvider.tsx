@@ -47,7 +47,7 @@ export function SessionTimeoutProvider({ children }: { children: React.ReactNode
         setShowModal(true)
         startLogoutTimer()
       }
-    }, 5 * 60 * 1000)
+    }, 10 * 60 * 1000)
   }
 
   const startLogoutTimer = () => {
@@ -59,9 +59,8 @@ export function SessionTimeoutProvider({ children }: { children: React.ReactNode
     // SEGUNDO RELOJ: Si pasa 5 minutos más en el modal, se cierra (5 * 60 * 1000 ms)
     logoutTimerRef.current = setTimeout(() => {
       handleLogout()
-    }, 5 * 60 * 1000)
+    }, 10 * 60 * 1000)
 
-    // Intervalo para actualizar el segundero del modal (opcional, queda pro)
     countdownIntervalRef.current = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
