@@ -181,3 +181,8 @@ export async function obtenerGrupoPorId(id: number): Promise<GrupoNombreIdDTO> {
 export async function eliminarGrupo(grupoId: number): Promise<void> {
   await api.delete(`/grupo/${grupoId}`)
 }
+
+export async function generarTokenInvitacion(grupoId: number): Promise<{ token: string }> {
+  const { data } = await api.post<{ token: string }>(`/grupo/${grupoId}/invitacion`)
+  return data
+}

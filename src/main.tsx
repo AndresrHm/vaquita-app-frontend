@@ -12,6 +12,7 @@ import FriendsPage from '@/pages/FriendsPage.tsx'
 import GroupsPage from '@/pages/GroupsPage.tsx'
 import GroupsScanPage from '@/pages/SmartScanPage'
 import GroupDetailPage from '@/pages/GroupDetailPage.tsx'
+import JoinGroupPage from '@/pages/JoinGroupPage.tsx'
 import GroupSettingsPage from '@/pages/GroupSettingsPage.tsx'
 import CreateGroupPage from '@/pages/CreateGroupPage.tsx'
 import LoginPage from '@/pages/LoginPage.tsx'
@@ -54,6 +55,7 @@ const router = createBrowserRouter([
           { index: true, element: <Navigate to="/groups" replace /> },
           { path: 'groups', element: <GroupsPage /> },
           { path: 'groups/new', element: <CreateGroupPage /> },
+          { path: 'groups/join/:inviteToken', element: <JoinGroupPage /> },
           { path: 'groups/:groupId', element: <GroupDetailPage /> },
           { path: 'groups/:groupId/settings', element: <GroupSettingsPage /> },
           { path: 'groups/:groupId/balances', element: <GroupBalancesPage /> },
