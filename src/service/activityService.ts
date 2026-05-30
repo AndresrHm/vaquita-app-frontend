@@ -1,11 +1,29 @@
 
 import api from './apiToken'
 import type { ActividadDTO } from '../domain/actividadDTO'
+import type { ActivityAnalyticsDTO } from '../domain/activityAnalytics'
 import type { TipoActividad } from '../domain/enums/tipoActividad'
 import type { PageResponse } from '../domain/pageResponse'
 
 const manejarError = (error: any): never => {
-    const mensaje = error.response?.data?.message || 'Error de conexión'
+    if (error?.response) {
+        console.error('activityService request failed', {
+            status: error.response.status,
+            url: error.config?.url,
+            params: error.config?.params,
+            data: error.response.data,
+        })
+    }
+
+    const responseData = error?.response?.data
+    const mensaje =
+        responseData?.message ||
+        responseData?.error ||
+        responseData?.detail ||
+        (typeof responseData === 'string' ? responseData : undefined) ||
+        error?.message ||
+        'Error de conexión'
+
     throw new Error(mensaje)
 }
 
@@ -84,6 +102,23 @@ export const actividadService = {
                 // Sin caché específico para este endpoint por ahora
             }
 
+            return manejarError(error)
+        }
+    },
+
+    async obtenerAnalytics(desde: string, hasta: string): Promise<ActivityAnalyticsDTO> {
+        try {
+            const { data } = await api.get<ActivityAnalyticsDTO>('/actividad/analytics', {
+                params: {
+                    desde,
+                    hasta,
+                },
+            })
+
+            console.log('actividadService.obtenerAnalytics - respuesta /actividad/analytics:', data)
+
+            return data
+        } catch (error: any) {
             return manejarError(error)
         }
     },

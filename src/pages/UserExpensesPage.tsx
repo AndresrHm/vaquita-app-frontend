@@ -13,11 +13,14 @@ import SearchCard from '@/components/userExpensesPage/SearchCard'
 import SortCard from '@/components/userExpensesPage/SortCard'
 import type { FilterState, SortValue } from '@/components/userExpensesPage/types'
 import UserExpensesFiltersModal from '@/components/userExpensesPage/UserExpensesFiltersModal'
+import UserExpensesChartsModal from '@/components/userExpensesPage/UserExpensesChartsModal'
+import ActionButton from '@/components/common/ActionButton'
 import { buildRequestFilters, formatDateFromApi, normalizeNumberOrNull } from '@/components/userExpensesPage/utils'
 import type { ExpenseFilteredJSON } from '@/domain/expense'
 import { ExpensesFilterTabs } from '@/domain/expenseItemDTO'
 import { CategoriaGasto } from '@/domain/enums/categoriaGasto'
 import axios from 'axios'
+import { BarChart3 } from 'lucide-react'
 import { expenseService } from '@/service/expenseService'
 import { useToast } from '@/customHooks/useToast'
 import { getMensajeError } from '@/utils/getMensajeError'
@@ -38,6 +41,7 @@ export default function UserExpensesPage() {
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('')
   const [sortBy, setSortBy] = useState<SortValue>('NOMBRE_ASC')
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false)
+  const [isChartsModalOpen, setIsChartsModalOpen] = useState(false)
   const [activeFilters, setActiveFilters] = useState<FilterState>(INITIAL_FILTERS)
   const [draftFilters, setDraftFilters] = useState<FilterState>(INITIAL_FILTERS)
 
@@ -218,6 +222,14 @@ export default function UserExpensesPage() {
           </SearchCard>
         </div>
 
+        <ActionButton
+          className="w-full justify-start"
+          icon={<BarChart3 className="h-5 w-5" />}
+          onClick={() => setIsChartsModalOpen(true)}
+        >
+          Ver graficos
+        </ActionButton>
+
         <ExpensesResultsCard
           loading={loading}
           error={error}
@@ -240,6 +252,13 @@ export default function UserExpensesPage() {
         onApply={applyDraftFilters}
         onToggleCategory={toggleCategory}
         setDraftFilters={setDraftFilters}
+      />
+
+      <UserExpensesChartsModal
+        isOpen={isChartsModalOpen}
+        initialDesde={activeFilters.fechaIni || undefined}
+        initialHasta={activeFilters.fechaFin || undefined}
+        onClose={() => setIsChartsModalOpen(false)}
       />
     </section>
   )

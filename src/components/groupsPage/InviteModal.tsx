@@ -7,35 +7,50 @@ import Modal from '@/components/common/modal'
 interface InviteModalProps {
   isOpen: boolean
   onClose: () => void
-  groupId: string | undefined
   inviteToken: string
 }
 
-export function InviteModal({ isOpen, onClose, groupId, inviteToken }: InviteModalProps) {
+type NavigatorWithOptionalApis = {
+  clipboard?: {
+    writeText: (text: string) => Promise<void>
+  }
+  share?: (data: {
+    title?: string
+    text?: string
+    url?: string
+  }) => Promise<void>
+}
+
+export function InviteModal({ isOpen, onClose, inviteToken }: InviteModalProps) {
   const { showToast } = useToast()
+  const navigatorWithOptionalApis = navigator as NavigatorWithOptionalApis
 
   const inviteLink = `${window.location.origin}/groups/join/${inviteToken}`
 
   const handleCopyLink = async () => {
     try {
-      await navigator.clipboard.writeText(inviteLink)
+      if (!navigatorWithOptionalApis.clipboard?.writeText) {
+        throw new Error('Clipboard API no disponible')
+      }
+
+      await navigatorWithOptionalApis.clipboard.writeText(inviteLink)
       showToast('¡Enlace copiado al portapapeles!', 'success')
       onClose() 
-    } catch (err) {
+    } catch {
       showToast('No se pudo copiar el enlace', 'error')
     }
   }
 
   const handleNativeShare = async () => {
-    if (navigator.share) {
+    if (navigatorWithOptionalApis.share) {
       try {
-        await navigator.share({
+        await navigatorWithOptionalApis.share({
           title: '¡Unite a mi grupo en La Vaquita!',
           text: 'Hacé clic en el enlace para sumarte a nuestro grupo y dividir los gastos.',
           url: inviteLink,
         })
-      } catch (error) {
-        console.log('El usuario canceló el share o hubo un error', error)
+      } catch {
+        showToast('No se pudo compartir. Copiá el enlace manualmente.', 'error')
       }
     } else {
       handleCopyLink()

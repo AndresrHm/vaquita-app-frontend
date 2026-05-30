@@ -14,6 +14,7 @@ import { useToast } from '@/customHooks/useToast'
 import { getMensajeError } from '@/utils/getMensajeError'
 import { AvatarCircle } from '@/components/common/avatarCircle'
 import GroupActivitiesModal from '@/components/groupsPage/GroupActivitiesModal'
+import GroupAnalyticsModal from '@/components/groupsPage/GroupAnalyticsModal'
 import { UserPlus } from 'lucide-react'
 import { InviteModal } from '@/components/groupsPage/InviteModal'
 
@@ -33,6 +34,7 @@ export default function GroupDetailPage() {
     const [showGroupInfo, setShowGroupInfo] = useState(false)
     const [visibleMembersCount, setVisibleMembersCount] = useState(MEMBERS_PAGE_SIZE)
     const [showActivitiesModal, setShowActivitiesModal] = useState(false)
+    const [showAnalyticsModal, setShowAnalyticsModal] = useState(false)
     const [isInviteModalOpen, setIsInviteModalOpen] = useState(false)
     const [inviteToken, setInviteToken] = useState<string>('')
     const [isGeneratingInvite, setIsGeneratingInvite] = useState(false)
@@ -236,6 +238,17 @@ export default function GroupDetailPage() {
 
                 <button
                     type="button"
+                    onClick={() => setShowAnalyticsModal(true)}
+                    className="w-full inline-flex items-center gap-3 rounded-2xl border border-border bg-background/70 px-3 py-2 text-sm font-medium text-foreground shadow-sm hover:bg-muted transition"
+                >
+                    <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                        <BarChart3 className="h-5 w-5" />
+                    </span>
+                    Ver graficos del grupo
+                </button>
+
+                <button
+                    type="button"
                     onClick={handleOpenInviteModal}
                     disabled={isGeneratingInvite}
                     className="w-full inline-flex items-center gap-3 rounded-2xl border border-border bg-background/70 px-3 py-2 text-sm font-medium text-foreground shadow-sm hover:bg-muted transition disabled:opacity-70"
@@ -279,10 +292,16 @@ export default function GroupDetailPage() {
                     onClose={() => setShowActivitiesModal(false)}
                 />
 
+                <GroupAnalyticsModal
+                    isOpen={showAnalyticsModal}
+                    groupId={grupoId}
+                    groupName={groupDetail.nombre}
+                    onClose={() => setShowAnalyticsModal(false)}
+                />
+
                 <InviteModal 
                     isOpen={isInviteModalOpen} 
                     onClose={() => setIsInviteModalOpen(false)} 
-                    groupId={String(grupoId)}
                     inviteToken={inviteToken} 
                 />
 
