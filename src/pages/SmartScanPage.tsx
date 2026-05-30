@@ -13,7 +13,15 @@ import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import EditableLineItems from '@/components/smartScan/editableLineItems'
 import Card from '@/components/common/card'
-import { CATEGORY_LABELS, CURRENCY_SYMBOLS, type ExpenseAttachment, type LineItem, type ScanResult, type ScanState } from '@/domain/smartScanDTO'
+import {
+  CATEGORY_LABELS,
+  getCurrencySymbol,
+  type BackendScanResult,
+  type ExpenseAttachment,
+  type LineItem,
+  type ScanResult,
+  type ScanState,
+} from '@/domain/smartScanDTO'
 import { scan, scanMock } from '@/service/smartScanService'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import CollapsibleCard from '@/components/common/collapsibleCard'
@@ -34,10 +42,15 @@ export default function GroupsScanPage() {
   const [editableResult, setEditableResult] = useState<ScanResult | null>(null)
 
   // El total se calcula siempre en base a lo que el usuario ve/edita
-  // ✨ CAMBIO: Ahora items es opcional y quantity también es opcional
   const total = useMemo(() => {
-    return editableResult?.items?.reduce((acc: number, it: LineItem) => acc + (it.price * (it.quantity || 1)), 0) ?? 0
-  }, [editableResult?.items])
+    if (!editableResult) return 0
+
+    if (editableResult.items?.length) {
+      return editableResult.items.reduce((acc: number, it: LineItem) => acc + (it.price * (it.quantity || 1)), 0)
+    }
+
+    return editableResult.totalAmount ?? 0
+  }, [editableResult])
 
   // ── Handlers ───────────────────────────────────────────────────────────────
 
@@ -79,14 +92,25 @@ export default function GroupsScanPage() {
     try {
       const compressedImage = await compressImage(attachments[0].file)
 
-      const data = await scan(compressedImage)
+      try {
+        const data = await scan(compressedImage)
 
-      setEditableResult({
-        ...data,
-        items: data.items || []
-      })
+        const normalizedResult = normalizeScanResult(data)
 
-      setState('result')
+        setEditableResult(normalizedResult)
+        setState('result')
+      } catch (scanError) {
+        if (shouldUseMockFallback(scanError)) {
+          const mockResult = await scanMock(compressedImage)
+
+          setEditableResult(normalizeScanResult(mockResult))
+          setState('result')
+          showToast('Gemini está saturado. Se usó una respuesta de respaldo.', 'warning')
+          return
+        }
+
+        throw scanError
+      }
     } catch (e) {
       const mensaje = getMensajeError(e)
       showToast(mensaje, 'error')
@@ -212,7 +236,7 @@ export default function GroupsScanPage() {
                     Cambiar imagen
                   </Button>
                 </>
-              ) : state !== 'loading' && (
+              ) : (
                 <>
                   <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => e.target.files?.[0] && handleFileSelected(e.target.files[0])} />
                   <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && handleFileSelected(e.target.files[0])} />
@@ -336,7 +360,7 @@ export default function GroupsScanPage() {
                   {editableResult.currency && (
                     <div className="space-y-1 border-t border-border/50 pt-2">
                       <label className="text-[10px] font-bold text-muted-foreground uppercase ml-1">Moneda</label>
-                      <p className="pl-1 text-sm font-medium">{editableResult.currency} ({CURRENCY_SYMBOLS[editableResult.currency]})</p>
+                      <p className="pl-1 text-sm font-medium">{editableResult.currency} ({getCurrencySymbol(editableResult.currency)})</p>
                     </div>
                   )}
                 </div>
@@ -381,7 +405,7 @@ export default function GroupsScanPage() {
 
                 <div className="relative flex items-baseline justify-end gap-1">
                   <span className="text-4xl font-black text-white">
-                    {CURRENCY_SYMBOLS[editableResult.currency || 'ARS']}
+                    {getCurrencySymbol(editableResult.currency || 'ARS')}
                   </span>
                   <span className="text-4xl font-black text-white tracking-tight">
                     {total.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
@@ -422,6 +446,28 @@ export default function GroupsScanPage() {
       )}
     </div>
   )
+}
+
+function normalizeScanResult(scan: BackendScanResult): ScanResult {
+  return {
+    ...scan,
+    currency: scan.currency?.trim() || 'ARS',
+    items: scan.items || [],
+  }
+}
+
+function shouldUseMockFallback(error: unknown): boolean {
+  if (!axios.isAxiosError(error)) return false
+
+  const status = error.response?.status
+  const payload = error.response?.data
+  const message = typeof payload === 'string'
+    ? payload
+    : typeof payload?.message === 'string'
+      ? payload.message
+      : JSON.stringify(payload ?? error.message)
+
+  return (status === 500 || status === 503) && /Gemini error|UNAVAILABLE|high demand/i.test(message)
 }
 
 async function compressImage(file: File): Promise<File> {

@@ -6,6 +6,8 @@ import { ExpenseAllocation } from './expenseAllocation'
 import type { ExpenseAllocationDTO } from './expenseAllocationDTO'
 import { TipoDivision } from './enums/tipoDivision'
 
+export type SupportedCurrency = 'ARS' | 'USD' | 'EUR'
+
 export type ExpenseJSON = {
     descripcion: string
     grupoID: number
@@ -16,6 +18,7 @@ export type ExpenseJSON = {
     fecha: string
     items: ExpenseItemDTO[]
     tipoGasto: TipoDivision
+    monedaOriginal?: string | null
     asignacionesExactas?: ExpenseAllocationDTO[]
 }
 
@@ -56,6 +59,7 @@ export class Expense extends Validable {
         public tipoDivision: TipoDivision = TipoDivision.PARTES_IGUALES,
         public allocations: ExpenseAllocation[] = [],
         public useItemsTotal = false,
+        public monedaOriginal: string | null = null,
     ) {
         super()
     }
@@ -153,11 +157,6 @@ export class Expense extends Validable {
     }
 
     toJSON(): ExpenseJSON {
-        const asignacionesMap: Record<number, number> = {}
-        this.allocations.forEach(alloc => {
-            asignacionesMap[alloc.participantId] = alloc.total
-        })
-
         const result: ExpenseJSON = {
             grupoID: this.groupId,
             pagadorID: this.pagadorId,
@@ -167,11 +166,12 @@ export class Expense extends Validable {
             categoria: this.category,
             fecha: this.date,
             items: this.items.map((item) => item.toDTO()),
-            tipoGasto: this.tipoDivision
+            tipoGasto: this.tipoDivision,
+            monedaOriginal: this.monedaOriginal
         }
 
         if (this.tipoDivision === TipoDivision.PARTES_EXACTAS || this.tipoDivision === TipoDivision.PORCENTUAL) {
-            result.asignacionesExactas = asignacionesMap as any
+            result.asignacionesExactas = this.allocations.map((allocation) => allocation.toDTO())
         }
 
         return result
@@ -205,6 +205,7 @@ export class Expense extends Validable {
             expense.tipoDivision,
             expense.allocations.map((allocation) => new ExpenseAllocation(allocation.participantId, allocation.total)),
             expense.useItemsTotal,
+            expense.monedaOriginal,
         )
     }
 }

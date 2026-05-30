@@ -1,5 +1,5 @@
 import { ChevronLeft, UserPlus, Trash2, LogOut, AlertTriangle, Crown, Check, X } from 'lucide-react'
-import type { ReactNode } from 'react'
+import type { ReactNode, ChangeEvent } from 'react'
 import { Button } from '@/components/ui/button'
 import ColumnContainer from '@/components/common/columnContainer'
 import Card from '@/components/common/card'
@@ -9,6 +9,7 @@ import ActionButton from '@/components/common/ActionButton'
 import Select from '@/components/ui/select'
 import { useState } from 'react'
 import type { GrupoContextoUsuarioDTO, GrupoSettingsDTO, Miembro } from '@/domain/Grupo'
+import type { SupportedCurrency } from '@/domain/expense'
 import { useOnInit } from '@/customHooks/hooks'
 import { obtenerGrupoUsuarioContexto, obtenerGrupoSettings, obtenerMiembrosDeGrupoSettings, actualizarGrupoSettings, eliminarMiembro, agregarMiembros, eliminarGrupo } from '@/service/groupsService'
 import { usuarioService } from '@/service/usuarioService'
@@ -101,6 +102,8 @@ export default function GroupSettingsPage() {
     }
 
     const isDirty = JSON.stringify(formularioGrupo) !== JSON.stringify(initialData)
+
+    const SUPPORTED_CURRENCIES: SupportedCurrency[] = ['ARS', 'USD', 'EUR']
 
 
     const validate = () => {
@@ -365,58 +368,62 @@ export default function GroupSettingsPage() {
                         <Card interactive={false}>
                             <h3 className="text-lg font-semibold mb-3">Moneda y preferencias</h3>
                             <p className="text-xs text-gray-400 pb-2">esto es funcional, pero en el backend aún no está hecho</p>
-                            <div className="space-y-4">
-                                {contextoUsuario?.esAdmin ? (
-                                    <>
-                                        <div>
-                                            <label className="block text-sm text-muted-foreground mb-1">Moneda por defecto</label>
-                                            <Select value={formularioGrupo?.moneda || ''} onChange={() => { }} disabled>
-                                                <option value="ARS">ARS — Peso argentino</option>
-                                                <option value="USD">USD — US Dollar</option>
-                                                <option value="EUR">EUR — Euro</option>
-                                            </Select>
+                                <div className="space-y-4">
+                                    {contextoUsuario?.esAdmin ? (
+                                        <>
+                                            <div>
+                                                <label className="block text-sm text-muted-foreground mb-1">Moneda por defecto</label>
+                                                <Select
+                                                    value={formularioGrupo?.moneda || ''}
+                                                    onChange={(e: ChangeEvent<HTMLSelectElement>) => updateGroupField('moneda', e.target.value as SupportedCurrency)}
+                                                    disabled={!contextoUsuario?.esAdmin}
+                                                >
+                                                    {SUPPORTED_CURRENCIES.map((c) => (
+                                                        <option key={c} value={c}>{c} — {c === 'ARS' ? 'Peso argentino' : c === 'USD' ? 'US Dollar' : 'Euro'}</option>
+                                                    ))}
+                                                </Select>
+                                            </div>
+                                            <div className="flex items-center justify-between">
+                                                <Toggle
+                                                    checked={formularioGrupo.simplificarDeudas}
+                                                    onChange={(v) => updateGroupField('simplificarDeudas', v)}
+                                                    label="Simplificar deudas"
+                                                />
+                                            </div>
+                                            <div className="flex items-center justify-between">
+                                                <Toggle
+                                                    checked={formularioGrupo.notificaciones}
+                                                    onChange={(v) => updateGroupField('notificaciones', v)}
+                                                    label="Notificaciones" />
+                                            </div>
+                                            <div className="flex items-center justify-between">
+                                                <Toggle
+                                                    checked={formularioGrupo.modoRata}
+                                                    onChange={(v) => updateGroupField('modoRata', v)}
+                                                    label="Modo rata 🐀" />
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div className="space-y-2 text-sm text-muted-foreground">
+                                            <div className="rounded-md border border-border bg-muted/30 p-3">
+                                                <div className="text-xs">Moneda por defecto</div>
+                                                <div className="font-medium">{formularioGrupo?.moneda || '-'}</div>
+                                            </div>
+                                            <div className="rounded-md border border-border bg-muted/30 p-3">
+                                                <div className="text-xs">Simplificar deudas</div>
+                                                <div>{formularioGrupo?.simplificarDeudas ? 'Activado' : 'Desactivado'}</div>
+                                            </div>
+                                            <div className="rounded-md border border-border bg-muted/30 p-3">
+                                                <div className="text-xs">Notificaciones</div>
+                                                <div>{formularioGrupo?.notificaciones ? 'Activado' : 'Desactivado'}</div>
+                                            </div>
+                                            <div className="rounded-md border border-border bg-muted/30 p-3">
+                                                <div className="text-xs">Modo rata</div>
+                                                <div>{formularioGrupo?.modoRata ? 'Activado' : 'Desactivado'}</div>
+                                            </div>
                                         </div>
-                                        <div className="flex items-center justify-between">
-                                            <Toggle
-                                                checked={formularioGrupo.simplificarDeudas}
-                                                onChange={(v) => updateGroupField('simplificarDeudas', v)}
-                                                label="Simplificar deudas"
-                                            />
-                                        </div>
-                                        <div className="flex items-center justify-between">
-                                            <Toggle
-                                                checked={formularioGrupo.notificaciones}
-                                                onChange={(v) => updateGroupField('notificaciones', v)}
-                                                label="Notificaciones" />
-                                        </div>
-                                        <div className="flex items-center justify-between">
-                                            <Toggle
-                                                checked={formularioGrupo.modoRata}
-                                                onChange={(v) => updateGroupField('modoRata', v)}
-                                                label="Modo rata 🐀" />
-                                        </div>
-                                    </>
-                                ) : (
-                                    <div className="space-y-2 text-sm text-muted-foreground">
-                                        <div className="rounded-xl border border-border bg-card/70 p-3">
-                                            <div className="text-xs">Moneda por defecto</div>
-                                            <div className="font-medium">{formularioGrupo?.moneda || '-'}</div>
-                                        </div>
-                                        <div className="rounded-xl border border-border bg-card/70 p-3">
-                                            <div className="text-xs">Simplificar deudas</div>
-                                            <div>{formularioGrupo?.simplificarDeudas ? 'Activado' : 'Desactivado'}</div>
-                                        </div>
-                                        <div className="rounded-xl border border-border bg-card/70 p-3">
-                                            <div className="text-xs">Notificaciones</div>
-                                            <div>{formularioGrupo?.notificaciones ? 'Activado' : 'Desactivado'}</div>
-                                        </div>
-                                        <div className="rounded-xl border border-border bg-card/70 p-3">
-                                            <div className="text-xs">Modo rata</div>
-                                            <div>{formularioGrupo?.modoRata ? 'Activado' : 'Desactivado'}</div>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
+                                    )}
+                                </div>
                         </Card>
 
                         {/* Gestión del grupo */}

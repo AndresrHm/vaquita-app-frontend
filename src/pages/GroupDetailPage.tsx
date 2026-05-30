@@ -178,6 +178,7 @@ export default function GroupDetailPage() {
         <div className="space-y-4">
             <GroupHeader
                 groupDetail={groupDetail}
+                miembros={miembros}
                 expanded={showGroupInfo}
                 onToggle={() => setShowGroupInfo(prev => !prev)}
             />

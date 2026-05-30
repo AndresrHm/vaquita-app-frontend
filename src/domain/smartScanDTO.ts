@@ -53,6 +53,14 @@ export const CURRENCY_LABELS: Record<Currency, string> = {
     COP: 'Peso Colombiano',
 }
 
+export function isSupportedScanCurrency(currency?: string): currency is Currency {
+    return !!currency && currency in CURRENCY_SYMBOLS
+}
+
+export function getCurrencySymbol(currency?: string): string {
+    return isSupportedScanCurrency(currency) ? CURRENCY_SYMBOLS[currency] : CURRENCY_SYMBOLS.ARS
+}
+
 /**
  * Item individual en un gasto/ticket
  */
@@ -70,11 +78,13 @@ export type ScanResult = {
     title: string
     description?: string // NUEVO: descripción detallada del gasto
     totalAmount: number
-    currency?: Currency // NUEVO: moneda del ticket (default ARS si no viene)
+    currency?: string // moneda detectada por el scan (puede venir libre)
     date?: string // Formato YYYY-MM-DD
     category?: CategoryType
     items?: LineItem[]
 }
+
+export type BackendScanResult = ScanResult
 
 /**
  * Parametros que se pasan al navegar hacia CreateExpense desde SmartScan
@@ -83,7 +93,7 @@ export type ScanToExpenseNavParams = {
     title: string
     description?: string
     totalAmount: number
-    currency?: Currency
+    currency?: string
     date?: string
     category?: CategoryType
     items?: LineItem[]
