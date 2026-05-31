@@ -1,4 +1,3 @@
-
 import { useNavigate, useParams } from 'react-router-dom'
 import { useEffect, useState, type UIEvent } from 'react'
 import ColumnContainer from '@/components/common/columnContainer'
@@ -9,13 +8,12 @@ import GroupHeader from '@/components/groupsPage/GroupHeader'
 import ExpensesList, { type ExpensesByMonth } from '@/components/groupsPage/ExpensesList'
 import { type Expense } from '@/components/groupsPage/ExpenseItem'
 import CreateExpenseButton from '@/components/groupsPage/CreateExpenseButton'
-import { BarChart3 } from 'lucide-react'
+import { PieChart, Scale, Bell, UserPlus } from 'lucide-react'
 import { useToast } from '@/customHooks/useToast'
 import { getMensajeError } from '@/utils/getMensajeError'
 import { AvatarCircle } from '@/components/common/avatarCircle'
 import GroupActivitiesModal from '@/components/groupsPage/GroupActivitiesModal'
 import GroupAnalyticsModal from '@/components/groupsPage/GroupAnalyticsModal'
-import { UserPlus } from 'lucide-react'
 import { InviteModal } from '@/components/groupsPage/InviteModal'
 
 const MEMBERS_PAGE_SIZE = 8
@@ -177,7 +175,7 @@ export default function GroupDetailPage() {
     }
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-0">
             <GroupHeader
                 groupDetail={groupDetail}
                 miembros={miembros}
@@ -185,31 +183,92 @@ export default function GroupDetailPage() {
                 onToggle={() => setShowGroupInfo(prev => !prev)}
             />
 
+            {/* Barra de acciones rápidas — debajo de la foto */}
+            <div className="mx-0 bg-background px-4 py-3">
+                <div className="grid grid-cols-4 gap-1">
+                    {/* Gráficos */}
+                    <button
+                        type="button"
+                        onClick={() => setShowAnalyticsModal(true)}
+                        className="flex flex-col items-center gap-1.5 rounded-xl px-2 py-2.5 text-foreground hover:bg-muted/60 active:scale-95 transition-all"
+                    >
+                        <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                            <PieChart className="h-5 w-5" />
+                        </span>
+                        <span className="text-[11px] font-medium text-muted-foreground leading-tight text-center">Gráficos</span>
+                    </button>
+
+                    {/* Invitar */}
+                    <button
+                        type="button"
+                        onClick={handleOpenInviteModal}
+                        disabled={isGeneratingInvite}
+                        className="flex flex-col items-center gap-1.5 rounded-xl px-2 py-2.5 text-foreground hover:bg-muted/60 active:scale-95 transition-all disabled:opacity-60"
+                    >
+                        <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                            {isGeneratingInvite ? (
+                                <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                            ) : (
+                                <UserPlus className="h-5 w-5" />
+                            )}
+                        </span>
+                        <span className="text-[11px] font-medium text-muted-foreground leading-tight text-center">Invitar</span>
+                    </button>
+
+                    {/* Balances */}
+                    <button
+                        type="button"
+                        onClick={() => navigate(`/groups/${grupoId}/balances`)}
+                        className="flex flex-col items-center gap-1.5 rounded-xl px-2 py-2.5 text-foreground hover:bg-muted/60 active:scale-95 transition-all"
+                    >
+                        <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                            <Scale className="h-5 w-5" />
+                        </span>
+                        <span className="text-[11px] font-medium text-muted-foreground leading-tight text-center">Balances</span>
+                    </button>
+
+                    {/* Actividad */}
+                    <button
+                        type="button"
+                        onClick={() => setShowActivitiesModal(true)}
+                        className="flex flex-col items-center gap-1.5 rounded-xl px-2 py-2.5 text-foreground hover:bg-muted/60 active:scale-95 transition-all"
+                    >
+                        <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                            <Bell className="h-5 w-5" />
+                        </span>
+                        <span className="text-[11px] font-medium text-muted-foreground leading-tight text-center">Actividad</span>
+                    </button>
+                </div>
+            </div>
+
             <ColumnContainer>
+                {/* Panel de miembros — se despliega con la flecha del header */}
                 {showGroupInfo && (
-                    <div className="rounded-2xl border border-border bg-muted/20 p-4 space-y-4">
-                        <div>
-                            <h2 className="text-sm font-semibold text-foreground">Descripción</h2>
-                            <p className="mt-1 text-sm text-foreground">
-                                {groupDetail.descripcion || 'Sin descripción'}
-                            </p>
-                        </div>
+                    <div className="rounded-2xl border border-border/50 bg-muted/10 p-4 space-y-4 mb-2">
+                        {groupDetail.descripcion && (
+                            <div>
+                                <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground/70">Descripción</h2>
+                                <p className="mt-1 text-sm text-foreground">
+                                    {groupDetail.descripcion}
+                                </p>
+                            </div>
+                        )}
 
                         <div>
-                            <h2 className="text-sm font-semibold text-foreground">
-                                Integrantes ({groupDetail.cantidadIntegrantes})
+                            <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground/70 mb-2">
+                                Integrantes · {groupDetail.cantidadIntegrantes}
                             </h2>
 
-                            <div className="mt-2 max-h-56 space-y-2 overflow-y-auto pr-1" onScroll={handleMembersScroll}>
+                            <div className="max-h-56 space-y-1.5 overflow-y-auto pr-1" onScroll={handleMembersScroll}>
                                 {visibleMembers.length === 0 ? (
                                     <p className="text-sm text-muted-foreground">No hay integrantes para mostrar.</p>
                                 ) : (
                                     visibleMembers.map((miembro) => (
-                                        <div key={miembro.id} className="grid grid-cols-[1fr_36px_auto] items-center gap-3 rounded-xl border border-border/60 bg-background/60 px-3 py-2">
-                                            <button type="button" onClick={() => navigate(`/friends/${miembro.id}`)} className="flex items-center gap-3 text-left hover:opacity-75 transition-opacity">
+                                        <div key={miembro.id} className="grid grid-cols-[1fr_24px_auto] items-center gap-2 rounded-xl bg-background/60 px-3 py-2 hover:bg-muted/40 transition-colors">
+                                            <button type="button" onClick={() => navigate(`/friends/${miembro.id}`)} className="flex items-center gap-2.5 text-left">
                                                 <AvatarCircle nombre={miembro.nombre} />
                                                 <div>
-                                                    <p className="text-sm font-medium text-foreground">{miembro.nombre}</p>
+                                                    <p className="text-sm font-medium text-foreground leading-tight">{miembro.nombre}</p>
                                                     {miembro.username && <p className="text-xs text-muted-foreground">@{miembro.username}</p>}
                                                 </div>
                                             </button>
@@ -221,7 +280,7 @@ export default function GroupDetailPage() {
                                             </div>
 
                                             <div className="flex items-center justify-end">
-                                                <span className="rounded-full bg-muted px-2 py-0.5 text-xs capitalize text-muted-foreground">
+                                                <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] capitalize text-muted-foreground font-medium">
                                                     {miembro.rol}
                                                 </span>
                                             </div>
@@ -230,61 +289,12 @@ export default function GroupDetailPage() {
                                 )}
 
                                 {visibleMembersCount < miembros.length && (
-                                    <p className="pt-1 text-center text-xs text-muted-foreground">Desliza para cargar mas integrantes...</p>
+                                    <p className="pt-1 text-center text-xs text-muted-foreground">Deslizá para ver más integrantes...</p>
                                 )}
                             </div>
                         </div>
                     </div>
                 )}
-
-                <button
-                    type="button"
-                    onClick={() => setShowAnalyticsModal(true)}
-                    className="w-full inline-flex items-center gap-3 rounded-2xl border border-border bg-background/70 px-3 py-2 text-sm font-medium text-foreground shadow-sm hover:bg-muted transition"
-                >
-                    <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                        <BarChart3 className="h-5 w-5" />
-                    </span>
-                    Ver graficos del grupo
-                </button>
-
-                <button
-                    type="button"
-                    onClick={handleOpenInviteModal}
-                    disabled={isGeneratingInvite}
-                    className="w-full inline-flex items-center gap-3 rounded-2xl border border-border bg-background/70 px-3 py-2 text-sm font-medium text-foreground shadow-sm hover:bg-muted transition disabled:opacity-70"
-                >
-                    <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                        {isGeneratingInvite ? (
-                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
-                        ) : (
-                            <UserPlus className="h-5 w-5" />
-                        )}
-                    </span>
-                    {isGeneratingInvite ? 'Generando link...' : 'Invitar amigos al grupo'}
-                </button>
-
-                <button
-                    type="button"
-                    onClick={() => navigate(`/groups/${grupoId}/balances`)}
-                    className="w-full inline-flex items-center gap-3 rounded-2xl border border-border bg-background/70 px-3 py-2 text-sm font-medium text-foreground shadow-sm hover:bg-muted transition"
-                >
-                    <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                        <BarChart3 className="h-5 w-5" />
-                    </span>
-                    Ver balances del grupo
-                </button>
-
-                <button
-                    type="button"
-                    onClick={() => setShowActivitiesModal(true)}
-                    className="w-full inline-flex items-center gap-3 rounded-2xl border border-border bg-background/70 px-3 py-2 text-sm font-medium text-foreground shadow-sm hover:bg-muted transition"
-                >
-                    <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                        <BarChart3 className="h-5 w-5" />
-                    </span>
-                    Ver actividades del grupo
-                </button>
 
                 <GroupActivitiesModal
                     isOpen={showActivitiesModal}
@@ -306,7 +316,7 @@ export default function GroupDetailPage() {
                     inviteToken={inviteToken} 
                 />
 
-                <div className="mt-4 space-y-6">
+                <div className="space-y-6">
                     {gastos.length === 0 ? (
                         <div className="p-4 text-sm text-muted-foreground">Aún no hay gastos</div>
                     ) : (
@@ -362,4 +372,4 @@ export default function GroupDetailPage() {
             <CreateExpenseButton onClick={() => navigate(`/groups/${groupDetail.id}/expense/create`)} />
         </div>
     )
-}
+}   
