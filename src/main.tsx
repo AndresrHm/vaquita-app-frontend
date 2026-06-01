@@ -29,10 +29,9 @@ import NotFoundPage from '@/pages/NotFoundPage.tsx'
 import { SessionTimeoutProvider } from './customHooks/sessionTimeoutProvider'
 
 
-const storedTheme = localStorage.getItem('theme')
-const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-const shouldUseDarkTheme = storedTheme ? storedTheme === 'dark' : systemPrefersDark
-document.documentElement.classList.toggle('dark', shouldUseDarkTheme)
+const theme = localStorage.getItem('theme') ?? 'light'
+
+document.documentElement.classList.toggle('dark', theme === 'dark')
 
 const router = createBrowserRouter([
   {
