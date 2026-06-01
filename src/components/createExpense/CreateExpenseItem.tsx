@@ -10,7 +10,6 @@ import {
 } from '@/components/ui/dialog'
 
 const INITIAL_ITEM = new ExpenseItem('', 1, 0)
-const MAX_ITEM_NAME_LENGTH = 50
 
 interface CreateExpenseItemProps {
     items: ExpenseItem[]
@@ -63,9 +62,9 @@ export default function CreateExpenseItem({ items, onChange }: CreateExpenseItem
         setIsOpen(false)
     }
 
-    const handleRemoveItem = (index: number) => {
-        onChange(items.filter((_, i) => i !== index))
-    }
+    // const handleRemoveItem = (index: number) => {
+    //     onChange(items.filter((_, i) => i !== index))
+    // }
 
     const handleDelete = () => {
         if (editingIndex === null) return

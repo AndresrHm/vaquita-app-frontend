@@ -1,4 +1,4 @@
-import React from 'react'
+/* eslint-disable no-undef */
 import type { ReactNode } from 'react'
 import FieldWrapper from './FieldWrapper'
 
@@ -10,7 +10,7 @@ interface TextFieldProps {
   placeholder?: string
   value: string
   onChange: (value: string) => void
-  inputMode?: string
+  inputMode?: React.HTMLAttributes<HTMLInputElement>['inputMode']
 }
 
 export default function TextField({

@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useEffect, useState, useRef } from 'react'
+/* eslint-disable no-undef */
+import React, { createContext, useEffect, useState, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/customHooks/useToast'
@@ -11,7 +12,7 @@ export function SessionTimeoutProvider({ children }: { children: React.ReactNode
   const { showToast } = useToast()
   
   const [showModal, setShowModal] = useState(false)
-  const [countdown, setCountdown] = useState(300) // 5 minutos en segundos para mostrar en el modal (opcional)
+  const [, setCountdown] = useState(300) // 5 minutos en segundos para mostrar en el modal (opcional)
 
   const warningTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const logoutTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)

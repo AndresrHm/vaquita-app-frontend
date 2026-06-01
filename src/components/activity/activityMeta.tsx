@@ -1,61 +1,110 @@
 import {
-    Receipt,
-    Pencil,
-    Trash2,
-    CheckCircle2,
-    Users,
-    UserMinus,
-    UserPlus,
+  Receipt,
+  CheckCircle2,
+  Users,
+  UserMinus,
+  UserPlus,
 } from 'lucide-react'
 import { TipoActividad } from '@/domain/enums/tipoActividad'
 
+// TODO: Revisar esto de acá porque metí tipoActividad . . . porque sino rompía activity card (estilos).
+
 export const activityMeta = {
-    [TipoActividad.MIS_DEUDAS]: {
-        title: 'Nueva deuda',
-        icon: Receipt,
-        color: 'bg-red-500/10 text-red-600',
-        badge: 'Gasto',
-    },
+  [TipoActividad.MIS_DEUDAS]: {
+    title: 'Nueva deuda',
+    icon: Receipt,
+    color: 'bg-red-500/10 text-red-600',
+    badge: 'Gasto',
+  },
 
-    [TipoActividad.MIS_DEUDAS_SALDADAS]: {
-        title: 'Deuda saldada',
-        icon: CheckCircle2,
-        color: 'bg-emerald-500/10 text-emerald-600',
-        badge: 'Pago',
-    },
+  [TipoActividad.MIS_DEUDAS_SALDADAS]: {
+    title: 'Deuda saldada',
+    icon: CheckCircle2,
+    color: 'bg-emerald-500/10 text-emerald-600',
+    badge: 'Pago',
+  },
 
-    [TipoActividad.MIS_PAGOS]: {
-        title: 'Pago registrado',
-        icon: Receipt, // O el que prefieras usar para representar que alguien te debe
-        color: 'bg-orange-500/10 text-orange-600',
-        badge: 'Gasto',
-    },
+  [TipoActividad.MIS_PAGOS]: {
+    title: 'Pago registrado',
+    icon: Receipt, // O el que prefieras usar para representar que alguien te debe
+    color: 'bg-orange-500/10 text-orange-600',
+    badge: 'Gasto',
+  },
 
-    [TipoActividad.COBROS_RECIBIDOS]: {
-        title: 'Cobro recibido',
-        icon: CheckCircle2,
-        color: 'bg-cyan-500/10 text-cyan-600',
-        badge: 'Pago',
-    },
+  [TipoActividad.COBROS_RECIBIDOS]: {
+    title: 'Cobro recibido',
+    icon: CheckCircle2,
+    color: 'bg-cyan-500/10 text-cyan-600',
+    badge: 'Pago',
+  },
 
-    [TipoActividad.INGRESO_GRUPO]: {
-        title: 'Ingreso al grupo',
-        icon: Users,
-        color: 'bg-blue-500/10 text-blue-600',
-        badge: 'Grupo',
-    },
+  [TipoActividad.INGRESO_GRUPO]: {
+    title: 'Ingreso al grupo',
+    icon: Users,
+    color: 'bg-blue-500/10 text-blue-600',
+    badge: 'Grupo',
+  },
 
-    [TipoActividad.EGRESO_GRUPO]: {
-        title: 'Egreso de grupo',
-        icon: UserMinus,
-        color: 'bg-amber-500/10 text-amber-600',
-        badge: 'Grupo',
-    },
+  [TipoActividad.EGRESO_GRUPO]: {
+    title: 'Egreso de grupo',
+    icon: UserMinus,
+    color: 'bg-amber-500/10 text-amber-600',
+    badge: 'Grupo',
+  },
 
-    [TipoActividad.CUENTA_CREADA]: {
-        title: 'Cuenta creada',
-        icon: UserPlus,
-        color: 'bg-purple-500/10 text-purple-600',
-        badge: 'Sistema',
-    },
+  [TipoActividad.CUENTA_CREADA]: {
+    title: 'Cuenta creada',
+    icon: UserPlus,
+    color: 'bg-purple-500/10 text-purple-600',
+    badge: 'Sistema',
+  },
+
+  [TipoActividad.GASTO_CREADO]: {
+    title: 'Cuenta creada',
+    icon: UserPlus,
+    color: 'bg-purple-500/10 text-purple-600',
+    badge: 'Sistema',
+  },
+
+  [TipoActividad.GASTO_ELIMINADO]: {
+    title: 'Cuenta creada',
+    icon: UserPlus,
+    color: 'bg-purple-500/10 text-purple-600',
+    badge: 'Sistema',
+  },
+
+  [TipoActividad.GASTO_ACTUALIZADO]: {
+    title: 'Cuenta creada',
+    icon: UserPlus,
+    color: 'bg-purple-500/10 text-purple-600',
+    badge: 'Sistema',
+  },
+
+  [TipoActividad.GASTO_DEUDA]: {
+    title: 'Cuenta creada',
+    icon: UserPlus,
+    color: 'bg-purple-500/10 text-purple-600',
+    badge: 'Sistema',
+  },
+
+  [TipoActividad.DEUDA_SALDADA]: {
+    title: 'Cuenta creada',
+    icon: UserPlus,
+    color: 'bg-purple-500/10 text-purple-600',
+    badge: 'Sistema',
+  },
+
+  [TipoActividad.PAGO_REALIZADO]: {
+    title: 'Cuenta creada',
+    icon: UserPlus,
+    color: 'bg-purple-500/10 text-purple-600',
+    badge: 'Sistema',
+  },
+
+  [TipoActividad.PAGO_RECIBIDO]: {
+    title: 'Cuenta creada',
+    icon: UserPlus,
+    color: 'bg-purple-500/10 text-purple-600',
+    badge: 'Sistema',
+  },
 }

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, ChevronLeft, KeyRound } from 'lucide-react'
+import { ChevronLeft, KeyRound } from 'lucide-react'
 import ColumnContainer from '@/components/common/columnContainer'
 import { usuarioService } from '@/service/usuarioService'
 import { useToast } from '@/customHooks/useToast'
