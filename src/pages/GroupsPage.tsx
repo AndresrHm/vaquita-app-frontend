@@ -1,81 +1,186 @@
-import MoneyBadge from '@/components/moneyBadge/moneyBadge'
-import { Search } from 'lucide-react'
+import { useCallback, useRef, useState } from 'react'
+import GroupCard from '@/components/groupsPage/GroupCard'
+import GroupsSearch from '@/components/groupsPage/GroupsSearch'
+import CreateGroupButton from '@/components/groupsPage/CreateGroupButton'
+import ColumnContainer from '@/components/common/columnContainer'
+import { AppPagination } from '@/components/common/pagination'
+import PageTitle from '@/components/common/pageTitle'
+import type { GrupoCardDTO } from '@/domain/Grupo'
+import { useOnInit } from '@/customHooks/hooks'
+import { obtenerGrupos } from '@/service/groupsService'
+import { expenseService } from '@/service/expenseService'
+import { formatCurrency } from '@/utils/formatCurrency'
+import { useToast } from '@/customHooks/useToast'
+import { getMensajeError } from '@/utils/getMensajeError'
 
-const mockGroups = [
-  { id: 'g1', name: 'Centro de Estudiantes', status: 'Pendiente de pago', outstanding: 12400, currency: '$', imageUrl: '' },
-  { id: 'g2', name: 'Cátedra - Comisión 2', status: 'Parcialmente pagada', outstanding: 7800, currency: '$', imageUrl: '' },
-  { id: 'g3', name: 'Viaje de Fin de Año', status: 'Pagada', outstanding: 0, currency: '$', imageUrl: '' },
-]
+// 1. IMPORTAMOS TU HOOK
+import { useNetwork } from '@/customHooks/useNetwork'
 
-function getInitials(name: string) {
-  return name
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? '')
-    .join('')
-}
+const PAGE_SIZE = 5
 
 export default function GroupsPage() {
+  const { showToast } = useToast()
+
+  // 2. ACTIVAMOS EL RADAR
+  const isOnline = useNetwork()
+
+  const [groups, setGroups] = useState<GrupoCardDTO[]>([])
+  const [page, setPage] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
+  const [loading, setLoading] = useState(false)
+  const [debt, setDebt] = useState<number | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [filter, setFilter] = useState('all')
+  const requestIdRef = useRef(0)
+  const loadingRef = useRef(false)
+  const errorShownRef = useRef(false)
+
+  const fetchGroups = useCallback(async (pageToFetch = 0, query = '', filterParam = '') => {
+    if (loadingRef.current) return
+
+    const requestId = ++requestIdRef.current
+    loadingRef.current = true
+    setLoading(true)
+
+    try {
+      const res = await obtenerGrupos(pageToFetch, PAGE_SIZE, query, filterParam)
+
+      if (requestId !== requestIdRef.current) return
+
+      setGroups(res.content)
+      setTotalPages(res.totalPages)
+      setPage(pageToFetch)
+
+      errorShownRef.current = false
+
+    } catch (error: unknown) {
+      if (!errorShownRef.current) {
+        const mensaje = getMensajeError(error)
+        showToast(mensaje, 'error')
+        errorShownRef.current = true
+      }
+    } finally {
+      loadingRef.current = false
+      setLoading(false)
+    }
+  }, [showToast])
+
+  const handleSearchChange = useCallback((text: string) => {
+    setSearchQuery(text)
+    setGroups([])
+    setPage(0)
+    fetchGroups(0, text, filter)
+  }, [fetchGroups, filter])
+
+  const handleFilterChange = useCallback((f: string) => {
+    setFilter(f)
+    setGroups([])
+    setPage(0)
+    fetchGroups(0, searchQuery, f)
+  }, [fetchGroups, searchQuery])
+
+  const getDebt = async () => {
+    try {
+      const debtFetch = await expenseService.getUserDebt()
+      setDebt(debtFetch)
+    } catch (error: unknown) {
+      const mensaje = getMensajeError(error)
+      // Si estamos offline, no queremos que salten 80 toasts de error de red, 
+      // así que podés atajarlo acá o dejarlo como está.
+      if (isOnline) showToast(mensaje, 'error')
+    }
+  }
+
+  useOnInit(() => {
+    fetchGroups(0, searchQuery, filter)
+    getDebt()
+  }, [fetchGroups, searchQuery, filter])
+
+  const handlePageChange = (nextPage: number) => {
+    if (loading || nextPage === page) return
+    fetchGroups(nextPage, searchQuery, filter)
+  }
+
   return (
-    <div className="space-y-4">
-      <div className="-mx-4 rounded-b-lg rounded-t-none border border-border bg-card/70 px-9 py-5 shadow-sm backdrop-blur-xl">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-lg font-semibold text-foreground">Grupos</h1>
-            <p className="mt-1 text-sm text-muted-foreground">Administrá deudas compartidas.</p>
-          </div>
+    <div className="flex flex-col space-y-4">
+      <PageTitle>
+        <div className="pl-2.5 pt-2">
+          <h2 className="text-xl font-semibold text-foreground">
+            {/* 1. Verificamos si es null (no sabemos el saldo todavía) */}
+            {debt === null
+              ? 'Saldo desconocido'
+              : debt > 0
+                ? 'Tenés deuda'
+                : 'Estás al día'}
+          </h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {/* 2. Mostramos el mensaje acorde al estado */}
+            {debt === null
+              ? 'Conectate para actualizar tu estado.'
+              : debt > 0
+                ? `Debés ${formatCurrency(debt)}`
+                : 'No debés nada, ¡genial!'}
+          </p>
         </div>
-      </div>
+        <GroupsSearch onSearchChange={handleSearchChange} onFilterChange={handleFilterChange} />
+      </PageTitle>
 
-      <div className="rounded-2xl border border-border bg-card/70 p-3 shadow-sm backdrop-blur-xl">
-        <label className="flex items-center gap-2 rounded-xl border border-border bg-background/70 px-3 py-2">
-          <Search className="h-4 w-4 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Buscar grupos"
-            className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
-          />
-        </label>
-      </div>
-
-      <div className="rounded-2xl border border-border bg-card/70 p-3 shadow-sm backdrop-blur-xl">
-        <div className="max-h-[52vh] space-y-3 overflow-y-auto pr-1">
-          {mockGroups.map((g) => (
-            <div
-              key={g.id}
-              className="rounded-2xl border border-border bg-background/70 p-4 shadow-sm"
-            >
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  {g.imageUrl ? (
-                    <img
-                      src={g.imageUrl}
-                      alt={g.name}
-                      className="h-11 w-11 shrink-0 rounded-full border border-border object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border bg-muted/80 text-xs font-semibold text-muted-foreground">
-                      {getInitials(g.name)}
-                    </div>
-                  )}
-                  <div>
-                    <div className="text-sm font-semibold text-foreground">{g.name}</div>
-                    <div className="mt-1 text-xs text-muted-foreground">{g.status}</div>
-                  </div>
-                </div>
-
-                {/* Badge de dinero */}
-                <MoneyBadge
-                  amount={g.outstanding}
-                  currency={g.currency}
-                />
+      <ColumnContainer>
+        {groups.length === 0 && !loading ? (
+          // 3. SEPARAMOS LOS CAMINOS: OFFLINE VS VACÍO REAL
+          !isOnline ? (
+            // A. ESTADO DE ERROR DE RED
+            <div className="flex items-center justify-center min-h-45 w-full">
+              <div className="text-center rounded-xl border-2 border-red-300/50 bg-red-50/50 p-8 shadow-sm max-w-sm w-full dark:border-red-900/50 dark:bg-red-950/20">
+                <p className="text-lg font-semibold text-red-600 dark:text-red-400">
+                  ¡Ups! No hay conexión
+                </p>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  No pudimos cargar tus grupos.
+                </p>
+                <p className="mt-1 text-sm text-muted-foreground font-medium">
+                  Conectate a internet e intentá de nuevo.
+                </p>
               </div>
             </div>
-          ))}
-        </div>
-      </div>
+          ) : (
+            // B. ESTADO VACÍO ORIGINAL
+            <div className="flex items-center justify-center min-h-45 w-full">
+              <div className="text-center rounded-xl border-2 border-dashed bg-card p-8 shadow-sm max-w-sm w-full">
+                <p className="text-sm text-muted-foreground">
+                  Todavía no tenés grupos...
+                </p>
+                <p className="mt-1 text-sm font-medium">
+                  ¡Probá crear uno!
+                </p>
+                <div className="mt-4 flex justify-center">
+                  {/* Le pasamos la prop disabled al botón por si acaso */}
+                  <CreateGroupButton fixed={false} />
+                </div>
+              </div>
+            </div>
+          )
+        ) : (
+          <>
+            {/* Lista */}
+            {groups.map((g) => (
+              <GroupCard key={g.id} group={g} />
+            ))}
+
+            {totalPages > 1 && (
+              <div className="pt-1">
+                <AppPagination
+                  page={page}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
+                />
+              </div>
+            )}
+          </>
+        )}
+      </ColumnContainer>
+
+      {groups.length > 0 && <CreateGroupButton />}
     </div>
   )
 }
-

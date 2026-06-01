@@ -1,0 +1,10 @@
+export enum CategoriaGasto {
+    COMIDA = 'COMIDA',
+    BEBIDA = 'BEBIDA',
+    HOGAR = 'HOGAR',
+    TRANSPORTE = 'TRANSPORTE',
+    SUPERMERCADO = 'SUPERMERCADO',
+    ENTRETENIMIENTO = 'ENTRETENIMIENTO',
+    VARIOS = 'VARIOS',
+    OTROS = 'OTROS',
+}

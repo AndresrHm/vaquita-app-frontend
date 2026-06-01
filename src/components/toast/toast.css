@@ -1,0 +1,205 @@
+/* #toast-container {
+  position: fixed;
+  top: 1.25rem;
+  left: 1.25rem;
+  right: auto;
+  z-index: 9999;
+  max-width: 23.75rem;
+  pointer-events: none;
+}
+
+.toast {
+  min-height: 3.125rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.5rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  animation: slideIn 0.28s ease-out;
+  border: 1px solid transparent;
+  pointer-events: auto;
+  backdrop-filter: blur(6px);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.toast:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.toast.fade-out {
+  animation: slideOut 0.3s ease-in forwards;
+}
+
+@keyframes slideOut {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+
+  to {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+}
+
+.toast-success {
+  background-color: #60a5fa;
+  border-color: #3b82f6;
+}
+
+.toast-error {
+  background-color: #f87171;
+  border-color: #ef4444;
+}
+
+.toast-warning {
+  background-color: #fb923c;
+  border-color: #f97316;
+}
+
+.toast-info {
+  background-color: #a78bfa;
+  border-color: #8b5cf6;
+}
+
+.toast::before {
+  content: '';
+  margin-right: 0.5rem;
+}
+
+@media (max-width: 48rem) {
+  #toast-container {
+    left: 0.625rem;
+    right: 0.625rem;
+    top: 0.625rem;
+    max-width: calc(100% - 1.25rem);
+  }
+
+  .toast {
+    max-width: none;
+    border-radius: 0.5rem;
+  }
+} */
+
+#toast-container {
+  position: fixed;
+  /* Centramos el contenedor horizontalmente */
+  left: 50%;
+  transform: translateX(-50%);
+  top: 2rem; /* Un poco más de aire arriba */
+  z-index: 9999;
+  /* El ancho se adapta al texto, pero nunca supera el 90% de la pantalla */
+  width: max-content;
+  max-width: 90vw;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.toast {
+  /* Diseño tipo "Píldora" */
+  border-radius: 9999px;
+  padding: 0.75rem 1.5rem;
+  margin-bottom: 0.75rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  
+  /* Animación desde arriba hacia abajo */
+  animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid transparent;
+  pointer-events: auto;
+  
+  /* Efecto cristal (Glassmorphism) */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.toast:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.2);
+}
+
+/* Colores con un 90% de opacidad para que el blur funcione de fondo */
+.toast-success {
+  background-color: rgba(96, 165, 250, 0.95);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.toast-error {
+  background-color: rgba(248, 113, 113, 0.95);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.toast-warning {
+  background-color: rgba(251, 146, 60, 0.95);
+  border-color: rgba(249, 115, 22, 0.3);
+}
+
+.toast-info {
+  background-color: rgba(167, 139, 250, 0.95);
+  border-color: rgba(139, 92, 246, 0.3);
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-150%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.toast.fade-out {
+  animation: slideUpOut 0.3s forwards cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUpOut {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-150%);
+    opacity: 0;
+  }
+}
+
+/* Ajustes limpios para celulares */
+@media (max-width: 48rem) {
+  #toast-container {
+    top: 3.5rem; /* Lo bajamos un poquito más para que no tape la barra superior del celu */
+  }
+
+  .toast {
+    padding: 0.6rem 1.25rem;
+    font-size: 0.8125rem; /* Letra penitas más chica para que entre mejor */
+  }
+}

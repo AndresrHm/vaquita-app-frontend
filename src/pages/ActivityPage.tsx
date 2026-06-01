@@ -1,49 +1,73 @@
-import { Search } from 'lucide-react'
+import { useState } from 'react'
+import PageTitle from '@/components/common/pageTitle'
+import ColumnContainer from '@/components/common/columnContainer'
+import UserExpensesButton from '@/components/accountPage/UserExpensesButton'
+import ActivityFilters from '@/components/activity/ActivityFilters'
+import ActivityList from '@/components/activity/ActivityList'
+import ActivityChartsModal from '@/components/activity/ActivityChartsModal'
+import type { ActivityFiltersState } from '@/components/activity/ActivityFilters'
 
-const mockActivity = [
-  { id: 'a1', title: 'Ticket escaneado', detail: 'Fotocopias - $3.200', date: 'Hoy' },
-  { id: 'a2', title: 'Reparto automático', detail: '3 miembros - saldo actualizado', date: 'Ayer' },
-  { id: 'a3', title: 'Pago registrado', detail: 'Martín - $1.200', date: 'Hace 3 días' },
-]
+// 1. Importamos tu hook
+import { useNetwork } from '@/customHooks/useNetwork'
+import Card from '@/components/common/card'
+import ActionButton from '@/components/common/ActionButton'
+import { BarChart3 } from 'lucide-react'
 
 export default function ActivityPage() {
-  return (
-    <div className="space-y-4">
-      <div className="-mx-4 rounded-b-lg rounded-t-none border border-border bg-card/70 px-9 py-5 shadow-sm backdrop-blur-xl">
-        <h1 className="text-lg font-semibold text-foreground">Actividad</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Resumen de movimientos (mock).</p>
-      </div>
+    // 2. Activamos el radar
+    const isOnline = useNetwork()
 
-      <div className="rounded-2xl border border-border bg-card/70 p-3 shadow-sm backdrop-blur-xl">
-        <label className="flex items-center gap-2 rounded-xl border border-border bg-background/70 px-3 py-2">
-          <Search className="h-4 w-4 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Buscar movimientos"
-            className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
-          />
-        </label>
-      </div>
+    const [filters, setFilters] = useState<ActivityFiltersState>({
+        searchText: '',
+        tipo: undefined,
+        desde: undefined,
+        hasta: undefined,
+    })
+    const [isChartsModalOpen, setIsChartsModalOpen] = useState(false)
 
-      <div className="rounded-2xl border border-border bg-card/70 p-3 shadow-sm backdrop-blur-xl">
-        <div className="max-h-[52vh] space-y-3 overflow-y-auto pr-1">
-          {mockActivity.map((item) => (
-            <div
-              key={item.id}
-              className="rounded-2xl border border-border bg-background/70 p-4 shadow-sm"
-            >
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <div className="text-sm font-semibold text-foreground">{item.title}</div>
-                  <div className="mt-1 text-xs text-muted-foreground">{item.detail}</div>
+    const handleFilterChange = (newFilters: ActivityFiltersState) => {
+        setFilters(newFilters)
+    }
+
+    return (
+        <div className="space-y-4">
+            <PageTitle title="Actividad" subtitle="Resumen de todos tus movimientos" />
+
+            <UserExpensesButton />
+
+            <ColumnContainer>
+                {/* 3. Bloqueamos los filtros si estamos offline usando CSS */}
+                <div className={!isOnline ? 'pointer-events-none opacity-50 cursor-not-allowed' : ''}>
+                    <ActivityFilters onFilterChange={handleFilterChange} />
                 </div>
-                <div className="text-right text-xs text-muted-foreground">{item.date}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  )
-}
 
+                <Card interactive={false}>
+
+                    <div className="h-[52vh]">
+                        <ActivityList
+                            searchText={filters.searchText}
+                            tipo={filters.tipo}
+                            desde={filters.desde}
+                            hasta={filters.hasta}
+                        />
+                    </div>
+                </Card>
+
+                <ActionButton
+                    className="w-full justify-start"
+                    icon={<BarChart3 className="h-5 w-5" />}
+                    onClick={() => setIsChartsModalOpen(true)}
+                >
+                    Ver graficos de actividad
+                </ActionButton>
+            </ColumnContainer>
+
+            <ActivityChartsModal
+                isOpen={isChartsModalOpen}
+                initialDesde={filters.desde}
+                initialHasta={filters.hasta}
+                onClose={() => setIsChartsModalOpen(false)}
+            />
+        </div>
+    )
+}

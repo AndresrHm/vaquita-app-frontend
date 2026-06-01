@@ -1,0 +1,33 @@
+export enum TipoActividad {
+    MIS_DEUDAS = 'MIS_DEUDAS',
+    MIS_DEUDAS_SALDADAS = 'MIS_DEUDAS_SALDADAS',
+    MIS_PAGOS = 'MIS_PAGOS',
+    COBROS_RECIBIDOS = 'COBROS_RECIBIDOS',
+    INGRESO_GRUPO = 'INGRESO_GRUPO',
+    EGRESO_GRUPO = 'EGRESO_GRUPO',
+    CUENTA_CREADA = 'CUENTA_CREADA',
+    GASTO_CREADO = 'GASTO_CREADO',
+    GASTO_ACTUALIZADO = 'GASTO_ACTUALIZADO',
+    GASTO_ELIMINADO = 'GASTO_ELIMINADO',
+    GASTO_DEUDA = 'GASTO_DEUDA',
+    DEUDA_SALDADA = 'DEUDA_SALDADA',
+    PAGO_REALIZADO = 'PAGO_REALIZADO',
+    PAGO_RECIBIDO = 'PAGO_RECIBIDO',
+}
+
+export const TipoActividadLabel: Record<TipoActividad, string> = {
+    [TipoActividad.MIS_DEUDAS]: 'Mis Deudas',
+    [TipoActividad.MIS_DEUDAS_SALDADAS]: 'Deudas Saldadas',
+    [TipoActividad.MIS_PAGOS]: 'Mis Pagos',
+    [TipoActividad.COBROS_RECIBIDOS]: 'Cobros Recibidos',
+    [TipoActividad.INGRESO_GRUPO]: 'Ingreso a Grupo',
+    [TipoActividad.EGRESO_GRUPO]: 'Egreso de Grupo',
+    [TipoActividad.CUENTA_CREADA]: 'Cuenta Creada',
+    [TipoActividad.GASTO_CREADO]: 'Gasto Creado',
+    [TipoActividad.GASTO_ACTUALIZADO]: 'Gasto Actualizado',
+    [TipoActividad.GASTO_ELIMINADO]: 'Gasto Eliminado',
+    [TipoActividad.GASTO_DEUDA]: 'Gasto de Deuda',
+    [TipoActividad.DEUDA_SALDADA]: 'Deuda Saldada',
+    [TipoActividad.PAGO_REALIZADO]: 'Pago Realizado',
+    [TipoActividad.PAGO_RECIBIDO]: 'Pago Recibido',
+}

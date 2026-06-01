@@ -1,6 +1,7 @@
 import { Activity, LayoutGrid, PlusCircle, Users, User as UserIcon } from 'lucide-react'
 import { NavLink, Outlet } from 'react-router-dom'
 import type { ReactNode } from 'react'
+import { useNetwork } from '@/customHooks/useNetwork'
 
 type NavItemProps = {
   to: string
@@ -30,6 +31,7 @@ function MobileNavItem({ to, label, icon }: NavItemProps) {
 }
 
 export default function MainLayout() {
+  const isOnline = useNetwork()
   return (
     <div className="min-h-screen bg-background">
       <main className="mx-auto w-full max-w-md px-4 pb-28 pt-0">
@@ -64,6 +66,11 @@ export default function MainLayout() {
                 to="/groups/scan"
                 aria-label="Add"
                 className="relative -top-4 flex items-center justify-center"
+                onClick={(e) => {
+                  if (!isOnline) {
+                    e.preventDefault();
+                  }
+                }}
               >
                 <span
                   className={[
@@ -73,7 +80,10 @@ export default function MainLayout() {
                     'shadow-lg',
                     'ring-1 ring-ring/30',
                     'transition-transform',
-                    'active:scale-[0.98]'
+                    'active:scale-[0.98]',
+                    isOnline 
+                      ? 'bg-primary text-primary-foreground active:scale-[0.98]' 
+                      : 'bg-gray-400 text-gray-200 opacity-50 cursor-not-allowed'
                   ].join(' ')}
                 >
                   <PlusCircle className="h-9 w-9" strokeWidth={2.25} />

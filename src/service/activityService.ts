@@ -1,0 +1,126 @@
+
+import api from './apiToken'
+import type { ActividadDTO } from '../domain/actividadDTO'
+import type { ActivityAnalyticsDTO } from '../domain/activityAnalytics'
+import type { TipoActividad } from '../domain/enums/tipoActividad'
+import type { PageResponse } from '../domain/pageResponse'
+
+const manejarError = (error: any): never => {
+    if (error?.response) {
+        console.error('activityService request failed', {
+            status: error.response.status,
+            url: error.config?.url,
+            params: error.config?.params,
+            data: error.response.data,
+        })
+    }
+
+    const responseData = error?.response?.data
+    const mensaje =
+        responseData?.message ||
+        responseData?.error ||
+        responseData?.detail ||
+        (typeof responseData === 'string' ? responseData : undefined) ||
+        error?.message ||
+        'Error de conexión'
+
+    throw new Error(mensaje)
+}
+
+interface ObtenerActividadesParams {
+    searchText?: string
+    tipo?: TipoActividad
+    desde?: string // ISO DateTime format: "2026-04-26T18:30:00"
+    hasta?: string // ISO DateTime format: "2026-04-26T18:30:00"
+    page?: number
+    size?: number
+}
+
+export const actividadService = {
+    async obtenerActividades(params: ObtenerActividadesParams = {}): Promise<PageResponse<ActividadDTO>> {
+        const searchText = params.searchText?.trim()
+        const requestParams = {
+            searchText: searchText || undefined,
+            tipo: params.tipo ?? undefined,
+            desde: params.desde ?? undefined,
+            hasta: params.hasta ?? undefined,
+            page: params.page ?? 0,
+            size: params.size ?? 6,
+        }
+
+        // 1. Armamos una llave única combinando tooooodos los filtros posibles
+        const cacheKey = `cache_actv_p${requestParams.page}_s${requestParams.size}_txt_${requestParams.searchText || 'all'}_tipo_${requestParams.tipo || 'all'}_d_${requestParams.desde || 'all'}_h_${requestParams.hasta || 'all'}`
+
+        try {
+            const { data } = await api.get<PageResponse<ActividadDTO>>('/actividad/me', {
+                params: requestParams,
+                paramsSerializer: {
+                    indexes: null,
+                },
+            })
+            
+            // 2. Si la petición sale bien, guardamos esta búsqueda específica
+            localStorage.setItem(cacheKey, JSON.stringify(data))
+            
+            return data
+        } catch (error: any) {
+            // 3. Si nos quedamos sin internet, buscamos exactamente lo mismo en la mochila
+            if (!navigator.onLine || error.message === 'Network Error') {
+                const cacheGuardado = localStorage.getItem(cacheKey)
+                
+                if (cacheGuardado) {
+                    return JSON.parse(cacheGuardado)
+                }
+            }
+            
+            // 4. Si no es un problema de red o no hay nada cacheado, dejamos que actúe tu manejador normal
+            return manejarError(error)
+        }
+    },
+
+    async obtenerActividadesPorGrupo(
+        grupoId: number,
+        page: number = 0,
+        size: number = 10
+    ): Promise<PageResponse<ActividadDTO>> {
+        const finalSize = size > 0 ? size : 10
+
+        try {
+            const { data } = await api.get<PageResponse<ActividadDTO>>(`actividad/grupo/${grupoId}`, {
+                params: { page, size: finalSize },
+                paramsSerializer: {
+                    indexes: null,
+                },
+            })
+
+            console.log(`actividadService.obtenerActividadesPorGrupo - respuesta actividad/grupo/${grupoId}:`, data)
+
+            return data
+        } catch (error: any) {
+            // Si no hay red, delegamos en el manejador general para mantener consistencia
+            if (!navigator.onLine || error.message === 'Network Error') {
+                // Sin caché específico para este endpoint por ahora
+            }
+
+            return manejarError(error)
+        }
+    },
+
+    async obtenerAnalytics(desde: string, hasta: string): Promise<ActivityAnalyticsDTO> {
+        try {
+            const { data } = await api.get<ActivityAnalyticsDTO>('/actividad/analytics', {
+                params: {
+                    desde,
+                    hasta,
+                },
+            })
+
+            console.log('actividadService.obtenerAnalytics - respuesta /actividad/analytics:', data)
+
+            return data
+        } catch (error: any) {
+            return manejarError(error)
+        }
+    },
+}
+
