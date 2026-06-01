@@ -1,13 +1,12 @@
 /* eslint-disable no-undef */
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Save, Camera, ChevronLeft } from 'lucide-react'
+import { Save, Camera, ChevronLeft } from 'lucide-react'
 import ColumnContainer from '@/components/common/columnContainer'
 import { usuarioService } from '@/service/usuarioService'
 import type { UsuarioEditarDTO } from '@/domain/usuario'
 import { useToast } from '@/customHooks/useToast'
 import { getMensajeError } from '@/utils/getMensajeError'
-import PageTitle from '@/components/common/pageTitle'
 import IconNavButton from '@/components/common/IconNavButton'
 
 function getInitials(name: string) {

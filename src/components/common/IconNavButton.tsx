@@ -1,6 +1,11 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
 
+type IconProps = {
+    className?: string
+    strokeWidth?: number
+}
+
 export default function IconNavButton({
     icon,
     to,
@@ -8,7 +13,8 @@ export default function IconNavButton({
     ariaLabel,
     className,
 }: {
-    icon: React.ReactNode
+    
+    icon: React.ReactElement<IconProps>
     to?: string
     onClick?: () => void
     ariaLabel?: string
@@ -19,20 +25,16 @@ export default function IconNavButton({
     function handleClick(e: React.MouseEvent) {
         e.stopPropagation()
         if (onClick) return onClick()
-        if (to) return navigate(to)
+        if (to) return  navigate(to)
     }
 
     // Clone icon to enforce strokeWidth and ensure consistent sizing
-    const renderedIcon = React.isValidElement(icon)
-        ? React.cloneElement(icon as React.ReactElement, {
-            className: [
-                // keep any className provided by caller
-                (icon as React.ReactElement).props.className ?? '',
-            ].join(' '),
-            strokeWidth: 1.8,
-        })
-        : icon
-
+    const renderedIcon = React.cloneElement(icon, {
+        className: [
+            icon.props.className ?? '',
+        ].join(' '),
+        strokeWidth: 1.8,
+    })
     return (
         <button
             type="button"

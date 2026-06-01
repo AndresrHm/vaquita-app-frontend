@@ -1,15 +1,15 @@
+/* eslint-disable no-undef */
 import { useState } from 'react'
 import { useToast } from '@/customHooks/useToast'
 import { getMensajeError } from '@/utils/getMensajeError'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, UserMinus, UserPlus } from 'lucide-react'
+import { UserMinus, UserPlus } from 'lucide-react'
 import { useOnInit } from '@/customHooks/hooks'
 import { usuarioService } from '@/service/usuarioService'
 import type { UsuarioInfoDTO } from '@/domain/usuario'
 import ColumnContainer from '@/components/common/columnContainer'
 import Modal from '@/components/common/modal'
 import { Button } from '@/components/ui/button'
-import MoneyBadge from '@/components/moneyBadge/moneyBadge'
 import PayDebtModal from '@/components/balancesPage/PayDebtModal'
 import { SectionCard } from '@/components/balancesPage/sectionCard'
 import { BalanceRow } from '@/components/balancesPage/balanceRow'
@@ -121,7 +121,6 @@ export default function UserProfilePage() {
   const totalOwedToMe = owedToMe.reduce((acc, b) => acc + b.monto, 0)
   const totalIOwe = iOwe.reduce((acc, b) => acc + b.monto, 0)
   const netAmount = totalIOwe - totalOwedToMe
-  const headerAmount = netAmount
 
   const tabs: { key: Tab; label: string }[] = [
     { key: 'balances', label: 'Balance' },
