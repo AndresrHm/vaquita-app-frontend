@@ -48,9 +48,9 @@ const router = createBrowserRouter([
       {
         path: '/',
         element: (
-          // <ProtectedRoute>
-          <MainLayout />
-          // </ProtectedRoute>
+          <ProtectedRoute>
+            <MainLayout />
+          </ProtectedRoute>
         ),
         children: [
           { index: true, element: <Navigate to="/groups" replace /> },
