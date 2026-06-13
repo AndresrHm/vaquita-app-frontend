@@ -6,7 +6,7 @@ interface LogoProps {
   iconSize?: number // Por si en algún lugar queremos el ícono más grande o más chico
 }
 
-export default function Logo({ className = "", iconSize = 48 }: LogoProps) {
+export default function Logo({ className = '', iconSize = 48 }: LogoProps) {
   return (
     <div className={cn('flex flex-col items-center justify-center gap-3', className)}>
       <img
