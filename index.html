@@ -1,99 +1,23 @@
 <!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/favicon_vaquita.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vaquita</title>
+  </head>
 
-<head>
-  <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="/favicon_vaquita.png" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>vaquita</title>
-</head>
-<div id="root">
-  <style>
-    html,
-    body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      background-color: var(--splash-bg-color);
-    }
+  <body>
+    <div id="root"></div>
 
-    :root {
-      --splash-bg-color: oklch(0.97 0.01 250);
-      /* #f7f7f9 (fondo base claro) */
-      --splash-text-color: oklch(0.25 0.03 260);
-      /* #3b3d45 (texto foreground) */
-    }
+    <script>
+      const theme = localStorage.getItem("theme") ?? "light";
 
-
-    .dark {
-      --splash-bg-color: oklch(0.20 0.02 255);
-      /* #2d2d31 (fondo oscuro oklch compartido) */
-      --splash-text-color: oklch(0.95 0.01 250);
-      /* #edf1f3 (texto claro oscuro) */
-    }
-
-    .splash-container {
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      width: 100vw;
-      align-items: center;
-      justify-content: center;
-      background-color: var(--splash-bg-color);
-      font-family: sans-serif;
-
-      /* 👇 Agregamos estas dos líneas para controlar la suavidad */
-      opacity: 1;
-      transition: opacity 0.5s ease-in-out;
-    }
-
-    /* 👇 Esta clase nueva la vamos a activar desde React */
-    .splash-container.fade-out {
-      opacity: 0;
-    }
-
-    .splash-logo {
-      width: 120px;
-      height: 120px;
-      animation: pulse-splash 2s infinite ease-in-out;
-    }
-
-    .splash-title {
-      margin-top: 20px;
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: var(--splash-text-color);
-    }
-
-    @keyframes pulse-splash {
-
-      0%,
-      100% {
-        transform: scale(1);
-        opacity: 1;
+      if (theme === "dark") {
+        document.documentElement.classList.add("dark");
       }
+    </script>
 
-      50% {
-        transform: scale(1.1);
-        opacity: 0.8;
-      }
-    }
-  </style>
-
-  <script>
-    const theme = localStorage.getItem('theme') ?? 'light';
-
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    }
-  </script>
-
-  <div id="splash-screen" class="splash-container">
-    <img src="/favicon_vaquita.png" alt="Cargando La Vaquita..." class="splash-logo" />
-  </div>
-</div>
-<script type="module" src="/src/main.tsx"></script>
-</body>
-
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>
