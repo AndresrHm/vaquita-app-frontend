@@ -21,6 +21,7 @@ import CreateManualExpensePage from './pages/CreateManualExpensePage'
 import UserExpensesPage from '@/pages/UserExpensesPage'
 import GroupBalancesPage from './pages/GroupBalancesPage'
 import UserProfilePage from '@/pages/UserProfilePage'
+import QuickSplitPage from '@/pages/QuickSplitPage'
 import SettingsAccountPage from '@/pages/SettingsAccountPage'
 import ToastProvider from '@/customHooks/ToastProvider'
 import ChangePasswordPage from './pages/ChangePasswordPage'
@@ -43,6 +44,7 @@ const router = createBrowserRouter([
     children: [
       { path: '/login', element: <LoginPage /> },
       { path: '/register', element: <RegisterPage /> },
+      { path: '/split', element: <QuickSplitPage /> },
       {
         path: '/',
         element: (
@@ -66,7 +68,7 @@ const router = createBrowserRouter([
           { path: 'activity', element: <ActivityPage /> },
           { path: 'account', element: <AccountPage /> },
           { path: 'account/expenses', element: <UserExpensesPage /> },
-          { path: 'account/settings', element: <SettingsAccountPage />},
+          { path: 'account/settings', element: <SettingsAccountPage /> },
           { path: 'account/password', element: <ChangePasswordPage /> }
         ]
       },
@@ -90,7 +92,7 @@ setTimeout(() => {
   root.render(
     <React.StrictMode>
       <ToastProvider>
-        <BannerOffline/>
+        <BannerOffline />
         <RouterProvider router={router} />
       </ToastProvider>
     </React.StrictMode>
