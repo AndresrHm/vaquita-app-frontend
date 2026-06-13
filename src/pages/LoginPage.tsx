@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
@@ -10,10 +11,10 @@ import Logo from '@/components/common/Logo'
 export default function LoginPage() {
   const navigate = useNavigate()
   const { showToast } = useToast()
-  
+
   // 2. Activamos el radar de internet
-  const isOnline = useNetwork() 
-  
+  const isOnline = useNetwork()
+
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [status, setStatus] = useState<string | null>(null)
@@ -25,7 +26,7 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     // 3. Mini validación extra por si logran bypassear el botón bloqueado
     if (!isValid || !isOnline) return
 
@@ -36,7 +37,7 @@ export default function LoginPage() {
       await usuarioService.login({ email, contrasena: password })
 
       setStatus('¡Ingreso exitoso! Redirigiendo...')
-      setTimeout(() => navigate('/groups'), 1000) 
+      setTimeout(() => navigate('/groups'), 1000)
 
     } catch (error: unknown) {
       const mensaje = getMensajeError(error)
@@ -90,8 +91,8 @@ export default function LoginPage() {
             )}
 
             {/* 5. Bloqueamos el botón si no hay internet (o si el formulario no es válido) */}
-            <Button 
-              className="w-full rounded-xl" 
+            <Button
+              className="w-full rounded-xl"
               type="submit"
               disabled={!isOnline || !isValid}
             >
@@ -99,11 +100,10 @@ export default function LoginPage() {
             </Button>
 
             {status ? (
-              <div className={`rounded-xl border px-3 py-2 text-sm ${
-                isError 
-                  ? 'border-red-500 bg-red-50 text-red-600' 
-                  : 'border-border bg-background/70 text-muted-foreground'
-              }`}>
+              <div className={`rounded-xl border px-3 py-2 text-sm ${isError
+                ? 'border-red-500 bg-red-50 text-red-600'
+                : 'border-border bg-background/70 text-muted-foreground'
+                }`}>
                 {status}
               </div>
             ) : null}
@@ -113,6 +113,17 @@ export default function LoginPage() {
             ¿No tenés cuenta?{' '}
             <Link className="font-medium text-foreground underline underline-offset-4" to="/register">
               Registrate
+            </Link>
+
+          </div>
+
+          <div className="mt-6 text-center">
+            <p className="text-xs text-muted-foreground mb-2">¿Sin cuenta? Probá igual</p>
+            <Link
+              to="/split"
+              className="inline-flex items-center gap-1.5 text-s text-primary hover:underline font-medium"
+            >
+              <span>🍕</span> División rápida — sin registro
             </Link>
           </div>
         </div>
