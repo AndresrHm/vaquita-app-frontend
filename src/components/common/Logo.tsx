@@ -6,13 +6,13 @@ interface LogoProps {
   iconSize?: number // Por si en algún lugar queremos el ícono más grande o más chico
 }
 
-export default function Logo({ className = "", iconSize = 48 }: LogoProps) {
+export default function Logo({ className = '', iconSize = 48 }: LogoProps) {
   return (
-    <div className={cn("flex flex-col items-center justify-center gap-3", className)}>
-      <img 
-        src="assets/favicon_vaquita.png" // O /icon-192.png, la que tenga mejor resolución
-        alt="Vaquita" 
-        width={iconSize} 
+    <div className={cn('flex flex-col items-center justify-center gap-3', className)}>
+      <img
+        src="public/favicon_vaquita.png" // O /icon-192.png, la que tenga mejor resolución
+        alt="Vaquita"
+        width={iconSize}
         height={iconSize}
         className="shrink-0"
       />
