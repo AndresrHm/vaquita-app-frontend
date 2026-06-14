@@ -4,12 +4,12 @@ import { Calendar, AlertTriangle, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { CATEGORIES } from '@/components/createExpense/categories'
 import CreateExpenseItem from '@/components/createExpense/CreateExpenseItem'
-import FieldWrapper from '@/components/createExpense/FieldWrapper'
 import { Expense } from '@/domain/expense'
 import { ExpenseItem } from '@/domain/expenseItem'
 import { expenseService } from '@/service/expenseService'
 import ColumnContainer from '@/components/common/columnContainer'
 import PageTitle from '@/components/common/pageTitle'
+import CollapsibleCard from '@/components/common/collapsibleCard'
 import { usuarioService } from '@/service/usuarioService'
 import type { Usuario } from '@/domain/usuario'
 import type { Grupo } from '@/domain/Grupo'
@@ -378,52 +378,6 @@ export default function CreateExpense() {
                 <div className="space-y-4 pt-2 overflow-hidden">
                     <div className="rounded-2xl border border-border bg-card/70 p-6 shadow-sm backdrop-blur-xl flex flex-col items-center">
                         <span className="text-xs font-medium text-muted-foreground mb-4 uppercase tracking-wider">Monto total</span>
-
-                        <div className="w-full max-w-2xl mb-5 rounded-[1.75rem] border border-border/70 bg-background/70 p-4 shadow-sm">
-                            <div className="mb-4 flex items-center justify-between gap-3">
-                                <div>
-                                    <span className="block text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-                                        Moneda original
-                                    </span>
-                                    <p className="mt-1 text-[11px] text-muted-foreground">
-                                        Elegí la moneda que detectó la IA o ajustala manualmente.
-                                    </p>
-                                </div>
-
-                                {locationState?.scanResult?.currency && isSupportedCurrency(locationState.scanResult.currency) && (
-                                    <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
-                                        <Sparkles size={13} /> Detectada por IA
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="w-full max-w-md">
-                                <label className="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-2">Seleccionar moneda</label>
-
-                                <div className="flex items-center gap-3">
-                                    <select
-                                        value={currency}
-                                        onChange={(e) => {
-                                            const v = (e.target.value as ScanCurrency)
-                                            setCurrency(v)
-                                            actualizarExpense({ monedaOriginal: v })
-                                        }}
-                                        className="w-full rounded-xl border border-border bg-background/70 px-3 py-2 text-sm font-semibold text-foreground"
-                                    >
-                                        {SUPPORTED_CURRENCIES.map((c) => (
-                                            <option key={c} value={c}>{`${c} - ${CURRENCY_LABELS[c]}`}</option>
-                                        ))}
-                                    </select>
-
-                                    {locationState?.scanResult?.currency && isSupportedCurrency(locationState.scanResult.currency) && (
-                                        <div className="inline-flex items-center gap-1 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1 text-[11px] font-semibold text-emerald-700">
-                                            <Sparkles size={13} /> IA
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-
                         {!useItemTotal ? (
                             <div className="flex items-center justify-center gap-2 w-full max-w-md rounded-2xl border border-primary/30 bg-primary/10 px-4 py-4">
                                 <span className="text-3xl font-bold text-primary">{CURRENCY_SYMBOLS[currency]}</span>
@@ -450,28 +404,77 @@ export default function CreateExpense() {
                             <p className="mt-3 text-xs text-muted-foreground">El total manual debe coincidir con la suma de los ítems.</p>
                         )}
 
-                        {isConvertingCurrency && (
-                            <p className="mt-2 text-xs text-muted-foreground">Actualizando conversión para la moneda del grupo...</p>
-                        )}
-
-                        {!isConvertingCurrency && conversionPreview && (
-                            <div className="mt-3 w-full max-w-md rounded-xl border border-primary/20 bg-primary/5 px-3 py-2 text-xs text-foreground">
-                                <p className="font-semibold">
-                                    En el grupo se verá aprox. {conversionPreview.to} {conversionPreview.convertedAmount.toFixed(2)}
-                                </p>
-                                <p className="mt-1 text-muted-foreground">
-                                    Tasa aplicada: {conversionPreview.exchangeRate.toFixed(4)} ({conversionPreview.from} → {conversionPreview.to})
-                                </p>
-                            </div>
-                        )}
-
                         {useItemTotal && expense.items.length === 0 && (
                             <p className="mt-3 text-sm text-muted-foreground">Agregá ítems para calcular el total automáticamente.</p>
                         )}
+
                     </div>
 
                     <div className="rounded-2xl border border-border bg-card/70 p-4 shadow-sm backdrop-blur-xl">
-                        <div className="text-sm font-semibold text-foreground mb-3">Cómo calcular el total</div>
+                        {/* Selección de moneda */}
+                        <div className="w-full max-w-md">
+                            <label className="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-4">Seleccionar moneda</label>
+                            <div className="mb-2 flex items-center justify-between gap-3">
+                                {locationState?.scanResult?.currency &&
+                                    isSupportedCurrency(locationState.scanResult.currency) && (
+                                        <div className="flex flex-wrap items-center gap-2">
+                                            <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1 text-[11px] font-semibold text-emerald-700">
+                                                <Sparkles size={13} />
+
+                                                Detectada por IA →
+                                                <span className="font-bold">
+                                                    {locationState.scanResult.currency}
+                                                </span>
+                                            </div>
+
+                                            {currency !== locationState.scanResult.currency && (
+                                                <div className="inline-flex items-center rounded-full border border-border bg-card/70 px-3 py-1 text-[11px] font-medium text-muted-foreground">
+                                                    Usando →
+                                                    <span className="ml-1 font-semibold text-foreground">
+                                                        {currency}
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                            </div>
+
+                            <div className="flex flex-col items-center gap-3">
+                                <select
+                                    value={currency}
+                                    onChange={(e) => {
+                                        const v = (e.target.value as ScanCurrency)
+                                        setCurrency(v)
+                                        actualizarExpense({ monedaOriginal: v })
+                                    }}
+                                    className="w-full rounded-xl border border-border bg-background/70 px-3 py-2 text-sm font-semibold text-foreground"
+                                >
+                                    {SUPPORTED_CURRENCIES.map((c) => (
+                                        <option key={c} value={c}>{`${c} - ${CURRENCY_LABELS[c]}`}</option>
+                                    ))}
+                                </select>
+
+                            </div>
+
+                            {isConvertingCurrency && (
+                                <p className="mt-2 text-xs text-muted-foreground">Actualizando conversión para la moneda del grupo...</p>
+                            )}
+
+                            {!isConvertingCurrency && conversionPreview && (
+                                <div className="mt-3 w-full max-w-md rounded-xl border border-primary/20 bg-primary/5 px-3 py-2 text-xs text-foreground">
+                                    <p className="font-semibold">
+                                        En el grupo se verá aprox. {conversionPreview.to} {conversionPreview.convertedAmount.toFixed(2)}
+                                    </p>
+                                    <p className="mt-1 text-muted-foreground">
+                                        Tasa aplicada: {conversionPreview.exchangeRate.toFixed(4)} ({conversionPreview.from} → {conversionPreview.to})
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="rounded-2xl border border-border bg-card/70 p-4 shadow-sm backdrop-blur-xl">
+                        <div className="text-sm font-medium text-foreground mb-3">Cómo calcular el total</div>
                         <div className="grid grid-cols-2 gap-2">
                             <button
                                 type="button"
@@ -496,102 +499,160 @@ export default function CreateExpense() {
                         </div>
                     </div>
 
-                    <div className="rounded-2xl border border-border bg-card/70 p-4 shadow-sm backdrop-blur-xl flex flex-col gap-7">
-                        <GroupSelector
-                            groups={groups}
-                            selectedGroupId={expense.groupId}
-                            currentGroupName={groupNameState}
-                            isOpen={isGroupsOpen}
-                            onToggleOpen={() => setIsGroupsOpen(!isGroupsOpen)}
-                            onSelect={(id) => cambiarGrupo(id)}
-                            disabled={!!groupId}
-                        />
-
-                        <ParticipantSelector
-                            participants={participants}
-                            selectedIds={expense.participantIds}
-                            currentUser={{ id: Number(localStorage.id) } as Usuario}
-                            isLoading={isLoadingParticipants}
-                            isOpen={isParticipantsOpen}
-                            enabled={!!effectiveGroupId}
-                            onToggleOpen={() => setIsParticipantsOpen(!isParticipantsOpen)}
-                            onToggleParticipant={handleToggleParticipant}
-                        />
-
-                        <span className='space-y-2'>
-                            <FieldWrapper label="Método de división">
-                                <DivisionTypeSelector
-                                    value={divisionType}
-                                    onChange={(type) => {
-                                        setDivisionType(type)
-                                        actualizarExpense({ tipoDivision: type })
-                                    }}
+                    <CollapsibleCard
+                        title="Grupo y participantes"
+                        subtitle="Elegí dónde cargar el gasto y quiénes participan"
+                        createExpense
+                    >
+                        <div className="space-y-3">
+                            <div className="mt-2 space-y-5 p-4 bg-card/70 rounded-2xl border border-border/50">
+                                <GroupSelector
+                                    groups={groups}
+                                    selectedGroupId={expense.groupId}
+                                    currentGroupName={groupNameState}
+                                    isOpen={isGroupsOpen}
+                                    onToggleOpen={() => setIsGroupsOpen(!isGroupsOpen)}
+                                    onSelect={(id) => cambiarGrupo(id)}
+                                    disabled={!!groupId}
                                 />
-                            </FieldWrapper>
 
-                            {(divisionType === TipoDivision.PARTES_EXACTAS || divisionType === TipoDivision.PORCENTUAL || divisionType === TipoDivision.PARTES_IGUALES || divisionType === TipoDivision.ALEATORIO) && (
-                                <AllocationSummary
-                                    participants={participants}
-                                    expense={expense}
-                                    onExactAmountChange={divisionType === TipoDivision.PARTES_EXACTAS ? handleExactAmountChange : undefined}
-                                    onPercentageChange={divisionType === TipoDivision.PORCENTUAL ? handlePercentageChange : undefined}
-                                />
-                            )}
-                        </span>
-
-                        <FieldWrapper label="Descripción" instruction="¿En qué se gastó?">
-                            <div className="flex items-start gap-3 rounded-xl border border-border bg-background/70 px-3 py-2.5">                                <textarea
-                                value={expense.description}
-                                placeholder="¿En qué se gastó?"
-                                onChange={(event) => actualizarExpense({ description: event.target.value })}
-                                rows={3}
-                                className="
-                                        min-h-20
-                                        w-full
-                                        resize-y
-                                        bg-transparent
-                                        text-sm
-                                        text-foreground
-                                        outline-none
-                                        placeholder:text-muted-foreground/50
-                                    "
-                            />
+                                <div className="border-t border-border/50 pt-4">
+                                    <ParticipantSelector
+                                        participants={participants}
+                                        selectedIds={expense.participantIds}
+                                        currentUser={{ id: Number(localStorage.id) } as Usuario}
+                                        isLoading={isLoadingParticipants}
+                                        isOpen={isParticipantsOpen}
+                                        enabled={!!effectiveGroupId}
+                                        onToggleOpen={() => setIsParticipantsOpen(!isParticipantsOpen)}
+                                        onToggleParticipant={handleToggleParticipant}
+                                    />
+                                </div>
                             </div>
-                        </FieldWrapper>
+                        </div>
+                    </CollapsibleCard>
 
-                        <ExpenseAttachmentsField
-                            attachments={attachments}
-                            onAdd={handleAddAttachments}
-                            onRemove={handleRemoveAttachment}
-                        />
+                    <CollapsibleCard
+                        title="Método de división"
+                        subtitle="Definí cómo se reparte el gasto"
+                        createExpense
+                    >
+                        <div className="space-y-3">
+                            <div className="mt-2 space-y-3 p-4 bg-card/70 rounded-2xl border border-border/50">
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-bold text-muted-foreground uppercase ml-1">Método de división</label>
+                                    <DivisionTypeSelector
+                                        value={divisionType}
+                                        onChange={(type) => {
+                                            setDivisionType(type)
+                                            actualizarExpense({ tipoDivision: type })
+                                        }}
+                                    />
+                                </div>
 
-                        <CreateExpenseItem items={expense.items} onChange={handleItemsChange} />
+                                {(divisionType === TipoDivision.PARTES_EXACTAS || divisionType === TipoDivision.PORCENTUAL || divisionType === TipoDivision.PARTES_IGUALES || divisionType === TipoDivision.ALEATORIO) && (
+                                    <div className="border-t border-border/50 pt-3">
+                                        <AllocationSummary
+                                            participants={participants}
+                                            expense={expense}
+                                            onExactAmountChange={divisionType === TipoDivision.PARTES_EXACTAS ? handleExactAmountChange : undefined}
+                                            onPercentageChange={divisionType === TipoDivision.PORCENTUAL ? handlePercentageChange : undefined}
+                                        />
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </CollapsibleCard>
 
-                        <CategorySelector
-                            label="Categoría"
-                            instruction="Elegí un tipo de gasto"
-                            categories={CATEGORIES}
-                            selectedCategory={expense.category}
-                            isOpen={isCategoryOpen}
-                            onToggleOpen={() => setIsCategoryOpen(!isCategoryOpen)}
-                            onSelect={(categoryId) => actualizarExpense({ category: categoryId })}
-                        />
-
-                        <FieldWrapper label="Fecha del gasto">
-                            <div className="flex items-center gap-3 rounded-xl border border-border bg-background/70 px-3 py-2.5">
-                                <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
-                                <input
-                                    type="date"
-                                    value={expense.date}
-                                    onChange={(event) => actualizarExpense({ date: event.target.value })}
-                                    className="w-full bg-transparent text-sm text-foreground outline-none"
+                    <CollapsibleCard
+                        title="Descripción"
+                        subtitle="Agregá una nota para identificar el gasto"
+                        createExpense
+                    >
+                        <div className="space-y-3">
+                            <div className="mt-2 space-y-1 p-4 bg-card/70 rounded-2xl border border-border/50">
+                                <label className="text-[10px] font-bold text-muted-foreground uppercase ml-1">Descripción / Nota</label>
+                                <textarea
+                                    value={expense.description}
+                                    placeholder="¿En qué se gastó?"
+                                    onChange={(event) => actualizarExpense({ description: event.target.value })}
+                                    rows={3}
+                                    className="w-full pl-1 bg-transparent border-none text-sm text-muted-foreground focus:ring-0 p-0 resize-y min-h-20 placeholder:text-muted-foreground/50 outline-none"
                                 />
                             </div>
-                        </FieldWrapper>
-                    </div>
+                        </div>
+                    </CollapsibleCard>
 
-                    {/* SECCIÓN FINAL DE ACCIONES Y ERRORES */}
-                    <div className="pt-4 space-y-3">
+                    <CollapsibleCard
+                        title="Comprobantes"
+                        subtitle={`${attachments.length} archivo${attachments.length === 1 ? '' : 's'} adjunto${attachments.length === 1 ? '' : 's'}`}
+                        createExpense
+                    >
+                        <div className="space-y-3">
+                            <div className="mt-2 p-4 bg-card/70 rounded-2xl border border-border/50">
+                                <ExpenseAttachmentsField
+                                    attachments={attachments}
+                                    onAdd={handleAddAttachments}
+                                    onRemove={handleRemoveAttachment}
+                                />
+                            </div>
+                        </div>
+                    </CollapsibleCard>
+
+                    <CollapsibleCard
+                        title="Ítems del gasto"
+                        subtitle={`${expense.items.length} ítem${expense.items.length === 1 ? '' : 's'} cargado${expense.items.length === 1 ? '' : 's'}`}
+                        createExpense
+                    >
+                        <div className="space-y-3">
+                            <div className="mt-2 p-4 bg-card/70 rounded-2xl border border-border/50">
+                                <CreateExpenseItem items={expense.items} onChange={handleItemsChange} />
+                            </div>
+                        </div>
+                    </CollapsibleCard>
+
+                    <CollapsibleCard
+                        title="Categoría"
+                        subtitle="Elegí un tipo de gasto"
+                        createExpense
+                    >
+                        <div className="space-y-3">
+                            <div className="mt-2 p-4 bg-card/70 rounded-2xl border border-border/50">
+                                <CategorySelector
+                                    label="Categoría"
+                                    instruction="Elegí un tipo de gasto"
+                                    categories={CATEGORIES}
+                                    selectedCategory={expense.category}
+                                    isOpen={isCategoryOpen}
+                                    onToggleOpen={() => setIsCategoryOpen(!isCategoryOpen)}
+                                    onSelect={(categoryId) => actualizarExpense({ category: categoryId })}
+                                />
+                            </div>
+                        </div>
+                    </CollapsibleCard>
+
+                    <CollapsibleCard
+                        title="Fecha"
+                        subtitle="Indicá cuándo se realizó el gasto"
+                        createExpense
+                    >
+                        <div className="space-y-3">
+                            <div className="mt-2 space-y-1 p-4 bg-card/70 rounded-2xl border border-border/50">
+                                <label className="text-[10px] font-bold text-muted-foreground uppercase ml-1">Fecha del gasto</label>
+                                <div className="flex items-center gap-3 border-t border-border/50 pt-2">
+                                    <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
+                                    <input
+                                        type="date"
+                                        value={expense.date}
+                                        onChange={(event) => actualizarExpense({ date: event.target.value })}
+                                        className="w-full bg-transparent border-none text-sm text-foreground outline-none focus:ring-0 p-0"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </CollapsibleCard>
+
+                    <div className="pt-4 space-y-3 pb-3">
                         {isLoading ? (
                             <ButtonSkeleton className="w-full h-12 rounded-2xl" />
                         ) : (
@@ -623,10 +684,6 @@ export default function CreateExpense() {
                                 ))}
                             </div>
                         )}
-
-                        <p className="text-center text-[10px] text-muted-foreground mt-4 leading-relaxed px-6 italic">
-                            "La vaquita se divide entre todos los miembros del grupo seleccionado automáticamente."
-                        </p>
                     </div>
                 </div>
             </ColumnContainer>

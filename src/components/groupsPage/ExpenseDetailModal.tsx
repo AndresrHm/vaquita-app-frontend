@@ -103,7 +103,7 @@ export default function ExpenseDetailModal({ isOpen, expense, onClose }: Expense
                 {/* Items detalle (mock) */}
                 <div>
                     {/* Monto */}
-                    <div className="rounded-lg bg-muted/80 p-4">
+                    <div className="rounded-lg bg-card/70 p-4">
                         <p className="text-xs font-medium text-muted-foreground mb-2">Monto</p>
                         <p className="text-2xl font-bold text-foreground">
                             {expense.currency} {expense.amount.toLocaleString('es-AR')}
@@ -128,7 +128,7 @@ export default function ExpenseDetailModal({ isOpen, expense, onClose }: Expense
                                 }
                             }
                         }}
-                        className="w-full flex items-center justify-between gap-3 rounded-lg border border-border/50 bg-muted/10 px-3 py-2 mt-4 text-sm font-medium text-foreground hover:bg-muted/20 transition"
+                        className="w-full flex items-center justify-between gap-3 rounded-lg border border-border/50 bg-card/70 px-3 py-2 mt-4 text-sm font-medium text-foreground hover:bg-muted/20 transition"
                     >
                         <span>Detalle de items</span>
                         <span className="text-xs text-muted-foreground">{showItems ? 'Ocultar' : 'Ver'}</span>
@@ -141,7 +141,7 @@ export default function ExpenseDetailModal({ isOpen, expense, onClose }: Expense
                             ) : items && items.length > 0 ? (
                                 <>
                                     {items.map((it, idx) => (
-                                        <div key={idx} className="flex items-center justify-between rounded-md border border-border/30 px-3 py-2 bg-background/50">
+                                        <div key={idx} className="flex items-center justify-between rounded-2xl border border-border/30 px-3 py-2 bg-card/70">
                                             <div className="min-w-0">
                                                 <div className="text-sm font-medium text-foreground truncate">{it.nombre}</div>
                                                 <div className="text-xs text-muted-foreground">{it.cantidad} x {it.precioUnitario.toLocaleString('es-AR')}</div>
@@ -150,9 +150,9 @@ export default function ExpenseDetailModal({ isOpen, expense, onClose }: Expense
                                         </div>
                                     ))}
 
-                                    <div className="flex items-center justify-end gap-3 pt-1">
-                                        <div className="text-xs text-muted-foreground">Total</div>
-                                        <div className="text-sm font-semibold text-foreground">{items.reduce((s, it) => s + it.cantidad * it.precioUnitario, 0).toLocaleString('es-AR')}</div>
+                                    <div className="flex items-center justify-end gap-3 pr-3 rounded-2xl pt-1 bg-card/70">
+                                        <span className="text-l text-muted-foreground">Total</span>
+                                        <div className="text-l font-semibold text-foreground">{items.reduce((s, it) => s + it.cantidad * it.precioUnitario, 0).toLocaleString('es-AR')}</div>
                                     </div>
                                 </>
                             ) : (
@@ -163,11 +163,11 @@ export default function ExpenseDetailModal({ isOpen, expense, onClose }: Expense
                 </div>
                 {/* Fecha y tipo de pago */}
                 <div className="grid grid-cols-2 gap-3">
-                    <div className="rounded-lg border border-border/50 p-3">
+                    <div className="rounded-lg border border-border/50 p-3 bg-card/70">
                         <p className="text-xs font-medium text-muted-foreground mb-1">Fecha</p>
                         <p className="text-sm font-medium text-foreground">{formatExpenseDate(expense)}</p>
                     </div>
-                    <div className="rounded-lg border border-border/50 p-3">
+                    <div className="rounded-lg border border-border/50 p-3 bg-card/70">
                         <p className="text-xs font-medium text-muted-foreground mb-1">Tipo</p>
                         <p className="text-xs font-medium text-foreground">{paymentLabel(expense.paymentType)}</p>
                     </div>
@@ -192,7 +192,7 @@ export default function ExpenseDetailModal({ isOpen, expense, onClose }: Expense
                                 setLoadingAttachments(false)
                             }
                         }}
-                        className="w-full flex items-center gap-2 rounded-lg border border-border/50 bg-muted/20 px-3 py-2.5 text-sm font-medium text-foreground hover:bg-muted/40 transition"
+                        className="w-full flex items-center gap-2 rounded-lg border border-border/50 bg-card/70 px-3 py-2.5 text-sm font-medium text-foreground hover:bg-muted/40 transition"
                     >
                         <Eye className="h-4 w-4" />
                         Ver comprobante
@@ -201,7 +201,7 @@ export default function ExpenseDetailModal({ isOpen, expense, onClose }: Expense
                     <div className="space-y-2">
                         <button
                             onClick={() => setShowTicket(w => !w)}
-                            className="w-full flex items-center gap-2 rounded-lg border border-border/50 bg-muted/20 px-3 py-2.5 text-sm font-medium text-foreground hover:bg-muted/40 transition"
+                            className="w-full flex items-center gap-2 rounded-lg border border-border/50 bg-card/70 px-3 py-2.5 text-sm font-medium text-foreground hover:bg-muted/40 transition"
                         >
                             <Eye className="h-4 w-4" />
                             {showTicket ? 'Ocultar' : 'Ver'} comprobante
@@ -264,6 +264,6 @@ export default function ExpenseDetailModal({ isOpen, expense, onClose }: Expense
                     </div>
                 ) : null}
             </div>
-        </Modal>
+        </Modal >
     )
 }

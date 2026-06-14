@@ -22,7 +22,9 @@ export default function Modal({ isOpen, title, description, onClose, children, f
         <div className="flex max-h-[calc(100dvh-3rem)] w-full flex-col rounded-2xl border border-border bg-background p-4 shadow-xl">
           <div className="mb-4 flex shrink-0 items-start justify-between gap-3">
             <div>
-              <h3 className="text-base font-semibold text-foreground">{title}</h3>
+              <h2 className="text-2xl font-bold tracking-tight text-foreground">
+                {title}
+              </h2>
               {description ? <p className="mt-1 text-xs text-muted-foreground">{description}</p> : null}
             </div>
             <Button variant="ghost" size="icon" onClick={onClose} aria-label="Cerrar modal">

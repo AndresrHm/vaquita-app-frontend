@@ -1,98 +1,134 @@
 /* eslint-disable no-undef */
-import axios from 'axios'
+import axios, {
+  AxiosHeaders,
+  type AxiosError,
+  type InternalAxiosRequestConfig,
+} from 'axios'
+
+type TokenResponse = {
+  accessToken: string;
+  refreshToken: string;
+};
+
+type RetriableRequestConfig = InternalAxiosRequestConfig & {
+  _retry?: boolean;
+};
+
+const API_BASE_URL = 'https://proyecto-vaquita.onrender.com'
 
 const api = axios.create({
-  baseURL: 'http://localhost:8080',
+  baseURL: API_BASE_URL,
 })
 
-// Función auxiliar para no repetir código cuando tenemos que echar al usuario
+let refreshTokenRequest: Promise<TokenResponse> | null = null
+
+const guardarTokens = (data: TokenResponse) => {
+  localStorage.setItem('accessToken', data.accessToken)
+  localStorage.setItem('refreshToken', data.refreshToken)
+}
+
+const refrescarTokens = async () => {
+  const refreshToken = localStorage.getItem('refreshToken')
+
+  if (!refreshToken) {
+    throw new Error('No hay refresh token para renovar la sesión')
+  }
+
+  if (!refreshTokenRequest) {
+    refreshTokenRequest = axios
+      .post<TokenResponse>(`${API_BASE_URL}/usuarios/refresh`, { refreshToken })
+      .then(({ data }) => {
+        guardarTokens(data)
+        return data
+      })
+      .finally(() => {
+        refreshTokenRequest = null
+      })
+  }
+
+  return refreshTokenRequest
+}
+
+const aplicarMensajeDelBackend = (error: AxiosError) => {
+  const data = error.response?.data
+
+  if (
+    data &&
+    typeof data === 'object' &&
+    'message' in data &&
+    typeof data.message === 'string'
+  ) {
+    error.message = data.message
+  } else if (error.request && !error.response) {
+    error.message = 'No se pudo conectar con el servidor. Revisá tu conexión.'
+  }
+}
+
+const esEndpointPublicoDeAuth = (url = '') =>
+  url.includes('/usuarios/login') ||
+  url.includes('/usuarios/register') ||
+  url.includes('/usuarios/refresh')
+
 const limpiarSesion = () => {
-  console.error('Sesión expirada o inválida, rajando al login...')
+  console.error('Sesión expirada o inválida, redirigiendo al login...')
   localStorage.removeItem('accessToken')
-  localStorage.removeItem('refreshToken') // Agregamos el nuevo
+  localStorage.removeItem('refreshToken')
   localStorage.removeItem('user_name')
   localStorage.removeItem('user_email')
   localStorage.removeItem('user_image')
   window.location.href = '/login'
 }
 
-// 1. Interceptor de PETICIONES
 api.interceptors.request.use(
   (config) => {
-    // AHORA buscamos el 'accessToken' (la llave rápida de 15 min)
     const token = localStorage.getItem('accessToken')
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
     return config
   },
-  (error) => {
-    return Promise.reject(error)
-  }
+  (error) => Promise.reject(error),
 )
 
-// 2. Interceptor de RESPUESTAS
 api.interceptors.response.use(
   (response) => response,
-  async (error) => {
-    const originalRequest = error.config
+  async (error: AxiosError) => {
+    aplicarMensajeDelBackend(error)
 
-    // Si el error es 401 (Venció el Access Token) y NO estamos en la ruta de login ni intentamos ya recargar...
+    const originalRequest = error.config as RetriableRequestConfig | undefined
+    const status = error.response?.status
+    const requestUrl = originalRequest?.url ?? ''
+
     if (
-      error.response &&
-      error.response.status === 401 &&
+      status === 401 &&
+      originalRequest &&
       !originalRequest._retry &&
-      !originalRequest.url.includes('/usuarios/login') &&
-      !originalRequest.url.includes('/usuarios/refresh')
+      !esEndpointPublicoDeAuth(requestUrl)
     ) {
       originalRequest._retry = true
 
       try {
-        const refreshToken = localStorage.getItem('refreshToken')
+        const data = await refrescarTokens()
 
-        if (!refreshToken) {
-          throw new Error('No hay refresh token, imposible salvar la sesión')
-        }
-
-        const { data } = await axios.post('http://localhost:8080/usuarios/refresh', {
-          refreshToken: refreshToken
-        })
-
-        localStorage.setItem('accessToken', data.accessToken)
-        localStorage.setItem('refreshToken', data.refreshToken)
-
-        originalRequest.headers.Authorization = `Bearer ${data.accessToken}`
+        originalRequest.headers = AxiosHeaders.from(originalRequest.headers)
+        originalRequest.headers.set(
+          'Authorization',
+          `Bearer ${data.accessToken}`,
+        )
 
         return api(originalRequest)
-
       } catch (refreshError) {
         limpiarSesion()
         return Promise.reject(refreshError)
       }
     }
 
-    // Si el error es 403 (No tiene permisos) o cualquier 401 que no pudimos salvar
-    if (error.response && (error.response.status === 403 || error.response.status === 401)) {
+    if (status === 401 && !esEndpointPublicoDeAuth(requestUrl)) {
       limpiarSesion()
     }
 
-    // 👇 ACA ENTRA LA MAGIA NUEVA (VAQUITA-237 y VAQUITA-239) 👇
-    if (error.response) {
-      // Si el backend mandó nuestro JSON prolijo con el "message", lo extraemos
-      if (error.response.data && error.response.data.message) {
-        // Pisamos el mensaje genérico de Axios con el nuestro de Spring Boot
-        error.message = error.response.data.message
-      }
-    } else if (error.request) {
-      // Si ni siquiera hay respuesta, es porque el backend está apagado o no hay internet
-      error.message = 'No se pudo conectar con el servidor. Revisá tu conexión.'
-    }
-    // 👆 FIN DE LA MAGIA 👆
-
-    // Rechazamos la promesa para que el frontend (el toast) lo muestre
     return Promise.reject(error)
-  }
-
+  },
 )
 
 export default api
