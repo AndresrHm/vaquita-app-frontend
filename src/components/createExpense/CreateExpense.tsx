@@ -404,21 +404,6 @@ export default function CreateExpense() {
                             <p className="mt-3 text-xs text-muted-foreground">El total manual debe coincidir con la suma de los ítems.</p>
                         )}
 
-                        {isConvertingCurrency && (
-                            <p className="mt-2 text-xs text-muted-foreground">Actualizando conversión para la moneda del grupo...</p>
-                        )}
-
-                        {!isConvertingCurrency && conversionPreview && (
-                            <div className="mt-3 w-full max-w-md rounded-xl border border-primary/20 bg-primary/5 px-3 py-2 text-xs text-foreground">
-                                <p className="font-semibold">
-                                    En el grupo se verá aprox. {conversionPreview.to} {conversionPreview.convertedAmount.toFixed(2)}
-                                </p>
-                                <p className="mt-1 text-muted-foreground">
-                                    Tasa aplicada: {conversionPreview.exchangeRate.toFixed(4)} ({conversionPreview.from} → {conversionPreview.to})
-                                </p>
-                            </div>
-                        )}
-
                         {useItemTotal && expense.items.length === 0 && (
                             <p className="mt-3 text-sm text-muted-foreground">Agregá ítems para calcular el total automáticamente.</p>
                         )}
@@ -432,15 +417,24 @@ export default function CreateExpense() {
                             <div className="mb-2 flex items-center justify-between gap-3">
                                 {locationState?.scanResult?.currency &&
                                     isSupportedCurrency(locationState.scanResult.currency) && (
-                                        <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1 text-[11px] font-semibold text-emerald-700">
-                                            <Sparkles size={13} />
+                                        <div className="flex flex-wrap items-center gap-2">
+                                            <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1 text-[11px] font-semibold text-emerald-700">
+                                                <Sparkles size={13} />
 
-                                            <span>
                                                 Detectada por IA →
-                                                <span className="ml-1 font-bold">
+                                                <span className="font-bold">
                                                     {locationState.scanResult.currency}
                                                 </span>
-                                            </span>
+                                            </div>
+
+                                            {currency !== locationState.scanResult.currency && (
+                                                <div className="inline-flex items-center rounded-full border border-border bg-card/70 px-3 py-1 text-[11px] font-medium text-muted-foreground">
+                                                    Usando →
+                                                    <span className="ml-1 font-semibold text-foreground">
+                                                        {currency}
+                                                    </span>
+                                                </div>
+                                            )}
                                         </div>
                                     )}
                             </div>
@@ -462,12 +456,25 @@ export default function CreateExpense() {
 
                             </div>
 
+                            {isConvertingCurrency && (
+                                <p className="mt-2 text-xs text-muted-foreground">Actualizando conversión para la moneda del grupo...</p>
+                            )}
 
+                            {!isConvertingCurrency && conversionPreview && (
+                                <div className="mt-3 w-full max-w-md rounded-xl border border-primary/20 bg-primary/5 px-3 py-2 text-xs text-foreground">
+                                    <p className="font-semibold">
+                                        En el grupo se verá aprox. {conversionPreview.to} {conversionPreview.convertedAmount.toFixed(2)}
+                                    </p>
+                                    <p className="mt-1 text-muted-foreground">
+                                        Tasa aplicada: {conversionPreview.exchangeRate.toFixed(4)} ({conversionPreview.from} → {conversionPreview.to})
+                                    </p>
+                                </div>
+                            )}
                         </div>
                     </div>
 
                     <div className="rounded-2xl border border-border bg-card/70 p-4 shadow-sm backdrop-blur-xl">
-                        <div className="text-sm font-semibold text-foreground mb-3">Cómo calcular el total</div>
+                        <div className="text-sm font-medium text-foreground mb-3">Cómo calcular el total</div>
                         <div className="grid grid-cols-2 gap-2">
                             <button
                                 type="button"
