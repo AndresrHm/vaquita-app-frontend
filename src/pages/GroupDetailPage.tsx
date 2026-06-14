@@ -183,66 +183,122 @@ export default function GroupDetailPage() {
             />
 
             {/* Barra de acciones rápidas — debajo de la foto */}
-            <div className="mx-0 bg-background px-4 py-3">
-                <div className="grid grid-cols-4 gap-1">
-                    {/* Gráficos */}
+            <div className="mx-0 px-4 py-2">
+                <div className="grid grid-cols-4 gap-2">
+
                     <button
                         type="button"
                         onClick={() => setShowAnalyticsModal(true)}
-                        className="flex flex-col items-center gap-1.5 rounded-xl px-2 py-2.5 text-foreground hover:bg-muted/60 active:scale-95 transition-all"
+                        className="flex flex-col items-center gap-1.5 rounded-2xl border border-border/50 bg-card/70 px-2 py-2.5 text-foreground active:scale-95 transition-all"
                     >
-                        <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                            <PieChart className="h-5 w-5" />
+                        <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-violet-600 dark:text-violet-400">
+                            <PieChart className="h-5 w-5 stroke-[2.4]" />
                         </span>
                         <span className="text-[11px] font-medium text-muted-foreground leading-tight text-center">Estadísticas</span>
                     </button>
 
-                    {/* Invitar */}
                     <button
                         type="button"
                         onClick={handleOpenInviteModal}
                         disabled={isGeneratingInvite}
-                        className="flex flex-col items-center gap-1.5 rounded-xl px-2 py-2.5 text-foreground hover:bg-muted/60 active:scale-95 transition-all disabled:opacity-60"
+                        className="flex flex-col items-center gap-1.5 rounded-2xl border border-border/50 bg-card/70 px-2 py-2.5 text-foreground active:scale-95 transition-all disabled:opacity-60"
                     >
-                        <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                            {isGeneratingInvite ? (
-                                <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-                            ) : (
-                                <UserPlus className="h-5 w-5" />
-                            )}
+                        <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-emerald-600 dark:text-emerald-400">
+                            {isGeneratingInvite
+                                ? <div className="h-5 w-5 animate-spin rounded-full border-[2.5px] border-emerald-600 border-t-transparent" />
+                                : <UserPlus className="h-5 w-5 stroke-[2.4]" />}
                         </span>
                         <span className="text-[11px] font-medium text-muted-foreground leading-tight text-center">Invitar</span>
                     </button>
 
-                    {/* Balances */}
                     <button
                         type="button"
                         onClick={() => navigate(`/groups/${grupoId}/balances`)}
-                        className="flex flex-col items-center gap-1.5 rounded-xl px-2 py-2.5 text-foreground hover:bg-muted/60 active:scale-95 transition-all"
+                        className="flex flex-col items-center gap-1.5 rounded-2xl border border-border/50 bg-card/70 px-2 py-2.5 text-foreground active:scale-95 transition-all"
                     >
-                        <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                            <Scale className="h-5 w-5" />
+                        <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-amber-600 dark:text-amber-400">
+                            <Scale className="h-5 w-5 stroke-[2.4]" />
                         </span>
                         <span className="text-[11px] font-medium text-muted-foreground leading-tight text-center">Balances</span>
                     </button>
 
-                    {/* Actividad */}
                     <button
                         type="button"
                         onClick={() => setShowActivitiesModal(true)}
-                        className="flex flex-col items-center gap-1.5 rounded-xl px-2 py-2.5 text-foreground hover:bg-muted/60 active:scale-95 transition-all"
+                        className="flex flex-col items-center gap-1.5 rounded-2xl border border-border/50 bg-card/70 px-2 py-2.5 text-foreground active:scale-95 transition-all"
                     >
-                        <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                            <Bell className="h-5 w-5" />
+                        <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-orange-600 dark:text-orange-400">
+                            <Bell className="h-5 w-5 stroke-[2.4]" />
                         </span>
                         <span className="text-[11px] font-medium text-muted-foreground leading-tight text-center">Actividad</span>
                     </button>
+
                 </div>
             </div>
 
             <ColumnContainer>
                 {/* Panel de miembros — se despliega con la flecha del header */}
-                {showGroupInfo && (
+                <div
+                    className={`
+    grid transition-all duration-300 ease-in-out
+    ${showGroupInfo ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}
+  `}
+                >
+                    <div className="overflow-hidden">
+                        <div className="rounded-2xl border border-border/50 bg-muted/10 p-4 space-y-4 mb-2">
+                            {groupDetail.descripcion && (
+                                <div>
+                                    <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground/70">Descripción</h2>
+                                    <p className="mt-1 text-sm text-foreground">
+                                        {groupDetail.descripcion}
+                                    </p>
+                                </div>
+                            )}
+
+                            <div>
+                                <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground/70 mb-2">
+                                    Integrantes · {groupDetail.cantidadIntegrantes}
+                                </h2>
+
+                                <div className="max-h-56 space-y-1.5 overflow-y-auto pr-1" onScroll={handleMembersScroll}>
+                                    {visibleMembers.length === 0 ? (
+                                        <p className="text-sm text-muted-foreground">No hay integrantes para mostrar.</p>
+                                    ) : (
+                                        visibleMembers.map((miembro) => (
+                                            <div key={miembro.id} className="grid grid-cols-[1fr_24px_auto] items-center gap-2 rounded-xl bg-background/60 px-3 py-2 hover:bg-muted/40 transition-colors">
+                                                <button type="button" onClick={() => navigate(`/friends/${miembro.id}`)} className="flex items-center gap-2.5 text-left">
+                                                    <AvatarCircle nombre={miembro.nombre} />
+                                                    <div>
+                                                        <p className="text-sm font-medium text-foreground leading-tight">{miembro.nombre}</p>
+                                                        {miembro.username && <p className="text-xs text-muted-foreground">@{miembro.username}</p>}
+                                                    </div>
+                                                </button>
+
+                                                <div className="flex items-center justify-center">
+                                                    {modoRataActivo && miembro.esRata ? (
+                                                        <span title="Modo rata" className="text-sm leading-none">🐀</span>
+                                                    ) : null}
+                                                </div>
+
+                                                <div className="flex items-center justify-end">
+                                                    <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] capitalize text-muted-foreground font-medium">
+                                                        {miembro.rol}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
+
+                                    {visibleMembersCount < miembros.length && (
+                                        <p className="pt-1 text-center text-xs text-muted-foreground">Deslizá para ver más integrantes...</p>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* {showGroupInfo && (
                     <div className="rounded-2xl border border-border/50 bg-muted/10 p-4 space-y-4 mb-2">
                         {groupDetail.descripcion && (
                             <div>
@@ -293,7 +349,7 @@ export default function GroupDetailPage() {
                             </div>
                         </div>
                     </div>
-                )}
+                )} */}
 
                 <GroupActivitiesModal
                     isOpen={showActivitiesModal}
