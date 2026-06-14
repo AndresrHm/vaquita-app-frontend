@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react'
-import { X } from 'lucide-react'
 import {
   Bar,
   BarChart,
@@ -15,6 +14,8 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+
+import Modal from '@/components/common/modal'
 
 import type { GroupAnalyticsDTO } from '@/domain/groupAnalytics'
 import { obtenerAnalyticsGrupo } from '@/service/groupsService'
@@ -49,9 +50,22 @@ function getDefaultDateRange() {
 
 function formatMonthLabel(monthKey: string) {
   const [year, month] = monthKey.split('-').map(Number)
+
   if (!year || !month) return monthKey
 
   return monthFormatter.format(new Date(year, month - 1, 1))
+}
+
+function formatCompactCurrency(value: number) {
+  if (value >= 1000000) {
+    return `$${(value / 1000000).toFixed(1)}M`
+  }
+
+  if (value >= 1000) {
+    return `$${(value / 1000).toFixed(1)}K`
+  }
+
+  return `$${value}`
 }
 
 export default function GroupAnalyticsModal({
@@ -63,12 +77,15 @@ export default function GroupAnalyticsModal({
   initialHasta,
 }: GroupAnalyticsModalProps) {
   const { showToast } = useToast()
+
   const defaultRange = useMemo(() => getDefaultDateRange(), [])
 
   const [desde, setDesde] = useState(initialDesde || defaultRange.desde)
   const [hasta, setHasta] = useState(initialHasta || defaultRange.hasta)
+
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
   const [data, setData] = useState<GroupAnalyticsDTO | null>(null)
 
   useEffect(() => {
@@ -76,7 +93,13 @@ export default function GroupAnalyticsModal({
 
     setDesde(initialDesde || defaultRange.desde)
     setHasta(initialHasta || defaultRange.hasta)
-  }, [defaultRange.desde, defaultRange.hasta, initialDesde, initialHasta, isOpen])
+  }, [
+    defaultRange.desde,
+    defaultRange.hasta,
+    initialDesde,
+    initialHasta,
+    isOpen,
+  ])
 
   useEffect(() => {
     if (!isOpen) return
@@ -85,11 +108,19 @@ export default function GroupAnalyticsModal({
       try {
         setIsLoading(true)
         setError(null)
-        const response = await obtenerAnalyticsGrupo(groupId, desde, hasta)
+
+        const response = await obtenerAnalyticsGrupo(
+          groupId,
+          desde,
+          hasta,
+        )
+
         setData(response)
       } catch (err) {
         const mensaje = getMensajeError(err)
+
         showToast(mensaje, 'error')
+
         setError('No se pudieron cargar los graficos del grupo.')
         setData(null)
       } finally {
@@ -98,175 +129,317 @@ export default function GroupAnalyticsModal({
     }
 
     void loadAnalytics()
-  }, [desde, groupId, hasta, isOpen, showToast])
+  }, [desde, hasta, groupId, isOpen, showToast])
 
   if (!isOpen) return null
 
   const hasData = !!data && data.resumen.cantidadGastos > 0
 
   return (
-    <div className="fixed inset-0 z-70 bg-black/45 p-2 sm:p-6" onClick={onClose}>
-      <div
-        onClick={(event) => event.stopPropagation()}
-        className="absolute left-1/2 top-1/2 flex max-h-[calc(100dvh-1rem)] w-[calc(100vw-1rem)] max-w-5xl -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-2xl border border-border bg-background shadow-2xl sm:w-full sm:max-h-[calc(100dvh-3rem)]"
-      >
-        <div className="flex shrink-0 flex-col gap-3 border-b border-border px-4 py-4 sm:flex-row sm:items-start sm:justify-between sm:px-5">
-          <div className="min-w-0">
-            <h3 className="text-base font-semibold text-foreground">Graficos del grupo</h3>
-            <p className="mt-1 text-xs text-muted-foreground">{groupName ? `Analitica de ${groupName}` : `Grupo ${groupId}`}</p>
+    <Modal
+      isOpen={isOpen}
+      title="Estadísticas del grupo"
+      onClose={onClose}
+    >
+      <div className="max-h-[70vh] sm:max-h-[80vh] overflow-y-auto px-1 py-1 space-y-4">
+        <div className="flex flex-col gap-3 rounded-xl border border-border bg-muted/10 p-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="flex flex-row gap-3 sm:flex-row sm:items-end">
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-muted-foreground">
+                Desde
+              </label>
+
+              <input
+                type="date"
+                value={desde}
+                onChange={(event) => setDesde(event.target.value)}
+                className="h-10 rounded-lg border border-border bg-background px-3 text-sm text-foreground"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-muted-foreground">
+                Hasta
+              </label>
+
+              <input
+                type="date"
+                value={hasta}
+                onChange={(event) => setHasta(event.target.value)}
+                className="h-10 rounded-lg border border-border bg-background px-3 text-sm text-foreground"
+              />
+            </div>
           </div>
-
-          <button
-            type="button"
-            onClick={onClose}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-background text-foreground transition hover:bg-muted"
-            aria-label="Cerrar modal"
-          >
-            <X className="h-4 w-4" />
-          </button>
         </div>
 
-        <div className="grid shrink-0 gap-3 border-b border-border px-4 py-3 sm:grid-cols-2 sm:px-5 lg:grid-cols-3">
-          <label className="space-y-1 text-xs text-muted-foreground">
-            Desde
-            <input
-              type="date"
-              value={desde}
-              onChange={(event) => setDesde(event.target.value)}
-              className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground"
-            />
-          </label>
+        {isLoading ? (
+          <div className="text-sm text-muted-foreground">
+            Cargando graficos...
+          </div>
+        ) : null}
 
-          <label className="space-y-1 text-xs text-muted-foreground">
-            Hasta
-            <input
-              type="date"
-              value={hasta}
-              onChange={(event) => setHasta(event.target.value)}
-              className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground"
-            />
-          </label>
+        {!isLoading && error ? (
+          <div className="rounded-2xl border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive">
+            {error}
+          </div>
+        ) : null}
 
-          {data ? (
-            <div className="rounded-lg border border-border bg-muted/20 px-3 py-2 text-xs text-muted-foreground sm:col-span-2 lg:col-span-1">
-              Rango backend: {data.rango.desde} - {data.rango.hasta}
-            </div>
-          ) : null}
-        </div>
+        {!isLoading && !error && !hasData ? (
+          <div className="rounded-2xl border border-dashed border-border bg-muted/20 p-4 text-sm text-muted-foreground">
+            No hay gastos para el rango seleccionado.
+          </div>
+        ) : null}
 
-        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-4 sm:px-5">
-          {isLoading ? <div className="text-sm text-muted-foreground">Cargando graficos...</div> : null}
+        {!isLoading && !error && hasData && data ? (
+          <>
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div className="rounded-xl border border-border bg-muted/20 p-3">
+                <p className="text-xs text-muted-foreground">
+                  Total gastado
+                </p>
 
-          {!isLoading && error ? (
-            <div className="rounded-2xl border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive">{error}</div>
-          ) : null}
-
-          {!isLoading && !error && !hasData ? (
-            <div className="rounded-2xl border border-dashed border-border bg-muted/20 p-4 text-sm text-muted-foreground">
-              No hay gastos para el rango seleccionado.
-            </div>
-          ) : null}
-
-          {!isLoading && !error && hasData && data ? (
-            <>
-              <div className="grid gap-3 sm:grid-cols-3">
-                <div className="rounded-xl border border-border bg-muted/20 p-3">
-                  <p className="text-xs text-muted-foreground">Total gastado</p>
-                  <p className="mt-1 text-2xl font-semibold leading-none text-foreground sm:text-lg">{formatCurrency(data.resumen.totalGastado)}</p>
-                </div>
-
-                <div className="rounded-xl border border-border bg-muted/20 p-3">
-                  <p className="text-xs text-muted-foreground">Cantidad de gastos</p>
-                  <p className="mt-1 text-2xl font-semibold leading-none text-foreground sm:text-lg">{data.resumen.cantidadGastos}</p>
-                </div>
-
-                <div className="rounded-xl border border-border bg-muted/20 p-3">
-                  <p className="text-xs text-muted-foreground">Promedio por gasto</p>
-                  <p className="mt-1 text-2xl font-semibold leading-none text-foreground sm:text-lg">{formatCurrency(data.resumen.promedioPorGasto)}</p>
-                </div>
+                <p className="mt-1 text-xl sm:text-2xl font-semibold leading-none text-foreground break-words">
+                  {formatCurrency(data.resumen.totalGastado)}
+                </p>
               </div>
 
+              <div className="rounded-xl border border-border bg-muted/20 p-3">
+                <p className="text-xs text-muted-foreground">
+                  Cantidad de gastos
+                </p>
+
+                <p className="mt-1 text-xl sm:text-2xl font-semibold leading-none text-foreground">
+                  {data.resumen.cantidadGastos}
+                </p>
+              </div>
+
+              <div className="rounded-xl border border-border bg-muted/20 p-3">
+                <p className="text-xs text-muted-foreground">
+                  Promedio por gasto
+                </p>
+
+                <p className="mt-1 text-xl sm:text-2xl font-semibold leading-none text-foreground break-words">
+                  {formatCurrency(data.resumen.promedioPorGasto)}
+                </p>
+              </div>
+            </div>
+
+            {/* Evolución mensual */}
+            <section className="rounded-xl border border-border p-3">
+              <h4 className="mb-2 text-sm font-semibold text-foreground">
+                Evolucion mensual
+              </h4>
+
+              <div className="h-52 sm:h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart
+                    data={data.porMes.map((item) => ({
+                      ...item,
+                      mesLabel: formatMonthLabel(item.mes),
+                    }))}
+                    margin={{
+                      top: 8,
+                      right: 4,
+                      left: -10,
+                      bottom: 4,
+                    }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+
+                    <XAxis
+                      dataKey="mesLabel"
+                      tick={{ fontSize: 10 }}
+                    />
+
+                    <YAxis
+                      tickFormatter={(value) =>
+                        formatCompactCurrency(Number(value))
+                      }
+                      width={48}
+                      tick={{ fontSize: 8 }}
+                    />
+
+                    <Tooltip
+                      formatter={(value) =>
+                        formatCurrency(Number(value))
+                      }
+                    />
+
+                    <Line
+                      type="monotone"
+                      dataKey="total"
+                      stroke="#0f766e"
+                      strokeWidth={2}
+                      dot
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </section>
+
+            <div className="grid gap-4 lg:grid-cols-2">
+              {/* Distribución */}
               <section className="rounded-xl border border-border p-3">
-                <h4 className="mb-2 text-sm font-semibold text-foreground">Evolucion mensual</h4>
+                <h4 className="mb-2 text-sm font-semibold text-foreground">
+                  Distribucion por categoria
+                </h4>
+
                 <div className="h-52 sm:h-64">
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart
-                      data={data.porMes.map((item) => ({ ...item, mesLabel: formatMonthLabel(item.mes) }))}
-                      margin={{ top: 8, right: 8, left: 0, bottom: 8 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="mesLabel" tick={{ fontSize: 12 }} />
-                      <YAxis tickFormatter={(value) => formatCurrency(Number(value))} width={72} tick={{ fontSize: 12 }} />
-                      <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-                      <Line type="monotone" dataKey="total" stroke="#0f766e" strokeWidth={2} dot />
-                    </LineChart>
+                    <PieChart>
+                      <Pie
+                        data={data.porCategoria}
+                        dataKey="total"
+                        nameKey="categoria"
+                        innerRadius={50}
+                        outerRadius={90}
+                        paddingAngle={2}
+                      >
+                        {data.porCategoria.map((item, index) => (
+                          <Cell
+                            key={item.categoria}
+                            fill={
+                              CHART_COLORS[
+                              index % CHART_COLORS.length
+                              ]
+                            }
+                          />
+                        ))}
+                      </Pie>
+
+                      <Tooltip
+                        formatter={(value) =>
+                          formatCurrency(Number(value))
+                        }
+                      />
+
+                      <Legend
+                        wrapperStyle={{
+                          fontSize: '11px',
+                        }}
+                      />
+                    </PieChart>
                   </ResponsiveContainer>
                 </div>
               </section>
 
-              <div className="grid gap-4 lg:grid-cols-2">
-                <section className="rounded-xl border border-border p-3">
-                  <h4 className="mb-2 text-sm font-semibold text-foreground">Distribucion por categoria</h4>
-                  <div className="h-52 sm:h-64">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={data.porCategoria}
-                          dataKey="total"
-                          nameKey="categoria"
-                          innerRadius={50}
-                          outerRadius={90}
-                          paddingAngle={2}
-                        >
-                          {data.porCategoria.map((item, index) => (
-                            <Cell key={item.categoria} fill={CHART_COLORS[index % CHART_COLORS.length]} />
-                          ))}
-                        </Pie>
-                        <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-                        <Legend wrapperStyle={{ fontSize: '12px' }} />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </div>
-                </section>
-
-                <section className="rounded-xl border border-border p-3">
-                  <h4 className="mb-2 text-sm font-semibold text-foreground">Top pagadores por monto</h4>
-                  <div className="h-52 sm:h-64">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={data.porPagador} margin={{ top: 8, right: 8, left: 0, bottom: 8 }}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="pagadorNombre" tick={{ fontSize: 11 }} />
-                        <YAxis tickFormatter={(value) => formatCurrency(Number(value))} width={72} tick={{ fontSize: 12 }} />
-                        <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-                        <Bar dataKey="total" fill="#0369a1" radius={[6, 6, 0, 0]} />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </section>
-              </div>
-
+              {/* Top pagadores */}
               <section className="rounded-xl border border-border p-3">
-                <h4 className="mb-2 text-sm font-semibold text-foreground">Balance por integrante</h4>
+                <h4 className="mb-2 text-sm font-semibold text-foreground">
+                  Top pagadores por monto
+                </h4>
+
                 <div className="h-52 sm:h-64">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={data.balances} margin={{ top: 8, right: 8, left: 0, bottom: 8 }}>
+                    <BarChart
+                      data={data.porPagador}
+                      margin={{
+                        top: 8,
+                        right: 4,
+                        left: -10,
+                        bottom: 4,
+                      }}
+                    >
                       <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="usuarioNombre" tick={{ fontSize: 11 }} />
-                      <YAxis tickFormatter={(value) => formatCurrency(Number(value))} width={72} tick={{ fontSize: 12 }} />
-                      <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-                      <Bar dataKey="saldo" radius={[6, 6, 0, 0]}>
-                        {data.balances.map((item) => (
-                          <Cell key={item.usuarioId} fill={item.saldo >= 0 ? '#0f766e' : '#be123c'} />
-                        ))}
-                      </Bar>
+
+                      <XAxis
+                        dataKey="pagadorNombre"
+                        tick={{ fontSize: 10 }}
+                        interval={0}
+                        angle={-20}
+                        textAnchor="end"
+                        height={50}
+                      />
+
+                      <YAxis
+                        tickFormatter={(value) =>
+                          formatCompactCurrency(Number(value))
+                        }
+                        width={48}
+                        tick={{ fontSize: 8 }}
+                      />
+
+                      <Tooltip
+                        formatter={(value) =>
+                          formatCurrency(Number(value))
+                        }
+                      />
+
+                      <Bar
+                        dataKey="total"
+                        fill="#0369a1"
+                        radius={[6, 6, 0, 0]}
+                      />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
               </section>
-            </>
-          ) : null}
-        </div>
+            </div>
+
+            {/* Balance */}
+            <section className="rounded-xl border border-border p-3">
+              <h4 className="mb-2 text-sm font-semibold text-foreground">
+                Balance por integrante
+              </h4>
+
+              <div className="h-52 sm:h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={data.balances}
+                    margin={{
+                      top: 8,
+                      right: 4,
+                      left: -10,
+                      bottom: 4,
+                    }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+
+                    <XAxis
+                      dataKey="usuarioNombre"
+                      tick={{ fontSize: 10 }}
+                      interval={0}
+                      angle={-20}
+                      textAnchor="end"
+                      height={50}
+                    />
+
+                    <YAxis
+                      tickFormatter={(value) =>
+                        formatCompactCurrency(Number(value))
+                      }
+                      width={48}
+                      tick={{ fontSize: 8 }}
+                    />
+
+                    <Tooltip
+                      formatter={(value) =>
+                        formatCurrency(Number(value))
+                      }
+                    />
+
+                    <Bar
+                      dataKey="saldo"
+                      radius={[6, 6, 0, 0]}
+                    >
+                      {data.balances.map((item) => (
+                        <Cell
+                          key={item.usuarioId}
+                          fill={
+                            item.saldo >= 0
+                              ? '#0f766e'
+                              : '#be123c'
+                          }
+                        />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </section>
+          </>
+        ) : null}
       </div>
-    </div>
+    </Modal>
   )
 }

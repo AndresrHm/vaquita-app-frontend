@@ -24,7 +24,6 @@ export default function GroupDetailPage() {
     const navigate = useNavigate()
     const { showToast } = useToast()
 
-
     // Detalle del grupo (info básica)
     const [groupDetail, setGroupDetail] = useState<GrupoDetalleDTO | null>(null)
     const [miembros, setMiembros] = useState<Miembro[]>([])
@@ -68,8 +67,8 @@ export default function GroupDetailPage() {
             // Reemplazá esto por la función real de tu groupsService que le pegue a Axios
             // Ej: const response = await api.post(`/grupos/${grupoId}/invitacion`)
             // Y de ahí sacás el token.
-            const response = await generarTokenInvitacion(grupoId) 
-            
+            const response = await generarTokenInvitacion(grupoId)
+
             setInviteToken(response.token)
             setIsInviteModalOpen(true)
         } catch (error: unknown) {
@@ -195,7 +194,7 @@ export default function GroupDetailPage() {
                         <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                             <PieChart className="h-5 w-5" />
                         </span>
-                        <span className="text-[11px] font-medium text-muted-foreground leading-tight text-center">Gráficos</span>
+                        <span className="text-[11px] font-medium text-muted-foreground leading-tight text-center">Estadísticas</span>
                     </button>
 
                     {/* Invitar */}
@@ -310,10 +309,10 @@ export default function GroupDetailPage() {
                     onClose={() => setShowAnalyticsModal(false)}
                 />
 
-                <InviteModal 
-                    isOpen={isInviteModalOpen} 
-                    onClose={() => setIsInviteModalOpen(false)} 
-                    inviteToken={inviteToken} 
+                <InviteModal
+                    isOpen={isInviteModalOpen}
+                    onClose={() => setIsInviteModalOpen(false)}
+                    inviteToken={inviteToken}
                 />
 
                 <div className="space-y-6">
