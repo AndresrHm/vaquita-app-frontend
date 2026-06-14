@@ -71,7 +71,6 @@ function formatCompactCurrency(value: number) {
 export default function GroupAnalyticsModal({
   isOpen,
   groupId,
-  groupName,
   onClose,
   initialDesde,
   initialHasta,
