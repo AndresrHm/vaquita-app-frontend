@@ -142,7 +142,7 @@ export default function GroupAnalyticsModal({
       onClose={onClose}
     >
       <div className="max-h-[70vh] sm:max-h-[80vh] overflow-y-auto px-1 py-1 space-y-4">
-        <div className="flex flex-col gap-3 rounded-xl border border-border bg-muted/10 p-4 sm:flex-row sm:items-end sm:justify-between">
+        <div className="flex flex-col gap-3 rounded-xl border border-border bg-card/70 p-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="flex flex-row gap-3 sm:flex-row sm:items-end">
             <div className="space-y-1">
               <label className="text-xs font-medium text-muted-foreground">
@@ -185,7 +185,7 @@ export default function GroupAnalyticsModal({
         ) : null}
 
         {!isLoading && !error && !hasData ? (
-          <div className="rounded-2xl border border-dashed border-border bg-muted/20 p-4 text-sm text-muted-foreground">
+          <div className="rounded-2xl border border-dashed border-border bg-card/20 p-4 text-sm text-muted-foreground">
             No hay gastos para el rango seleccionado.
           </div>
         ) : null}
@@ -193,7 +193,7 @@ export default function GroupAnalyticsModal({
         {!isLoading && !error && hasData && data ? (
           <>
             <div className="grid gap-3 sm:grid-cols-3">
-              <div className="rounded-xl border border-border bg-muted/20 p-3">
+              <div className="rounded-xl border border-border bg-card/70 p-3">
                 <p className="text-xs text-muted-foreground">
                   Total gastado
                 </p>
@@ -203,17 +203,17 @@ export default function GroupAnalyticsModal({
                 </p>
               </div>
 
-              <div className="rounded-xl border border-border bg-muted/20 p-3">
+              <div className="rounded-xl border border-border bg-card/70 p-3">
                 <p className="text-xs text-muted-foreground">
                   Cantidad de gastos
                 </p>
 
-                <p className="mt-1 text-xl sm:text-2xl font-semibold leading-none text-foreground">
+                <p className="mt-1 text-xl sm:text-2xl font-semibold leading-none text-foreground ">
                   {data.resumen.cantidadGastos}
                 </p>
               </div>
 
-              <div className="rounded-xl border border-border bg-muted/20 p-3">
+              <div className="rounded-xl border border-border bg-card/70 p-3">
                 <p className="text-xs text-muted-foreground">
                   Promedio por gasto
                 </p>
@@ -225,7 +225,7 @@ export default function GroupAnalyticsModal({
             </div>
 
             {/* Evolución mensual */}
-            <section className="rounded-xl border border-border p-3">
+            <section className="rounded-xl border border-border p-3 bg-card/70">
               <h4 className="mb-2 text-sm font-semibold text-foreground">
                 Evolucion mensual
               </h4>
@@ -279,7 +279,7 @@ export default function GroupAnalyticsModal({
 
             <div className="grid gap-4 lg:grid-cols-2">
               {/* Distribución */}
-              <section className="rounded-xl border border-border p-3">
+              <section className="rounded-xl border border-border p-3 bg-card/70">
                 <h4 className="mb-2 text-sm font-semibold text-foreground">
                   Distribucion por categoria
                 </h4>
@@ -324,7 +324,7 @@ export default function GroupAnalyticsModal({
               </section>
 
               {/* Top pagadores */}
-              <section className="rounded-xl border border-border p-3">
+              <section className="rounded-xl border border-border p-3 bg-card/70">
                 <h4 className="mb-2 text-sm font-semibold text-foreground">
                   Top pagadores por monto
                 </h4>
@@ -377,7 +377,7 @@ export default function GroupAnalyticsModal({
             </div>
 
             {/* Balance */}
-            <section className="rounded-xl border border-border p-3">
+            <section className="rounded-xl border border-border p-3 bg-card/70">
               <h4 className="mb-2 text-sm font-semibold text-foreground">
                 Balance por integrante
               </h4>
