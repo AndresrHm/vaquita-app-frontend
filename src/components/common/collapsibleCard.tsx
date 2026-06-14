@@ -6,6 +6,7 @@ interface CollapsibleCardProps {
     title: string
     subtitle?: string
     defaultOpen?: boolean
+    createExpense?: boolean
     children: React.ReactNode
 }
 
@@ -13,17 +14,23 @@ export default function CollapsibleCard({
     title,
     subtitle,
     defaultOpen = true,
+    createExpense = false,
     children
 }: CollapsibleCardProps) {
 
     const [isOpen, setIsOpen] = useState(defaultOpen)
 
     return (
-        <div className="rounded-2xl border border-border bg-background/70 overflow-hidden">
+        <div className={`rounded-2xl border border-border ${createExpense ? 'bg-card/70 overflow-visible' : 'bg-background/70 overflow-hidden'}`}>
 
             {/* HEADER */}
             <div
-                className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-muted/40 transition"
+                className={`
+    flex items-center justify-between px-4 cursor-pointer
+    hover:bg-muted/40 transition
+    ${createExpense ? 'pt-3 pb-2' : 'py-3'}
+    ${isOpen ? 'rounded-t-2xl' : 'rounded-2xl'}
+`}
                 onClick={() => setIsOpen(!isOpen)}
             >
                 <div className="space-y-0.5">
@@ -47,9 +54,9 @@ export default function CollapsibleCard({
             {/* CONTENT */}
             <div
                 className={`transition-all duration-300 ${isOpen ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'
-                    } overflow-hidden`}
+                    } ${createExpense && isOpen ? 'overflow-visible' : 'overflow-hidden'}`}
             >
-                <div className="px-4 pb-4 pt-2">
+                <div className={createExpense ? 'px-2 pb-2 pt-0' : 'px-4 pb-4 pt-2'}>
                     {children}
                 </div>
             </div>
