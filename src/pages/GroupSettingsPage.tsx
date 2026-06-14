@@ -364,63 +364,62 @@ export default function GroupSettingsPage() {
                         {/* Currency & Preferences */}
                         <Card interactive={false}>
                             <h3 className="text-lg font-semibold mb-3">Moneda y preferencias</h3>
-                            <p className="text-xs text-gray-400 pb-2">esto es funcional, pero en el backend aún no está hecho</p>
-                                <div className="space-y-4">
-                                    {contextoUsuario?.esAdmin ? (
-                                        <>
-                                            <div>
-                                                <label className="block text-sm text-muted-foreground mb-1">Moneda por defecto</label>
-                                                <Select
-                                                    value={formularioGrupo?.moneda || ''}
-                                                    onChange={(e: ChangeEvent<HTMLSelectElement>) => updateGroupField('moneda', e.target.value as SupportedCurrency)}
-                                                    disabled={!contextoUsuario?.esAdmin}
-                                                >
-                                                    {SUPPORTED_CURRENCIES.map((c) => (
-                                                        <option key={c} value={c}>{c} — {CURRENCY_LABELS[c]}</option>
-                                                    ))}
-                                                </Select>
-                                            </div>
-                                            <div className="flex items-center justify-between">
-                                                <Toggle
-                                                    checked={formularioGrupo.simplificarDeudas}
-                                                    onChange={(v) => updateGroupField('simplificarDeudas', v)}
-                                                    label="Simplificar deudas"
-                                                />
-                                            </div>
-                                            <div className="flex items-center justify-between">
-                                                <Toggle
-                                                    checked={formularioGrupo.notificaciones}
-                                                    onChange={(v) => updateGroupField('notificaciones', v)}
-                                                    label="Notificaciones" />
-                                            </div>
-                                            <div className="flex items-center justify-between">
-                                                <Toggle
-                                                    checked={formularioGrupo.modoRata}
-                                                    onChange={(v) => updateGroupField('modoRata', v)}
-                                                    label="Modo rata 🐀" />
-                                            </div>
-                                        </>
-                                    ) : (
-                                        <div className="space-y-2 text-sm text-muted-foreground">
-                                            <div className="rounded-md border border-border bg-muted/30 p-3">
-                                                <div className="text-xs">Moneda por defecto</div>
-                                                <div className="font-medium">{formularioGrupo?.moneda || '-'}</div>
-                                            </div>
-                                            <div className="rounded-md border border-border bg-muted/30 p-3">
-                                                <div className="text-xs">Simplificar deudas</div>
-                                                <div>{formularioGrupo?.simplificarDeudas ? 'Activado' : 'Desactivado'}</div>
-                                            </div>
-                                            <div className="rounded-md border border-border bg-muted/30 p-3">
-                                                <div className="text-xs">Notificaciones</div>
-                                                <div>{formularioGrupo?.notificaciones ? 'Activado' : 'Desactivado'}</div>
-                                            </div>
-                                            <div className="rounded-md border border-border bg-muted/30 p-3">
-                                                <div className="text-xs">Modo rata</div>
-                                                <div>{formularioGrupo?.modoRata ? 'Activado' : 'Desactivado'}</div>
-                                            </div>
+                            <div className="space-y-4">
+                                {contextoUsuario?.esAdmin ? (
+                                    <>
+                                        <div>
+                                            <label className="block text-sm text-muted-foreground mb-1">Moneda por defecto</label>
+                                            <Select
+                                                value={formularioGrupo?.moneda || ''}
+                                                onChange={(e: ChangeEvent<HTMLSelectElement>) => updateGroupField('moneda', e.target.value as SupportedCurrency)}
+                                                disabled={!contextoUsuario?.esAdmin}
+                                            >
+                                                {SUPPORTED_CURRENCIES.map((c) => (
+                                                    <option key={c} value={c}>{c} — {CURRENCY_LABELS[c]}</option>
+                                                ))}
+                                            </Select>
                                         </div>
-                                    )}
-                                </div>
+                                        <div className="flex items-center justify-between">
+                                            <Toggle
+                                                checked={formularioGrupo.simplificarDeudas}
+                                                onChange={(v) => updateGroupField('simplificarDeudas', v)}
+                                                label="Simplificar deudas"
+                                            />
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <Toggle
+                                                checked={formularioGrupo.notificaciones}
+                                                onChange={(v) => updateGroupField('notificaciones', v)}
+                                                label="Notificaciones" />
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <Toggle
+                                                checked={formularioGrupo.modoRata}
+                                                onChange={(v) => updateGroupField('modoRata', v)}
+                                                label="Modo rata 🐀" />
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div className="space-y-2 text-sm text-muted-foreground">
+                                        <div className="rounded-md border border-border bg-muted/30 p-3">
+                                            <div className="text-xs">Moneda por defecto</div>
+                                            <div className="font-medium">{formularioGrupo?.moneda || '-'}</div>
+                                        </div>
+                                        <div className="rounded-md border border-border bg-muted/30 p-3">
+                                            <div className="text-xs">Simplificar deudas</div>
+                                            <div>{formularioGrupo?.simplificarDeudas ? 'Activado' : 'Desactivado'}</div>
+                                        </div>
+                                        <div className="rounded-md border border-border bg-muted/30 p-3">
+                                            <div className="text-xs">Notificaciones</div>
+                                            <div>{formularioGrupo?.notificaciones ? 'Activado' : 'Desactivado'}</div>
+                                        </div>
+                                        <div className="rounded-md border border-border bg-muted/30 p-3">
+                                            <div className="text-xs">Modo rata</div>
+                                            <div>{formularioGrupo?.modoRata ? 'Activado' : 'Desactivado'}</div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         </Card>
 
                         {/* Gestión del grupo */}

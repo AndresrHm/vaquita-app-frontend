@@ -378,52 +378,6 @@ export default function CreateExpense() {
                 <div className="space-y-4 pt-2 overflow-hidden">
                     <div className="rounded-2xl border border-border bg-card/70 p-6 shadow-sm backdrop-blur-xl flex flex-col items-center">
                         <span className="text-xs font-medium text-muted-foreground mb-4 uppercase tracking-wider">Monto total</span>
-
-                        <div className="w-full max-w-2xl mb-5 rounded-[1.75rem] border border-border/70 bg-background/70 p-4 shadow-sm">
-                            <div className="mb-4 flex items-center justify-between gap-3">
-                                <div>
-                                    <span className="block text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-                                        Moneda original
-                                    </span>
-                                    <p className="mt-1 text-[11px] text-muted-foreground">
-                                        Elegí la moneda que detectó la IA o ajustala manualmente.
-                                    </p>
-                                </div>
-
-                                {locationState?.scanResult?.currency && isSupportedCurrency(locationState.scanResult.currency) && (
-                                    <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
-                                        <Sparkles size={13} /> Detectada por IA
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="w-full max-w-md">
-                                <label className="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-2">Seleccionar moneda</label>
-
-                                <div className="flex items-center gap-3">
-                                    <select
-                                        value={currency}
-                                        onChange={(e) => {
-                                            const v = (e.target.value as ScanCurrency)
-                                            setCurrency(v)
-                                            actualizarExpense({ monedaOriginal: v })
-                                        }}
-                                        className="w-full rounded-xl border border-border bg-background/70 px-3 py-2 text-sm font-semibold text-foreground"
-                                    >
-                                        {SUPPORTED_CURRENCIES.map((c) => (
-                                            <option key={c} value={c}>{`${c} - ${CURRENCY_LABELS[c]}`}</option>
-                                        ))}
-                                    </select>
-
-                                    {locationState?.scanResult?.currency && isSupportedCurrency(locationState.scanResult.currency) && (
-                                        <div className="inline-flex items-center gap-1 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1 text-[11px] font-semibold text-emerald-700">
-                                            <Sparkles size={13} /> IA
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-
                         {!useItemTotal ? (
                             <div className="flex items-center justify-center gap-2 w-full max-w-md rounded-2xl border border-primary/30 bg-primary/10 px-4 py-4">
                                 <span className="text-3xl font-bold text-primary">{CURRENCY_SYMBOLS[currency]}</span>
@@ -468,6 +422,48 @@ export default function CreateExpense() {
                         {useItemTotal && expense.items.length === 0 && (
                             <p className="mt-3 text-sm text-muted-foreground">Agregá ítems para calcular el total automáticamente.</p>
                         )}
+
+                    </div>
+
+                    <div className="rounded-2xl border border-border bg-card/70 p-4 shadow-sm backdrop-blur-xl">
+                        {/* Selección de moneda */}
+                        <div className="w-full max-w-md">
+                            <label className="block text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-4">Seleccionar moneda</label>
+                            <div className="mb-2 flex items-center justify-between gap-3">
+                                {locationState?.scanResult?.currency &&
+                                    isSupportedCurrency(locationState.scanResult.currency) && (
+                                        <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1 text-[11px] font-semibold text-emerald-700">
+                                            <Sparkles size={13} />
+
+                                            <span>
+                                                Detectada por IA →
+                                                <span className="ml-1 font-bold">
+                                                    {locationState.scanResult.currency}
+                                                </span>
+                                            </span>
+                                        </div>
+                                    )}
+                            </div>
+
+                            <div className="flex flex-col items-center gap-3">
+                                <select
+                                    value={currency}
+                                    onChange={(e) => {
+                                        const v = (e.target.value as ScanCurrency)
+                                        setCurrency(v)
+                                        actualizarExpense({ monedaOriginal: v })
+                                    }}
+                                    className="w-full rounded-xl border border-border bg-background/70 px-3 py-2 text-sm font-semibold text-foreground"
+                                >
+                                    {SUPPORTED_CURRENCIES.map((c) => (
+                                        <option key={c} value={c}>{`${c} - ${CURRENCY_LABELS[c]}`}</option>
+                                    ))}
+                                </select>
+
+                            </div>
+
+
+                        </div>
                     </div>
 
                     <div className="rounded-2xl border border-border bg-card/70 p-4 shadow-sm backdrop-blur-xl">
@@ -591,7 +587,7 @@ export default function CreateExpense() {
                     </div>
 
                     {/* SECCIÓN FINAL DE ACCIONES Y ERRORES */}
-                    <div className="pt-4 space-y-3">
+                    <div className="pt-4 space-y-3 pb-3">
                         {isLoading ? (
                             <ButtonSkeleton className="w-full h-12 rounded-2xl" />
                         ) : (
@@ -623,10 +619,6 @@ export default function CreateExpense() {
                                 ))}
                             </div>
                         )}
-
-                        <p className="text-center text-[10px] text-muted-foreground mt-4 leading-relaxed px-6 italic">
-                            "La vaquita se divide entre todos los miembros del grupo seleccionado automáticamente."
-                        </p>
                     </div>
                 </div>
             </ColumnContainer>
