@@ -1,22 +1,31 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { QRCodeSVG } from 'qrcode.react'
 import { Button } from '@/components/ui/button'
 import PageTitle from '@/components/common/pageTitle'
 import Card from '@/components/common/card'
 import ColumnContainer from '@/components/common/columnContainer'
 import { useNetwork } from '@/customHooks/useNetwork'
 import Modal from '@/components/common/modal'
+import { Download } from 'lucide-react'
 
 export default function AccountPage() {
   const navigate = useNavigate()
   const [isDarkMode, setIsDarkMode] = useState(() => document.documentElement.classList.contains('dark'))
   // 👇 Agregamos el estado para controlar el modal
   const [showLogoutModal, setShowLogoutModal] = useState(false)
+  const [showQRModal, setShowQRModal] = useState(false) 
 
   const userName = window.localStorage.getItem('user_name') || 'Usuario'
   const userUsername = window.localStorage.getItem('user_username') || ''
   const userImage = window.localStorage.getItem('user_image') || ''
+  const userId = window.localStorage.getItem('id') || ''
   const isOnline = useNetwork()
+
+  const profileUrl = useMemo(
+    () => `${window.location.origin}/friends/${userId}`,
+    [userId]
+  )
 
   const handleLogout = () => {
     window.localStorage.removeItem('token')
@@ -28,6 +37,32 @@ export default function AccountPage() {
 
   const handleToggleTheme = () => {
     setIsDarkMode((prev) => !prev)
+  }
+
+  const handleDownloadQR = () => {
+    const svgEl = document.querySelector<SVGElement>('#qr-profile svg')
+    if (!svgEl) return
+
+    const svgString = new XMLSerializer().serializeToString(svgEl)
+    const img = new Image()
+    const blob = new Blob([svgString], { type: 'image/svg+xml' })
+    const url = URL.createObjectURL(blob)
+
+    img.onload = () => {
+      const canvas = document.createElement('canvas')
+      canvas.width = 200
+      canvas.height = 200
+      const ctx = canvas.getContext('2d')!
+      ctx.drawImage(img, 0, 0)
+      URL.revokeObjectURL(url)
+
+      const a = document.createElement('a')
+      a.href = canvas.toDataURL('image/png')
+      a.download = `perfil-${userUsername || 'usuario'}.png`
+      a.click()
+    }
+
+    img.src = url
   }
 
   useEffect(() => {
@@ -92,6 +127,16 @@ export default function AccountPage() {
             <div className="text-xs font-medium text-foreground">Cambiar contraseña</div>
             <div className="mt-1 text-xs text-muted-foreground">Actualizá tu clave de acceso</div>
           </Card>
+
+          <Card
+            className={`rounded-xl border border-border px-3 py-2 transition-colors ${isOnline ? 'cursor-pointer hover:bg-muted/50' : 'opacity-50 cursor-not-allowed'}`}
+            role="button"
+            tabIndex={isOnline ? 0 : -1}
+            onClick={() => { if (isOnline) setShowQRModal(true) }}
+          >
+            <div className="text-xs font-medium text-foreground">Compartir QR de perfil</div>
+            <div className="mt-1 text-xs text-muted-foreground">Compartí tu perfil con tus amigos</div>
+          </Card>
         </div>
 
         <h2 className="text-sm font-semibold text-foreground pl-1">Preferencias</h2>
@@ -147,6 +192,31 @@ export default function AccountPage() {
         }
       >
         <></> {/* Children vacío porque la data va en title y description */}
+      </Modal>
+
+      <Modal
+        isOpen={showQRModal}
+        title="Compartir perfil"
+        description="Mostrá este código para que tus amigos te agreguen."
+        onClose={() => setShowQRModal(false)}
+        footer={
+          <Button variant="outline" size="sm" onClick={handleDownloadQR} className="gap-2">
+            <Download className="h-4 w-4" />
+            Guardar QR
+          </Button>
+        }
+      >
+        <div id="qr-profile" className="flex flex-col items-center space-y-4 text-center">
+          {userUsername && (
+            <p className="text-sm text-muted-foreground">@{userUsername}</p>
+          )}
+          <div className="rounded-xl bg-white p-4 shadow-md">
+            <QRCodeSVG value={profileUrl} size={200} bgColor="#FFFFFF" fgColor="#000000" level="M" />
+          </div>
+          <p className="text-xs text-muted-foreground max-w-[200px]">
+            Pedile a tu amigo que escanee este código para agregarte.
+          </p>
+        </div>
       </Modal>
 
     </div>
