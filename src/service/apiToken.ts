@@ -1,16 +1,20 @@
 /* eslint-disable no-undef */
-import axios, { AxiosHeaders, type AxiosError, type InternalAxiosRequestConfig } from 'axios'
+import axios, {
+  AxiosHeaders,
+  type AxiosError,
+  type InternalAxiosRequestConfig,
+} from 'axios'
 
 type TokenResponse = {
-  accessToken: string
-  refreshToken: string
-}
+  accessToken: string;
+  refreshToken: string;
+};
 
 type RetriableRequestConfig = InternalAxiosRequestConfig & {
-  _retry?: boolean
-}
+  _retry?: boolean;
+};
 
-const API_BASE_URL = 'http://localhost:8080'
+const API_BASE_URL = 'https://proyecto-vaquita.onrender.com'
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -48,18 +52,22 @@ const refrescarTokens = async () => {
 const aplicarMensajeDelBackend = (error: AxiosError) => {
   const data = error.response?.data
 
-  if (data && typeof data === 'object' && 'message' in data && typeof data.message === 'string') {
+  if (
+    data &&
+    typeof data === 'object' &&
+    'message' in data &&
+    typeof data.message === 'string'
+  ) {
     error.message = data.message
   } else if (error.request && !error.response) {
     error.message = 'No se pudo conectar con el servidor. Revisá tu conexión.'
   }
 }
 
-const esEndpointPublicoDeAuth = (url = '') => (
+const esEndpointPublicoDeAuth = (url = '') =>
   url.includes('/usuarios/login') ||
   url.includes('/usuarios/register') ||
   url.includes('/usuarios/refresh')
-)
 
 const limpiarSesion = () => {
   console.error('Sesión expirada o inválida, redirigiendo al login...')
@@ -79,7 +87,7 @@ api.interceptors.request.use(
     }
     return config
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 )
 
 api.interceptors.response.use(
@@ -103,7 +111,10 @@ api.interceptors.response.use(
         const data = await refrescarTokens()
 
         originalRequest.headers = AxiosHeaders.from(originalRequest.headers)
-        originalRequest.headers.set('Authorization', `Bearer ${data.accessToken}`)
+        originalRequest.headers.set(
+          'Authorization',
+          `Bearer ${data.accessToken}`,
+        )
 
         return api(originalRequest)
       } catch (refreshError) {
@@ -117,7 +128,7 @@ api.interceptors.response.use(
     }
 
     return Promise.reject(error)
-  }
+  },
 )
 
 export default api
