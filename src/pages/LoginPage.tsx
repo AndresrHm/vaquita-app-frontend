@@ -37,7 +37,9 @@ export default function LoginPage() {
       await usuarioService.login({ email, contrasena: password })
 
       setStatus('¡Ingreso exitoso! Redirigiendo...')
+      
       setTimeout(() => navigate('/groups'), 1000)
+
 
     } catch (error: unknown) {
       const mensaje = getMensajeError(error)

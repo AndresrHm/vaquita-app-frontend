@@ -14,6 +14,7 @@ export const usuarioService = {
         try {
             // Sincronizado con el backend: /register
             const { data } = await api.post(`${API_URL}/register`, nuevoUsuario.toJSON())
+            console.log(data)
             return Usuario.fromJSON(data)
         } catch (error: any) {
             return manejarError(error)

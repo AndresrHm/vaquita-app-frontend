@@ -83,7 +83,8 @@ api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('accessToken')
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`
+      config.headers = config.headers ?? new AxiosHeaders()
+      config.headers.set('Authorization', `Bearer ${token}`)
     }
     return config
   },
@@ -130,5 +131,11 @@ api.interceptors.response.use(
     return Promise.reject(error)
   },
 )
+
+api.interceptors.response.use(
+  (response) => {
+    console.log('RESPONSE OK', response)
+    return response
+  },)
 
 export default api
