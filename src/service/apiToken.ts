@@ -14,7 +14,7 @@ type RetriableRequestConfig = InternalAxiosRequestConfig & {
   _retry?: boolean;
 };
 
-const API_BASE_URL = 'https://proyecto-vaquita.onrender.com'
+const API_BASE_URL = 'https://backend-proyecto-vaquita.onrender.com'
 
 const api = axios.create({
   baseURL: API_BASE_URL,
