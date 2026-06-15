@@ -170,26 +170,18 @@ export class Expense extends Validable {
         }
 
         if (this.tipoDivision === TipoDivision.PARTES_EXACTAS || this.tipoDivision === TipoDivision.PORCENTUAL) {
-            result.asignacionesExactas = this.allocations.map((allocation) => allocation.toDTO())
-        }
+            const mapaAsignaciones: Record<number, number> = {}
 
+            this.allocations.forEach((alloc) => {
+                mapaAsignaciones[alloc.participantId] = alloc.total
+            })
+
+            // Se lo mandamos a la única propiedad que tu CreacionGastoDTO entiende en el back
+            result.asignacionesExactas = mapaAsignaciones
+        }
+        
         return result
     }
-    /* No se usa (por ahora)
-        static fromJSON(json: ExpenseJSON): Expense {
-            return new Expense(
-                json.grupoID,
-                json.pagadorID,
-                json.participantesIDs,
-                json.descripcion,
-                json.monto,
-                json.categoria,
-                json.fecha,
-                (json.items ?? []).map((item) => new ExpenseItem(item.nombre, item.cantidad, item.precioUnitario)),
-                json.tipoGasto,
-                (json.asignacionesExactas ?? []).map((allocation) => new ExpenseAllocation(allocation.participantId, allocation.total))
-            )
-        }*/
 
     public static clone(expense: Expense): Expense {
         return new Expense(
