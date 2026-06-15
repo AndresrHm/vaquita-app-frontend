@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-// 1. Importamos tus archivos de lógica
 import { Usuario } from '@/domain/usuario' 
 import { usuarioService } from '@/service/usuarioService'
 import { useToast } from '@/customHooks/useToast'
@@ -11,12 +10,10 @@ export default function RegisterPage() {
   const navigate = useNavigate()
   const { showToast } = useToast()
   
-  // 2. Cambiamos los 3 estados sueltos por uno solo que sea nuestra Clase
   const [usuario, setUsuario] = useState<Usuario>(new Usuario())
   const [status, setStatus] = useState<string | null>(null)
   const [isError, setIsError] = useState(false)
 
-  // 4. Función para actualizar el objeto (mantiene la inmutabilidad de React)
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setUsuario(new Usuario({ ...usuario, [name]: value }))
@@ -25,8 +22,7 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    // --- 1. VALIDACIÓN DEL FRONTEND (El Guardia) ---
-    const erroresFront: string[] = [] // Armamos nuestra libreta en React
+    const erroresFront: string[] = []
     
     if (usuario.nombre.trim() === '') erroresFront.push('• Faltó escribir tu nombre')
 
@@ -48,7 +44,6 @@ export default function RegisterPage() {
         erroresFront.push('• La contraseña es muy corta')
     }
 
-    // Si el guardia encontró errores, los muestra y corta el viaje acá mismo
     if (erroresFront.length > 0) {
         setIsError(true)
         setStatus(erroresFront.join('\n')) // Une los errores con saltos de línea
