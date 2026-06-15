@@ -421,7 +421,6 @@ export default function GroupsScanPage() {
                     state: {
                       scanResult: {
                         ...editableResult,
-                        totalAmount: total
                       },
                       attachments
                     }
