@@ -108,6 +108,7 @@ export default function CreateExpenseItem({ items, onChange }: CreateExpenseItem
                         )
                     })}
                 </div>
+            </div>
             ) : (
                 <p className="mt-3 text-sm text-muted-foreground">
                     No hay ítems agregados todavía.

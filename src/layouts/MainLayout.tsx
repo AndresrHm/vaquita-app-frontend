@@ -33,14 +33,14 @@ function MobileNavItem({ to, label, icon }: NavItemProps) {
 export default function MainLayout() {
   const isOnline = useNetwork()
   return (
-    <div className="min-h-screen bg-background">
-      <main className="mx-auto w-full max-w-md px-4 pb-28 pt-0">
+    <div className="flex h-dvh flex-col bg-background">
+      <main className="mx-auto w-full max-w-md flex-1 overflow-y-auto px-4 pb-4 pt-0">
         <Outlet />
       </main>
 
       <nav
         className={[
-          'fixed inset-x-0 bottom-0 z-50',
+          'shrink-0',
           'bg-card/80 backdrop-blur-xl',
           'border-t border-border',
           'shadow-lg'
