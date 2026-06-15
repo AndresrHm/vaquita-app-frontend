@@ -82,8 +82,9 @@ export default function CreateExpenseItem({ items, onChange }: CreateExpenseItem
         <FieldWrapper label="Ítems del gasto" instruction="Dividí el gasto en partes (si corresponde)">
             {/* LISTA */}
             {items.length > 0 ? (
-                <div className="mt-4 space-y-2">
-                    {items.map((currentItem, index) => {
+                <div className="mt-4">
+                    <div className="space-y-2 max-h-[40vh] md:max-h-[28vh] overflow-auto pr-2">
+                        {items.map((currentItem, index) => {
                         return (
                             <div
                                 key={`${currentItem.nombre}-${index}`}
