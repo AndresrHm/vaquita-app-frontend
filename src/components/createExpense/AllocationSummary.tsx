@@ -17,11 +17,11 @@ export default function AllocationSummary({ participants, expense, onExactAmount
         if (expense.tipoDivision === TipoDivision.PARTES_IGUALES) {
             return expense.total / activeParticipants.length
         } else if (expense.tipoDivision === TipoDivision.PARTES_EXACTAS || expense.tipoDivision === TipoDivision.PORCENTUAL) {
-            const allocation = expense.allocations.find(a => a.participantId === participantId)
-            if (expense.tipoDivision === TipoDivision.PORCENTUAL && allocation) {
-                return (allocation.total / 100) * expense.total
+            const allocationValue = expense.allocations?.[participantId] ?? 0
+            if (expense.tipoDivision === TipoDivision.PORCENTUAL) {
+                return (allocationValue / 100) * expense.total
             }
-            return allocation?.total || 0
+            return allocationValue
         } else if (expense.tipoDivision === TipoDivision.ALEATORIO) {
             return 0
         }
@@ -30,13 +30,12 @@ export default function AllocationSummary({ participants, expense, onExactAmount
 
     const getPercentageForParticipant = (participantId: number): number => {
         if (expense.tipoDivision === TipoDivision.PORCENTUAL) {
-            const allocation = expense.allocations.find(a => a.participantId === participantId)
-            return allocation?.total || 0
+            return expense.allocations?.[participantId] ?? 0
         }
         return 0
     }
 
-    const totalAssigned = expense.allocations.reduce((acc, curr) => acc + curr.total, 0)
+    const totalAssigned = Object.values(expense.allocations || {}).reduce((acc, curr) => acc + curr, 0)
     const isValid = expense.tipoDivision === TipoDivision.PARTES_IGUALES ||
         (expense.tipoDivision === TipoDivision.PARTES_EXACTAS && Math.abs(totalAssigned - expense.total) < 0.01) ||
         (expense.tipoDivision === TipoDivision.PORCENTUAL && Math.abs(totalAssigned - 100) < 0.01)

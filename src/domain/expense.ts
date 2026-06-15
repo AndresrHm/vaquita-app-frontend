@@ -2,8 +2,7 @@ import { Validable } from '@/types/validable'
 import { InputError } from '@/types/inputError'
 import { ExpenseItem } from './expenseItem'
 import type { ExpenseItemDTO } from './expenseItemDTO'
-import { ExpenseAllocation } from './expenseAllocation'
-import type { ExpenseAllocationDTO } from './expenseAllocationDTO'
+// Allocations are stored as Record<number, number> (participantId -> value)
 import { TipoDivision } from './enums/tipoDivision'
 export type { SupportedCurrency } from './currency'
 
@@ -18,7 +17,7 @@ export type ExpenseJSON = {
     items: ExpenseItemDTO[]
     tipoGasto: TipoDivision
     monedaOriginal?: string | null
-    asignacionesExactas?: ExpenseAllocationDTO[]
+    asignacionesExactas?: Record<number, number>
 }
 
 export type ExpenseParticipantJSON = {
@@ -56,7 +55,8 @@ export class Expense extends Validable {
         public date = new Date().toISOString().split('T')[0],
         public items: ExpenseItem[] = [],
         public tipoDivision: TipoDivision = TipoDivision.PARTES_IGUALES,
-        public allocations: ExpenseAllocation[] = [],
+        // Mapeo participantId -> valor (monto o porcentaje según tipoDivision)
+        public allocations: Record<number, number> = {},
         public useItemsTotal = false,
         public monedaOriginal: string | null = null,
     ) {
@@ -141,14 +141,14 @@ export class Expense extends Validable {
         }
 
         if (this.tipoDivision === TipoDivision.PARTES_EXACTAS) {
-            const sumaAsignada = this.allocations.reduce((acc, curr) => acc + curr.total, 0)
+            const sumaAsignada = Object.values(this.allocations).reduce((acc, curr) => acc + curr, 0)
             if (Math.abs(sumaAsignada - this.total) > 0.01) {
                 this.agregarError(new InputError('allocations', 'La suma de las asignaciones exactas debe ser igual al total'))
             }
         }
 
         if (this.tipoDivision === TipoDivision.PORCENTUAL) {
-            const sumaPorcentajes = this.allocations.reduce((acc, curr) => acc + curr.total, 0)
+            const sumaPorcentajes = Object.values(this.allocations).reduce((acc, curr) => acc + curr, 0)
             if (Math.abs(sumaPorcentajes - 100) > 0.01) {
                 this.agregarError(new InputError('allocations', 'La suma de los porcentajes debe ser 100%'))
             }
@@ -170,16 +170,10 @@ export class Expense extends Validable {
         }
 
         if (this.tipoDivision === TipoDivision.PARTES_EXACTAS || this.tipoDivision === TipoDivision.PORCENTUAL) {
-            const mapaAsignaciones: Record<number, number> = {}
-
-            this.allocations.forEach((alloc) => {
-                mapaAsignaciones[alloc.participantId] = alloc.total
-            })
-
-            // Se lo mandamos a la única propiedad que tu CreacionGastoDTO entiende en el back
-            result.asignacionesExactas = mapaAsignaciones
+            // Ya guardamos las asignaciones como Record<number, number>
+            result.asignacionesExactas = this.allocations
         }
-        
+
         return result
     }
 
@@ -194,7 +188,18 @@ export class Expense extends Validable {
             expense.date,
             expense.items.map((item) => new ExpenseItem(item.nombre, item.cantidad, item.precioUnitario)),
             expense.tipoDivision,
-            expense.allocations.map((allocation) => new ExpenseAllocation(allocation.participantId, allocation.total)),
+            // Aceptar allocations tanto en formato array como en Record al clonar
+                ((): Record<number, number> => {
+                    const allocsAny = (expense as any).allocations
+                    if (Array.isArray(allocsAny)) {
+                        return allocsAny.reduce((acc: Record<number, number>, a: any) => {
+                            acc[a.participantId] = a.total
+                            return acc
+                        }, {})
+                    }
+
+                    return allocsAny as Record<number, number>
+                })(),
             expense.useItemsTotal,
             expense.monedaOriginal,
         )
