@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { getAvatarColorClass, getInitials } from '@/components/common/initials'
 
 export function GroupCardSkeleton() {
   return (
@@ -22,6 +24,11 @@ type Group = {
 }
 
 export default function GroupCard({ group }: { group: Group }) {
+  const [imageLoadFailed, setImageLoadFailed] = useState(false)
+  const initials = getInitials(group.nombre)
+  const avatarColor = getAvatarColorClass(group.nombre)
+  const showImage = Boolean(group.imagenUrl?.trim()) && !imageLoadFailed
+
   return (
     <Link
       to={`/groups/${group.id}`}
@@ -29,23 +36,16 @@ export default function GroupCard({ group }: { group: Group }) {
     >
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          {group.imagenUrl ? (
+          {showImage ? (
             <img
-              src={group.imagenUrl}
+              src={group.imagenUrl!}
               alt={group.nombre}
               className="h-12 w-14 shrink-0 rounded-md border border-border object-cover"
-              onError={(e) => {
-                e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(group.nombre)}&background=random&color=fff`
-              }}
+              onError={() => setImageLoadFailed(true)}
             />
           ) : (
-            <div className="flex h-12 w-14 shrink-0 items-center justify-center rounded-md border border-border bg-muted/80 text-sm font-semibold text-muted-foreground">
-              {group.nombre
-                .trim()
-                .split(/\s+/)
-                .slice(0, 2)
-                .map((p) => p[0]?.toUpperCase() ?? '')
-                .join('')}
+            <div className={`flex h-12 w-14 shrink-0 items-center justify-center rounded-md border border-border ${avatarColor.bg}`}>
+              <span className={`text-sm font-semibold ${avatarColor.text}`}>{initials}</span>
             </div>
           )}
 

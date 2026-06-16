@@ -157,10 +157,12 @@ export default function AccountPage() {
             <div className="text-xs font-medium text-foreground">Tema</div>
             <div className="mt-1 text-xs text-muted-foreground">{isDarkMode ? 'Oscuro' : 'Claro'}</div>
           </Card>
+          {/*
           <Card className="rounded-xl border border-border px-3 py-2">
             <div className="text-xs font-medium text-foreground">Notificaciones</div>
             <div className="mt-1 text-xs text-muted-foreground">Activadas</div>
           </Card>
+          */}
         </div>
 
         {/* 👇 Modificamos el onClick para que abra el modal */}

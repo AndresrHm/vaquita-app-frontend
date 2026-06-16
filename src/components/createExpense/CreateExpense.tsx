@@ -29,7 +29,6 @@ import {
     type ScanResult
 } from '@/domain/smartScanDTO'
 import { TipoDivision } from '@/domain/enums/tipoDivision'
-import { ExpenseAllocation } from '@/domain/expenseAllocation'
 import DivisionTypeSelector from './DivisionTypeSelector'
 import AllocationSummary from './AllocationSummary'
 import CategorySelector from './CategorySelector'
@@ -305,8 +304,10 @@ export default function CreateExpense() {
     }
 
     const handleExactAmountChange = (participantId: number, amount: number) => {
-        const otrasAsignaciones = expense.allocations.filter(a => a.participantId !== participantId)
-        const nuevasAsignaciones = [...otrasAsignaciones, new ExpenseAllocation(participantId, amount)]
+        const nuevasAsignaciones = {
+            ...expense.allocations,
+            [participantId]: amount,
+        }
 
         actualizarExpense({
             tipoDivision: TipoDivision.PARTES_EXACTAS,
@@ -315,8 +316,10 @@ export default function CreateExpense() {
     }
 
     const handlePercentageChange = (participantId: number, percentage: number) => {
-        const otrasAsignaciones = expense.allocations.filter(a => a.participantId !== participantId)
-        const nuevasAsignaciones = [...otrasAsignaciones, new ExpenseAllocation(participantId, percentage)]
+        const nuevasAsignaciones = {
+            ...expense.allocations,
+            [participantId]: percentage,
+        }
 
         actualizarExpense({
             tipoDivision: TipoDivision.PORCENTUAL,
