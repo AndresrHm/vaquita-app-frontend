@@ -5,7 +5,8 @@ import { getMensajeError } from '@/utils/getMensajeError'
 import { Button } from '@/components/ui/button'
 import {
   Edit3, Sparkles, Upload, Camera, RotateCcw,
-  CheckCircle2, AlertCircle
+  CheckCircle2, AlertCircle,
+  RotateCw
 } from 'lucide-react'
 import PageTitle from '@/components/common/pageTitle'
 import ColumnContainer from '@/components/common/columnContainer'
@@ -212,12 +213,12 @@ export default function GroupsScanPage() {
                   >
                     {state === 'loading' ? (
                       <>
-                        <RotateCcw size={18} className="animate-spin" />
+                        <RotateCw size={18} className="animate-spin" />
                         Procesando imagen...
                       </>
                     ) : state === 'error' ? (
                       <>
-                        <RotateCcw size={18} />
+                        <RotateCw size={18} />
                         Reintentar
                       </>
                     ) : (
