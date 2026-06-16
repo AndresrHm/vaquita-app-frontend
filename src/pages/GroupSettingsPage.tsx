@@ -87,7 +87,6 @@ export default function GroupSettingsPage() {
     const [error, setError] = useState<string | null>(null)
     const [imageError, setImageError] = useState(false)
     const imageUrl = formularioGrupo?.imagenUrl || ''
-    const fallbackImage = '/favicon_vaquita.png'
     const navigate = useNavigate()
     const { groupId } = useParams()
     const parsedGroupId = Number(groupId)
@@ -285,23 +284,29 @@ export default function GroupSettingsPage() {
                                     <div>
                                         <label className="block text-sm text-muted-foreground">Imagen (URL)</label>
                                         <div className="flex items-center space-x-1">
-                                            <input
-                                                value={imageUrl}
-                                                onChange={(e) => {
-                                                    setImageError(false)
-                                                    updateGroupField('imagenUrl', e.target.value)
-                                                }}
-                                                className="flex-1 px-3 py-2 border border-border rounded-md bg-white text-sm text-foreground"
-                                            />
-                                            <div className="flex items-center space-x-2">
-                                                <img
-                                                    src={!imageError && imageUrl ? imageUrl : fallbackImage}
-                                                    onError={() => setImageError(true)}
-                                                    alt="preview"
-                                                    className="w-30 h-20 rounded-md object-cover"
+                                                <input
+                                                    value={imageUrl}
+                                                    onChange={(e) => {
+                                                        setImageError(false)
+                                                        updateGroupField('imagenUrl', e.target.value)
+                                                    }}
+                                                    className="flex-1 px-3 py-2 border border-border rounded-md bg-white text-sm text-foreground"
                                                 />
+                                                <div className="flex items-center space-x-2">
+                                                    {imageUrl && !imageError ? (
+                                                        <img
+                                                            src={imageUrl}
+                                                            onError={() => setImageError(true)}
+                                                            alt="preview"
+                                                            className="w-30 h-20 rounded-md object-cover"
+                                                        />
+                                                    ) : (
+                                                        <div className="w-32 h-20 rounded-md flex items-center justify-center border border-border bg-muted/20 text-sm text-muted-foreground text-center">
+                                                            No hay foto seleccionada
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
-                                        </div>
                                     </div>
                                 </form>
                             ) : (
@@ -314,9 +319,13 @@ export default function GroupSettingsPage() {
                                         <div className="text-sm text-muted-foreground mb-1">Descripción</div>
                                         <div className="text-sm">{formularioGrupo?.descripcion || '-'}</div>
                                     </div>
-                                    <div className="rounded-xl border border-border bg-card/70 p-3">
+                                        <div className="rounded-xl border border-border bg-card/70 p-3">
                                         <div className="text-sm text-muted-foreground mb-1">Imagen</div>
-                                        <img src={!imageError && imageUrl ? imageUrl : fallbackImage} alt="preview" className="w-30 h-20 rounded-md object-cover" />
+                                        {imageUrl && !imageError ? (
+                                            <img src={imageUrl} alt="preview" className="w-30 h-20 rounded-md object-cover" />
+                                        ) : (
+                                            <div className="w-32 h-20 rounded-md flex items-center justify-center border border-border bg-muted/20 text-sm text-muted-foreground text-center">No hay foto seleccionada</div>
+                                        )}
                                     </div>
                                 </div>
                             )}
@@ -379,6 +388,7 @@ export default function GroupSettingsPage() {
                                                 ))}
                                             </Select>
                                         </div>
+                                        {/*
                                         <div className="flex items-center justify-between">
                                             <Toggle
                                                 checked={formularioGrupo.simplificarDeudas}
@@ -392,6 +402,7 @@ export default function GroupSettingsPage() {
                                                 onChange={(v) => updateGroupField('notificaciones', v)}
                                                 label="Notificaciones" />
                                         </div>
+                                        */}
                                         <div className="flex items-center justify-between">
                                             <Toggle
                                                 checked={formularioGrupo.modoRata}
@@ -399,12 +410,13 @@ export default function GroupSettingsPage() {
                                                 label="Modo rata 🐀" />
                                         </div>
                                     </>
-                                ) : (
+                                        ) : (
                                     <div className="space-y-2 text-sm text-muted-foreground">
                                         <div className="rounded-md border border-border bg-muted/30 p-3">
                                             <div className="text-xs">Moneda por defecto</div>
                                             <div className="font-medium">{formularioGrupo?.moneda || '-'}</div>
                                         </div>
+                                        { /*
                                         <div className="rounded-md border border-border bg-muted/30 p-3">
                                             <div className="text-xs">Simplificar deudas</div>
                                             <div>{formularioGrupo?.simplificarDeudas ? 'Activado' : 'Desactivado'}</div>
@@ -413,6 +425,7 @@ export default function GroupSettingsPage() {
                                             <div className="text-xs">Notificaciones</div>
                                             <div>{formularioGrupo?.notificaciones ? 'Activado' : 'Desactivado'}</div>
                                         </div>
+                                        */ }
                                         <div className="rounded-md border border-border bg-muted/30 p-3">
                                             <div className="text-xs">Modo rata</div>
                                             <div>{formularioGrupo?.modoRata ? 'Activado' : 'Desactivado'}</div>
