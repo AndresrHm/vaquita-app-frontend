@@ -6,7 +6,7 @@ import { Search, Check, X, WifiOff } from 'lucide-react'
 import { debounce, SEARCH_DEBOUNCE_MS } from '@/lib/utils'
 import PageTitle from '@/components/common/pageTitle'
 import ColumnContainer from '@/components/common/columnContainer'
-import FriendCard from '@/components/friendsPage/FriendCard'
+import FriendCard, { FriendCardSkeleton } from '@/components/friendsPage/FriendCard'
 
 import { usuarioService } from '@/service/usuarioService'
 import type { SolicitudAmistadFront, UsuarioBusquedaDTO } from '@/domain/usuario'
@@ -28,6 +28,7 @@ export default function FriendsPage() {
   const isOnline = useNetwork()
 
   const [friends, setFriends] = useState<{ id: string; name: string; role: string; due: number; imageUrl: string }[]>([])
+  const [loadingFriends, setLoadingFriends] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('')
 
@@ -75,6 +76,7 @@ export default function FriendsPage() {
   }, [usernameSearch, isOnline])
 
   const loadFriends = () => {
+    setLoadingFriends(true)
     usuarioService.obtenerAmigos()
       .then((data) => {
         setFriends(data.map((u) => ({ id: String(u.id), name: u.nombre, role: 'Amigo', due: u.monto, imageUrl: '' })))
@@ -82,6 +84,7 @@ export default function FriendsPage() {
       .catch((err) => {
         if (isOnline) showToast(getMensajeError(err), 'error')
       })
+      .finally(() => setLoadingFriends(false))
   }
 
   const filteredFriends = friends.filter((f) =>
@@ -157,7 +160,11 @@ export default function FriendsPage() {
           {/* Lista */}
           <div className="min-h-[22.5vh] max-h-[26vh] overflow-y-auto space-y-3 px-1 py-3 pb-2 pr-1 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
 
-            {!isOnline && friends.length === 0 ? (
+            {loadingFriends && friends.length === 0 ? (
+              <>
+                {Array.from({ length: 3 }).map((_, i) => <FriendCardSkeleton key={i} />)}
+              </>
+            ) : !isOnline && friends.length === 0 ? (
               <div className="flex flex-col items-center justify-center rounded-xl border-2 border-red-300/50 bg-red-50/50 p-6 text-center shadow-sm dark:border-red-900/50 dark:bg-red-950/20">
                 <WifiOff className="mb-2 h-6 w-6 text-red-500/70" />
 

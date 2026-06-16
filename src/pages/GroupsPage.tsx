@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from 'react'
-import GroupCard from '@/components/groupsPage/GroupCard'
+import GroupCard, { GroupCardSkeleton } from '@/components/groupsPage/GroupCard'
 import GroupsSearch from '@/components/groupsPage/GroupsSearch'
 import CreateGroupButton from '@/components/groupsPage/CreateGroupButton'
 import ColumnContainer from '@/components/common/columnContainer'
@@ -126,7 +126,11 @@ export default function GroupsPage() {
       </PageTitle>
 
       <ColumnContainer>
-        {groups.length === 0 && !loading ? (
+        {loading && groups.length === 0 ? (
+          <>
+            {Array.from({ length: PAGE_SIZE }).map((_, i) => <GroupCardSkeleton key={i} />)}
+          </>
+        ) : groups.length === 0 ? (
           // 3. SEPARAMOS LOS CAMINOS: OFFLINE VS VACÍO REAL
           !isOnline ? (
             // A. ESTADO DE ERROR DE RED

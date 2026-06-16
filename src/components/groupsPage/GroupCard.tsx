@@ -1,5 +1,19 @@
 import { Link } from 'react-router-dom'
 
+export function GroupCardSkeleton() {
+  return (
+    <div className="rounded-2xl border border-border bg-background/70 p-4 shadow-sm animate-pulse" aria-hidden="true">
+      <div className="flex items-center gap-3">
+        <div className="h-12 w-14 shrink-0 rounded-md bg-muted/60" />
+        <div className="space-y-2">
+          <div className="h-3.5 w-32 rounded bg-muted/60" />
+          <div className="h-3 w-20 rounded bg-muted/60" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
 type Group = {
   id: number
   nombre: string
