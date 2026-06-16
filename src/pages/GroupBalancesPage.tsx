@@ -79,9 +79,36 @@ export default function GroupBalancesPage() {
 
     if (loading) {
         return (
-            <div className="space-y-4">
-                <div className="rounded-2xl border border-border bg-background/70 p-4 animate-pulse h-24" />
-                <div className="rounded-2xl border border-border bg-background/70 p-4 animate-pulse h-40" />
+            <div className="space-y-4 animate-pulse">
+                {/* Summary row */}
+                <div className="grid grid-cols-2 gap-3">
+                    <div className="rounded-2xl border border-border bg-background/70 px-4 py-3 shadow-sm">
+                        <div className="h-3 w-16 rounded bg-muted/60" />
+                        <div className="mt-2 h-6 w-24 rounded bg-muted/60" />
+                    </div>
+                    <div className="rounded-2xl border border-border bg-background/70 px-4 py-3 shadow-sm">
+                        <div className="h-3 w-16 rounded bg-muted/60" />
+                        <div className="mt-2 h-6 w-24 rounded bg-muted/60" />
+                    </div>
+                </div>
+                {/* Section card */}
+                <div className="rounded-2xl border border-border bg-background/70 shadow-sm overflow-hidden">
+                    <div className="border-b border-border px-4 py-2.5">
+                        <div className="h-3.5 w-28 rounded bg-muted/60" />
+                    </div>
+                    <div className="py-1 space-y-0 divide-y divide-border">
+                        {Array.from({ length: 3 }).map((_, i) => (
+                            <div key={i} className="flex items-center gap-3 px-3 py-2.5">
+                                <div className="h-9 w-9 shrink-0 rounded-full bg-muted/60" />
+                                <div className="flex-1 space-y-1.5">
+                                    <div className="h-3.5 w-32 rounded bg-muted/60" />
+                                    <div className="h-3 w-16 rounded bg-muted/60" />
+                                </div>
+                                <div className="h-3.5 w-16 rounded bg-muted/60" />
+                            </div>
+                        ))}
+                    </div>
+                </div>
             </div>
         )
     }
