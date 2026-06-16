@@ -2,6 +2,28 @@ import Card from '@/components/common/card'
 import { type ActividadDTO } from '@/domain/actividadDTO'
 import { activityMeta } from './activityMeta'
 
+export function ActivityCardSkeleton() {
+  return (
+    <Card className="bg-card/70 animate-pulse" aria-hidden="true">
+      <div className="flex items-start gap-4 p-1">
+        <div className="h-11 w-11 shrink-0 rounded-2xl bg-muted/60" />
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0 space-y-2">
+              <div className="h-3.5 w-32 rounded bg-muted/60" />
+              <div className="h-3 w-48 rounded bg-muted/60" />
+            </div>
+            <div className="flex flex-col items-end gap-2 pt-1">
+              <div className="h-3 w-10 rounded bg-muted/60" />
+              <div className="h-5 w-16 rounded-full bg-muted/60" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </Card>
+  )
+}
+
 interface ActivityCardProps {
     actividad: ActividadDTO
 }

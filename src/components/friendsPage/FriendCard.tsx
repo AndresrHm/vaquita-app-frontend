@@ -1,6 +1,23 @@
 import { useNavigate } from 'react-router-dom'
 import MoneyBadge from '@/components/moneyBadge/moneyBadge'
 
+export function FriendCardSkeleton() {
+  return (
+    <div className="rounded-2xl border border-border bg-card/70 p-4 shadow-sm animate-pulse" aria-hidden="true">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="h-11 w-11 shrink-0 rounded-full bg-muted/60" />
+          <div className="space-y-2">
+            <div className="h-3.5 w-28 rounded bg-muted/60" />
+            <div className="h-3 w-16 rounded bg-muted/60" />
+          </div>
+        </div>
+        <div className="h-6 w-16 rounded-full bg-muted/60" />
+      </div>
+    </div>
+  )
+}
+
 type Friend = {
     id: string
     name: string

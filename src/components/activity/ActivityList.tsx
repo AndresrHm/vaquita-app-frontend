@@ -3,7 +3,7 @@ import { useToast } from '@/customHooks/useToast'
 import { getMensajeError } from '@/utils/getMensajeError'
 import type { ActividadDTO } from '@/domain/actividadDTO'
 import type { PageResponse } from '@/domain/pageResponse'
-import ActivityCard from './ActivityCard'
+import ActivityCard, { ActivityCardSkeleton } from './ActivityCard'
 import { AppPagination } from '../common/pagination'
 
 interface ActivityListProps {
@@ -66,8 +66,8 @@ export default function ActivityList({ searchText, tipo, desde, hasta, size = 6 
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center py-8">
-                <div className="text-sm text-muted-foreground">Cargando actividades...</div>
+            <div className="space-y-2">
+                {Array.from({ length: size }).map((_, i) => <ActivityCardSkeleton key={i} />)}
             </div>
         )
     }
