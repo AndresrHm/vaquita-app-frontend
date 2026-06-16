@@ -85,31 +85,30 @@ export default function CreateExpenseItem({ items, onChange }: CreateExpenseItem
                 <div className="mt-4">
                     <div className="space-y-2 max-h-[40vh] md:max-h-[28vh] overflow-auto pr-2">
                         {items.map((currentItem, index) => {
-                        return (
-                            <div
-                                key={`${currentItem.nombre}-${index}`}
-                                onClick={() => openEdit(index)}
-                                className="cursor-pointer rounded-xl border border-border bg-background/70 px-3 py-2 hover:bg-muted transition"
-                            >
-                                <div className="flex items-center justify-between gap-3 mb-1">
-                                    <div className="text-sm font-medium text-foreground">
-                                        {currentItem.nombre || 'Ítem sin nombre'}
+                            return (
+                                <div
+                                    key={`${currentItem.nombre}-${index}`}
+                                    onClick={() => openEdit(index)}
+                                    className="cursor-pointer rounded-xl border border-border bg-background/70 px-3 py-2 hover:bg-muted transition"
+                                >
+                                    <div className="flex items-center justify-between gap-3 mb-1">
+                                        <div className="text-sm font-medium text-foreground">
+                                            {currentItem.nombre || 'Ítem sin nombre'}
+                                        </div>
+                                    </div>
+
+                                    <div className="flex flex-wrap justify-between gap-2 text-xs text-muted-foreground">
+                                        <span>Cantidad: {currentItem.cantidad}</span>
+                                        <span>Precio u.: ${currentItem.precioUnitario.toFixed(2)}</span>
+                                        <span className="font-medium text-primary">
+                                            Subtotal: ${currentItem.total().toFixed(2)}
+                                        </span>
                                     </div>
                                 </div>
-
-                                <div className="flex flex-wrap justify-between gap-2 text-xs text-muted-foreground">
-                                    <span>Cantidad: {currentItem.cantidad}</span>
-                                    <span>Precio u.: ${currentItem.precioUnitario.toFixed(2)}</span>
-                                    <span className="font-medium text-primary">
-                                        Subtotal: ${currentItem.total().toFixed(2)}
-                                    </span>
-                                </div>
-                            </div>
-                        )
-                    })}
+                            )
+                        })}
                     </div>
                 </div>
-            </div>
             ) : (
                 <p className="mt-3 text-sm text-muted-foreground">
                     No hay ítems agregados todavía.
