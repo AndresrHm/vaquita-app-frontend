@@ -1,8 +1,10 @@
 import { ChevronDown, ChevronLeft, ChevronUp, Settings } from 'lucide-react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import IconNavButton from '@/components/common/IconNavButton'
 import type { GrupoDetalleDTO, Miembro } from '@/domain/Grupo'
 import { AvatarCircle } from '@/components/common/avatarCircle'
+import { getAvatarColorClass, getInitials } from '@/components/common/initials'
 
 function GroupMembersCount({ count }: { count: number }) {
     return (
@@ -27,19 +29,36 @@ export default function GroupHeader({
 
     if (!groupDetail) return null
 
+    const initials = getInitials(groupDetail.nombre)
+    const avatarColor = getAvatarColorClass(groupDetail.nombre)
+    const [coverImageFailed, setCoverImageFailed] = useState(false)
+    const showCoverImage = Boolean(groupDetail.imagenUrl?.trim()) && !coverImageFailed
+
     return (
         <div className="space-y-4">
             <div className="-mx-4 rounded-b-2xl rounded-t-none overflow-hidden shadow-sm">
                 <div className="relative h-44 w-full">
                     {/* Imagen */}
-                    <img
-                        src={groupDetail.imagenUrl}
-                        alt={groupDetail.nombre}
-                        className="absolute inset-0 h-full w-full object-cover"
-                    />
+                    {showCoverImage ? (
+                        <img
+                            src={groupDetail.imagenUrl}
+                            alt={groupDetail.nombre}
+                            className="absolute inset-0 h-full w-full object-cover"
+                            onError={() => setCoverImageFailed(true)}
+                        />
+                    ) : null}
 
-                    {/* Overlay mejorado para legibilidad */}
-                    <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/20 to-black/60" />
+                    <div className={`absolute inset-0 flex items-center justify-center ${showCoverImage ? 'bg-black/10' : avatarColor.bg}`}>
+                        {!showCoverImage && (
+                            <span className={`text-5xl font-black tracking-tight ${avatarColor.text}`}>
+                                {initials}
+                            </span>
+                        )}
+                    </div>
+
+                    {showCoverImage && (
+                        <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/20 to-black/60" />
+                    )}
 
                     {/* Top buttons */}
                     <div className="absolute inset-x-4 top-3 flex items-center justify-between">
@@ -59,7 +78,7 @@ export default function GroupHeader({
                     {/* Título + integrantes */}
                     <div className="absolute inset-x-4 bottom-8">
                         <div className="flex flex-col gap-2">
-                            <h1 className="text-xl font-semibold text-white drop-shadow-sm leading-tight line-clamp-2">
+                            <h1 className={`text-xl font-semibold drop-shadow-sm leading-tight line-clamp-2 ${showCoverImage ? 'text-white' : 'text-foreground'}`}>
                                 {groupDetail.nombre}
                             </h1>
 

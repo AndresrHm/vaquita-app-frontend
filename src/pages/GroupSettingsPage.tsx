@@ -87,7 +87,7 @@ export default function GroupSettingsPage() {
     const [error, setError] = useState<string | null>(null)
     const [imageError, setImageError] = useState(false)
     const imageUrl = formularioGrupo?.imagenUrl || ''
-    const fallbackImage = 'https://t4.ftcdn.net/jpg/06/57/37/01/360_F_657370150_pdNeG5pjI976ZasVbKN9VqH1rfoykdYU.jpg'
+    const fallbackImage = '/favicon_vaquita.png'
     const navigate = useNavigate()
     const { groupId } = useParams()
     const parsedGroupId = Number(groupId)

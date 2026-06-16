@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Save, Camera } from 'lucide-react'
+import { Save, Camera } from 'lucide-react'
 import ColumnContainer from '@/components/common/columnContainer'
 import { usuarioService } from '@/service/usuarioService'
 import type { UsuarioEditarDTO } from '@/domain/usuario'
