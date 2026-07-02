@@ -4,7 +4,7 @@ import axios, {
   type AxiosError,
   type InternalAxiosRequestConfig,
 } from 'axios'
-import { REST_SERVER_URL } from './configurations';
+import { REST_SERVER_URL } from './configurations'
 
 type TokenResponse = {
   accessToken: string;

@@ -75,6 +75,7 @@ export interface UsuarioConBalanceDTO {
     nombre: string,
     username: string,
     monto: number,
+    imagenUrl?: string,
 }
 
 export interface UsuarioBusquedaDTO {

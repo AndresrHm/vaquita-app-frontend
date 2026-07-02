@@ -12,6 +12,7 @@ import { usuarioService } from '@/service/usuarioService'
 import type { SolicitudAmistadFront, UsuarioBusquedaDTO } from '@/domain/usuario'
 
 import { useNetwork } from '@/customHooks/useNetwork'
+import { mapUsuarioToFriend } from '@/components/friendsPage/friendUtils'
 
 function getInitials(name: string) {
   return name
@@ -27,7 +28,7 @@ export default function FriendsPage() {
   const navigate = useNavigate()
   const isOnline = useNetwork()
 
-  const [friends, setFriends] = useState<{ id: string; name: string; role: string; due: number; imageUrl: string }[]>([])
+  const [friends, setFriends] = useState<{ id: string; name: string; role: string; due: number; imageUrl?: string }[]>([])
   const [loadingFriends, setLoadingFriends] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('')
@@ -79,7 +80,7 @@ export default function FriendsPage() {
     setLoadingFriends(true)
     usuarioService.obtenerAmigos()
       .then((data) => {
-        setFriends(data.map((u) => ({ id: String(u.id), name: u.nombre, role: 'Amigo', due: u.monto, imageUrl: '' })))
+        setFriends(data.map(mapUsuarioToFriend))
       })
       .catch((err) => {
         if (isOnline) showToast(getMensajeError(err), 'error')
