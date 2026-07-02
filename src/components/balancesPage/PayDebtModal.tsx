@@ -1,7 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useState } from 'react'
 import Modal from '@/components/common/modal'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { formatCurrency } from '@/utils/formatCurrency'
 import { useToast } from '@/customHooks/useToast'
 import { pagarDeudaGrupoAUsuario, pagarDeudaGlobalAUsuario } from '@/service/groupsService'
@@ -24,53 +23,18 @@ export default function PayDebtModal({
   onPagoExitoso,
 }: PayDebtModalProps) {
   const [open, setOpen] = useState(false)
-  const [monto, setMonto] = useState(totalMonto.toFixed(2))
-  const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const { showToast } = useToast()
   const isOnline = useNetwork()
 
-  useEffect(() => {
-    if (open) {
-      setMonto(totalMonto.toFixed(2))
-      setError(null)
-    }
-  }, [open, totalMonto])
-
-  const parsedMonto = Number(monto)
-
-  const validationMessage = useMemo(() => {
-    if (!monto.trim()) return 'Ingresá un monto válido'
-    if (Number.isNaN(parsedMonto)) return 'Ingresá un monto válido'
-    if (parsedMonto <= 0) return 'El monto debe ser mayor a 0'
-    if (parsedMonto > totalMonto) return 'No podés pagar más que la deuda total'
-    return null
-  }, [monto, parsedMonto, totalMonto])
-
-  const isSubmitDisabled = validationMessage !== null
-
-  const handleMontoChange = (value: string) => {
-    setMonto(value)
-    if (error) {
-      setError(null)
-    }
-    console.log(parsedMonto)
-    console.log(totalMonto)
-  }
-
   const handleSubmit = async () => {
-    if (validationMessage) {
-      setError(validationMessage)
-      return
-    }
-
     setLoading(true)
 
     try {
       if (grupoId !== undefined) {
-        await pagarDeudaGrupoAUsuario(grupoId, acreedorId, parsedMonto)
+        await pagarDeudaGrupoAUsuario(grupoId, acreedorId, totalMonto)
       } else {
-        await pagarDeudaGlobalAUsuario(acreedorId, parsedMonto)
+        await pagarDeudaGlobalAUsuario(acreedorId, totalMonto)
       }
       showToast('Pago registrado correctamente', 'success')
       setOpen(false)
@@ -90,42 +54,28 @@ export default function PayDebtModal({
       </Button>
       <Modal
         isOpen={open}
-        title="Pagar deuda"
-        description={`Estás pagando a ${acreedorNombre}. El monto máximo disponible es ${formatCurrency(totalMonto)}.`}
+        title="Confirmar pago"
+        description={`¿Estás seguro de que querés pagar ${formatCurrency(totalMonto)} a ${acreedorNombre}?`}
         onClose={() => setOpen(false)}
         footer={
           <>
-            {/* Bloqueamos también el botón de cancelar si ya se está enviando el pago */}
             <Button variant="ghost" onClick={() => setOpen(false)} type="button" disabled={loading}>
               Cancelar
             </Button>
             
-            {/* 👇 Acá metemos la magia del Skeleton */}
             {loading ? (
-              <ButtonSkeleton className="w-32" /> // w-32 es más o menos el ancho del botón "Confirmar pago"
+              <ButtonSkeleton className="w-32" />
             ) : (
-              <Button onClick={handleSubmit} type="button" disabled={isSubmitDisabled}>
+              <Button onClick={handleSubmit} type="button">
                 Confirmar pago
               </Button>
             )}
           </>
         }
       >
-        <div className="space-y-3">
-          <label className="block text-sm font-medium text-foreground">
-            Monto a pagar
-          </label>
-          <Input
-            type="number"
-            min="0"
-            step="0.01"
-            max={totalMonto}
-            value={monto}
-            onChange={(event) => handleMontoChange(event.target.value)}
-          />
-          {(error || validationMessage) && (
-            <div className="text-sm text-destructive">{error ?? validationMessage}</div>
-          )}
+        <div className="rounded-lg border border-border bg-background/70 p-4">
+          <p className="text-sm text-muted-foreground mb-2">Monto a pagar:</p>
+          <p className="text-2xl font-bold text-foreground">{formatCurrency(totalMonto)}</p>
         </div>
       </Modal>
     </>

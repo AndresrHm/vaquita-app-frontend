@@ -263,12 +263,6 @@ export default function UserProfilePage() {
                             sublabel={b.grupoNombre}
                             amount={`-${formatCurrency(b.monto)}`}
                             variant="danger"
-                            showPayButton
-                            grupoId={b.grupoId}
-                            totalMonto={b.monto}
-                            acreedorId={b.acreedorId}
-                            acreedorNombre={b.acreedorNombre}
-                            onPagoExitoso={refreshInfo}
                           />
                         </div>
                       ))}

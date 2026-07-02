@@ -42,15 +42,12 @@ export default function ActivityPage() {
                 </div>
 
                 <Card interactive={false}>
-
-                    <div className="h-[52vh]">
-                        <ActivityList
-                            searchText={filters.searchText}
-                            tipo={filters.tipo}
-                            desde={filters.desde}
-                            hasta={filters.hasta}
-                        />
-                    </div>
+                    <ActivityList
+                        searchText={filters.searchText}
+                        tipo={filters.tipo}
+                        desde={filters.desde}
+                        hasta={filters.hasta}
+                    />
                 </Card>
 
                 <ActionButton
