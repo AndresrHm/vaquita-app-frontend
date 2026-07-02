@@ -4,6 +4,7 @@ import axios, {
   type AxiosError,
   type InternalAxiosRequestConfig,
 } from 'axios'
+import { REST_SERVER_URL } from './configurations';
 
 type TokenResponse = {
   accessToken: string;
@@ -14,10 +15,8 @@ type RetriableRequestConfig = InternalAxiosRequestConfig & {
   _retry?: boolean;
 };
 
-const API_BASE_URL = 'https://backend-proyecto-vaquita.onrender.com'
-
 const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: REST_SERVER_URL,
 })
 
 let refreshTokenRequest: Promise<TokenResponse> | null = null
