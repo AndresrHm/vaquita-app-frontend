@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import MoneyBadge from '@/components/moneyBadge/moneyBadge'
+import { normalizeFriendImageUrl } from '@/components/friendsPage/friendUtils'
 
 export function FriendCardSkeleton() {
   return (
@@ -45,9 +46,9 @@ export default function FriendCard({ friend }: { friend: Friend, onPagoExitoso?:
         >
             <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                    {friend.imageUrl ? (
+                    {normalizeFriendImageUrl(friend.imageUrl) ? (
                         <img
-                            src={friend.imageUrl}
+                            src={normalizeFriendImageUrl(friend.imageUrl)}
                             alt={friend.name}
                             className="h-11 w-11 shrink-0 rounded-full border border-border object-cover"
                         />
