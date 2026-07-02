@@ -35,7 +35,7 @@ const refrescarTokens = async () => {
 
   if (!refreshTokenRequest) {
     refreshTokenRequest = axios
-      .post<TokenResponse>(`${API_BASE_URL}/usuarios/refresh`, { refreshToken })
+      .post<TokenResponse>(`${REST_SERVER_URL}/usuarios/refresh`, { refreshToken })
       .then(({ data }) => {
         guardarTokens(data)
         return data
