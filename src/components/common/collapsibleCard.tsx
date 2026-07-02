@@ -53,8 +53,10 @@ export default function CollapsibleCard({
 
             {/* CONTENT */}
             <div
-                className={`transition-all duration-300 ${isOpen ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'
-                    } ${createExpense && isOpen ? 'overflow-visible' : 'overflow-hidden'}`}
+                className={`transition-all duration-300 ${isOpen
+                        ? 'max-h-[80vh] opacity-100 overflow-y-auto'
+                        : 'max-h-0 opacity-0 overflow-hidden'
+                    }`}
             >
                 <div className={createExpense ? 'px-2 pb-2 pt-0' : 'px-4 pb-4 pt-2'}>
                     {children}
