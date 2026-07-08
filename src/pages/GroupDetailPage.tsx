@@ -2,8 +2,8 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useEffect, useState, type UIEvent } from 'react'
 import ColumnContainer from '@/components/common/columnContainer'
 import { useOnInit } from '@/customHooks/hooks'
-import { obtenerDetalleGrupo, obtenerGastosGrupo, obtenerGrupoSettings, obtenerMiembrosDeGrupoSettings, generarTokenInvitacion } from '@/service/groupsService'
-import type { GrupoDetalleDTO, GrupoGastosPorAnioDTO, Miembro } from '@/domain/Grupo'
+import { obtenerDetalleGrupo, obtenerGastosGrupo, obtenerGrupoSettings, obtenerMiembrosDeGrupoSettings, generarTokenInvitacion, obtenerGrupoUsuarioContexto } from '@/service/groupsService'
+import type { GrupoDetalleDTO, GrupoGastosPorAnioDTO, Miembro, GrupoContextoUsuarioDTO } from '@/domain/Grupo'
 import GroupHeader from '@/components/groupsPage/GroupHeader'
 import ExpensesList, { type ExpensesByMonth } from '@/components/groupsPage/ExpensesList'
 import { type Expense } from '@/components/groupsPage/ExpenseItem'
@@ -27,6 +27,7 @@ export default function GroupDetailPage() {
     // Detalle del grupo (info básica)
     const [groupDetail, setGroupDetail] = useState<GrupoDetalleDTO | null>(null)
     const [miembros, setMiembros] = useState<Miembro[]>([])
+    const [contextoUsuario, setContextoUsuario] = useState<GrupoContextoUsuarioDTO | null>(null)
     const [modoRataActivo, setModoRataActivo] = useState(false)
     const [showGroupInfo, setShowGroupInfo] = useState(false)
     const [visibleMembersCount, setVisibleMembersCount] = useState(MEMBERS_PAGE_SIZE)
@@ -35,6 +36,9 @@ export default function GroupDetailPage() {
     const [isInviteModalOpen, setIsInviteModalOpen] = useState(false)
     const [inviteToken, setInviteToken] = useState<string>('')
     const [isGeneratingInvite, setIsGeneratingInvite] = useState(false)
+
+    // usar contexto del backend para saber si el usuario es admin
+    const isCurrentUserAdmin = !!contextoUsuario?.esAdmin
 
     // Gastos del grupo
     const [gastos, setGastos] = useState<GrupoGastosPorAnioDTO[]>([])
@@ -84,15 +88,18 @@ export default function GroupDetailPage() {
 
         const fetchAll = async () => {
             try {
-                const [groupData, membersData, settingsData] = await Promise.all([
+
+                const [groupData, membersData, settingsData, contexto] = await Promise.all([
                     obtenerDetalleGrupo(grupoId),
                     obtenerMiembrosDeGrupoSettings(grupoId),
                     obtenerGrupoSettings(grupoId),
+                    obtenerGrupoUsuarioContexto(grupoId),
                 ])
 
                 setGroupDetail(groupData)
                 setMiembros(membersData)
                 setModoRataActivo(settingsData.modoRata)
+                setContextoUsuario(contexto)
 
                 await fetchGastos(0)
             } catch (error: unknown) {
@@ -184,7 +191,7 @@ export default function GroupDetailPage() {
 
             {/* Barra de acciones rápidas — debajo de la foto */}
             <div className="mx-0 px-4 py-2">
-                <div className="grid grid-cols-4 gap-2">
+                <div className="flex flex-wrap justify-center gap-2">
 
                     <button
                         type="button"
@@ -197,19 +204,21 @@ export default function GroupDetailPage() {
                         <span className="text-[11px] font-medium text-muted-foreground leading-tight text-center">Estadísticas</span>
                     </button>
 
-                    <button
-                        type="button"
-                        onClick={handleOpenInviteModal}
-                        disabled={isGeneratingInvite}
-                        className="flex flex-col items-center gap-1.5 rounded-2xl border border-border/50 bg-card/70 px-2 py-2.5 text-foreground active:scale-95 transition-all disabled:opacity-60"
-                    >
-                        <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-emerald-600 dark:text-emerald-400">
-                            {isGeneratingInvite
-                                ? <div className="h-5 w-5 animate-spin rounded-full border-[2.5px] border-emerald-600 border-t-transparent" />
-                                : <UserPlus className="h-5 w-5 stroke-[2.4]" />}
-                        </span>
-                        <span className="text-[11px] font-medium text-muted-foreground leading-tight text-center">Invitar</span>
-                    </button>
+                    {isCurrentUserAdmin && (
+                        <button
+                            type="button"
+                            onClick={handleOpenInviteModal}
+                            disabled={isGeneratingInvite}
+                            className="flex flex-col items-center gap-1.5 rounded-2xl border border-border/50 bg-card/70 px-2 py-2.5 text-foreground active:scale-95 transition-all disabled:opacity-60"
+                        >
+                            <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-emerald-600 dark:text-emerald-400">
+                                {isGeneratingInvite
+                                    ? <div className="h-5 w-5 animate-spin rounded-full border-[2.5px] border-emerald-600 border-t-transparent" />
+                                    : <UserPlus className="h-5 w-5 stroke-[2.4]" />}
+                            </span>
+                            <span className="text-[11px] font-medium text-muted-foreground leading-tight text-center">Invitar</span>
+                        </button>
+                    )}
 
                     <button
                         type="button"
