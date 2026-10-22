@@ -1,16 +1,51 @@
-# Vaquita
+# Vaquita - Frontend
 
-TP Final para la materia de Proyectos de Software
+Aplicación web para organizar gastos compartidos entre grupos (como dividir cuentas, saldos y pagos).
 
-Al clonar el repo:
-1. nvm use
-2. npm install
+## Tecnologías
+- [React](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
+- [Vite](https://vitejs.dev/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [shadcn/ui](https://ui.shadcn.com/)
+- [React Router](https://reactrouter.com/)
+- [Axios](https://axios-http.com/)
+- [React Hook Form](https://react-hook-form.com/)
+- [Recharts](https://recharts.org/)
+- [Lucide React](https://lucide.dev/)
 
-Si tienen alguna advertencia en el punto uno tiren un nvm install
+## Capturas
 
-Stack:
-- React
-- Vite
-- Tailwind
-- shadcn/ui (componentes)
-- lucide-react (iconos)
+![Logo Vaquita](docs/images/logo_vaquita.png)
+
+![Diagrama Entidad-Relación](docs/images/DER%20Vaquita.png)
+
+## Características
+- Creación y gestión de grupos
+- Registro de gastos compartidos
+- Cálculo automático de saldos entre miembros
+- Gestión de deudas y pagos
+- Visualización de estadísticas con gráficos
+- Autenticación de usuarios
+
+## Instalación
+
+```bash
+nvm use
+npm install
+npm run dev
+```
+
+Si hay advertencias con la versión de Node, ejecutar `nvm install`.
+
+## Scripts
+```bash
+npm run dev      # Desarrollo
+npm run build    # Build de producción
+npm run lint     # Linting
+npm run preview  # Preview del build
+npm run test     # Tests con Vitest
+```
+
+## Repositorio
+- Frontend: [vaquita-app-frontend](https://github.com/AndresrHm/vaquita-app-frontend)
+- Backend: [vaquita-app-backend](https://github.com/AndresrHm/vaquita-app-backend)
