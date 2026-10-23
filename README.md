@@ -17,12 +17,6 @@ Aplicación web para organizar gastos compartidos entre grupos (como dividir cue
 
 ![Logo Vaquita](docs/images/logo_vaquita.png)
 
-![Pantalla de grupos](docs/screenshots/groups2.png)
-
-![Detalle de grupo](docs/screenshots/group-detail.png)
-
-![Pantalla de login](docs/screenshots/after-submit.png)
-
 ## Características
 - Creación y gestión de grupos
 - Registro de gastos compartidos
